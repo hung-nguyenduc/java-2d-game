@@ -5,8 +5,10 @@ Người chơi sẽ thực hiện các nhiệm vụ khác nhau như tham gia l�
 Sản phẩm được phát triển bằng ngôn ngữ Java, áp dụng các nguyên lý lập trình hướng đối tượng (OOP) như đóng gói, kế thừa và đa hình để xây dựng các thành phần của trò chơi như nhân vật, bản đồ, hệ thống nhiệm vụ và tương tác giữa các đối tượng.
 
 
-Năm 1: học giải tích
+Năm 1: học giải tích 3
+    Nội dung: làm 5 câu fami sohoa
     - Nếu đỗ --> qua năm 2
+    ![img.png](img.png)
     - Nếu trượt --> đuổi học
 Năm 2: Đại dịch zombie, cầm súng lên đường
     - Nếu sống --> năm 3   
