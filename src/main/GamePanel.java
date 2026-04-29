@@ -95,6 +95,7 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
     public void startGameThread() {
         gameThread = new Thread(this);
         gameThread.start();
+        requestFocusInWindow();
     }
 
     // Vòng lặp game chính (chạy ở 60 FPS)
@@ -179,6 +180,8 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
         }
         currentState = newState;
         currentState.enter();
+        // Lấy lại focus bàn phím sau mỗi lần chuyển state
+        requestFocusInWindow();
     }
 
     // MouseListener methods
