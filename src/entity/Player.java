@@ -3,32 +3,40 @@ package entity;
 import main.GamePanel;
 import main.KeyHandler;
 import java.awt.*;
-import java.awt.image.BufferedImage; // Import lớp để xử lý ảnh
+import java.awt.image.BufferedImage;
 import java.io.IOException;
-import javax.imageio.ImageIO; // Import công cụ đọc ảnh
+import java.util.List;
+import javax.imageio.ImageIO;
 
 public class Player extends Entity {
     GamePanel gp;
     KeyHandler keyH;
+    List<Enemy> enemies;
 
-    // Khai báo biến chứa hình ảnh
     public BufferedImage playerImage;
+    private int shootCooldown = 0; // Cooldown để tránh bắn quá nhanh
+    private final int shootInterval = 30; // Shoot every 30 frames
 
-    public Player(GamePanel gp, KeyHandler keyH) {
+    // Constructor: Khởi tạo Player với GamePanel và KeyHandler
+    public Player(GamePanel gp, KeyHandler keyH, List<Enemy> enemies) {
         this.gp = gp;
         this.keyH = keyH;
+        this.enemies = enemies;
 
         setDefaultValues();
-        getPlayerImage(); // Gọi hàm load ảnh ngay khi nhân vật được tạo ra
+        getPlayerImage();
     }
 
+    // Thiết lập giá trị mặc định cho Player
     public void setDefaultValues() {
-        worldX = 100;
-        worldY = 100;
+        worldX = 1000;
+        worldY = 1000;
         speed = 4;
+        aimAngle = 0; // Mặc định hướng sang phải
+        health = maxHealth; // Đặt máu ban đầu
     }
 
-    // Hàm chuyên dụng để tải ảnh từ thư mục
+    // Tải hình ảnh của Player
     public void getPlayerImage() {
         try {
             var is = getClass().getResourceAsStream("/player/player.png");
@@ -43,28 +51,145 @@ public class Player extends Entity {
         }
     }
 
+    // Cập nhật trạng thái của Player mỗi frame
     public void update() {
+        // Reset velocity
+        vx = 0;
+        vy = 0;
+
+        // AWSD for movement
         if (keyH.upPressed) {
-            worldY -= speed;
+            vy -= speed;
         }
-        else if (keyH.downPressed) {
-            worldY += speed;
+        if (keyH.downPressed) {
+            vy += speed;
         }
-        else if (keyH.leftPressed) {
-            worldX -= speed;
+        if (keyH.leftPressed) {
+            vx -= speed;
         }
-        else if (keyH.rightPressed) {
-            worldX += speed;
+        if (keyH.rightPressed) {
+            vx += speed;
+        }
+
+        // Apply velocity to position
+        worldX += (int) vx;
+        worldY += (int) vy;
+
+        // Giới hạn vị trí nhân vật trong map
+        clampPlayerPosition();
+
+        // Find nearest enemy and aim at it
+        Enemy nearestEnemy = findNearestEnemy();
+        if (nearestEnemy != null) {
+            double dx = nearestEnemy.worldX - worldX;
+            double dy = nearestEnemy.worldY - worldY;
+            aimAngle = Math.toDegrees(Math.atan2(dy, dx));
+        }
+
+        // Automatic shooting at nearest enemy
+        shootCooldown++;
+        if (shootCooldown >= shootInterval && nearestEnemy != null) {
+            shoot();
+            shootCooldown = 0;
+        }
+
+        // Update bullets
+        for (int i = 0; i < bullets.size(); i++) {
+            bullets.get(i).update();
+            if (bullets.get(i).isOutOfRange()) {
+                bullets.remove(i);
+                i--;
+            }
         }
     }
 
+    // Giới hạn vị trí nhân vật không cho phép vượt ra ngoài map
+    private void clampPlayerPosition() {
+        // Player size is 80x80
+        int playerSize = 80;
+
+        // Clamp X position
+        if (worldX < 0) {
+            worldX = 0;
+        }
+        if (worldX + playerSize > gp.worldWidth) {
+            worldX = gp.worldWidth - playerSize;
+        }
+
+        // Clamp Y position
+        if (worldY < 0) {
+            worldY = 0;
+        }
+        if (worldY + playerSize > gp.worldHeight) {
+            worldY = gp.worldHeight - playerSize;
+        }
+    }
+
+    // Tìm enemy gần nhất
+    private Enemy findNearestEnemy() {
+        Enemy nearest = null;
+        double minDistance = Double.MAX_VALUE;
+        for (Enemy enemy : enemies) {
+            double dx = enemy.worldX - worldX;
+            double dy = enemy.worldY - worldY;
+            double distance = Math.sqrt(dx * dx + dy * dy);
+            if (distance < minDistance) {
+                minDistance = distance;
+                nearest = enemy;
+            }
+        }
+        return nearest;
+    }
+
+    // Bắn đạn nếu cooldown cho phép
+    public void shoot() {
+        // Create bullet at player position
+        Bullet bullet = new Bullet(worldX + 40, worldY + 40, aimAngle);
+        bullets.add(bullet);
+    }
+
+    // Vẽ Player và các thành phần liên quan
     public void draw(Graphics2D g2) {
-        // Tính toán vị trí của nhân vật TRÊN MÀN HÌNH
-        // Luôn giữ nhân vật ở giữa màn hình
         int screenX = gp.screenWidth / 2 - (gp.tileSize / 2);
         int screenY = gp.screenHeight / 2 - (gp.tileSize / 2);
 
-        // Vẽ nhân vật tại vị trí cố định trên màn hình
         g2.drawImage(playerImage, screenX, screenY, 80, 80, null);
+
+        // Draw health bar
+        drawHealthBar(g2, screenX, screenY - 10, 80, 10);
+
+        // Draw aiming direction indicator
+        drawAimingIndicator(g2, screenX + 40, screenY + 40);
+
+        // Draw bullets
+        for (Bullet bullet : bullets) {
+            bullet.draw(g2, worldX, worldY, gp.screenWidth, gp.screenHeight, gp.tileSize);
+        }
+    }
+
+    // Vẽ thanh máu
+    private void drawHealthBar(Graphics2D g2, int x, int y, int width, int height) {
+        // Background (red)
+        g2.setColor(Color.RED);
+        g2.fillRect(x, y, width, height);
+        // Foreground (green)
+        g2.setColor(Color.GREEN);
+        int healthWidth = (int)((double)health / maxHealth * width);
+        g2.fillRect(x, y, healthWidth, height);
+        // Border
+        g2.setColor(Color.BLACK);
+        g2.drawRect(x, y, width, height);
+    }
+
+    // Vẽ chỉ báo hướng nhắm
+    private void drawAimingIndicator(Graphics2D g2, int centerX, int centerY) {
+        int indicatorLength = 30;
+        double radians = Math.toRadians(aimAngle);
+        int endX = (int)(centerX + indicatorLength * Math.cos(radians));
+        int endY = (int)(centerY + indicatorLength * Math.sin(radians));
+
+        g2.setColor(Color.RED);
+        g2.setStroke(new BasicStroke(2));
+        g2.drawLine(centerX, centerY, endX, endY);
     }
 }

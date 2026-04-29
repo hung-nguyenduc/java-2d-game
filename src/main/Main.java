@@ -1,10 +1,10 @@
 package main;
 
 import javax.swing.JFrame;
+//import main.GamePanel;
 
-public class Main
 
-{
+public class Main {
     public static void main(String[] args) {
 
         JFrame frame = new JFrame("Sinh ton o HUST");
