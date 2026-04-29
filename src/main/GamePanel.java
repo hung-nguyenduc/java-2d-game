@@ -10,6 +10,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage; // Import lớp để xử lý ảnh
 import java.io.IOException;
 import java.util.ArrayList;
@@ -17,7 +19,7 @@ import java.util.Iterator;
 import java.util.List;
 
 // Lớp chính quản lý panel game, vòng lặp game, và rendering
-public class GamePanel extends JPanel implements Runnable {
+public class GamePanel extends JPanel implements Runnable, MouseListener {
 
     // -- CẤU HÌNH MÀN HÌNH (Giữ nguyên như cũ) --
     final int originalTileSize = 16;
@@ -51,11 +53,21 @@ public class GamePanel extends JPanel implements Runnable {
     // Game over flag
     public boolean gameOver = false;
 
+    // Game state management
+    private GameState currentState;
+
     // Constructor: Khởi tạo GamePanel
     public GamePanel() {
         this.setPreferredSize(new Dimension(screenWidth, screenHeight));
         this.setBackground(Color.BLUE);
         this.setDoubleBuffered(true);
+
+        // Initialize state management - start with MenuState
+        currentState = new MenuState(this);
+        currentState.enter();
+
+        // Add mouse listener for button clicks
+        this.addMouseListener(this);
 
         // Load initial map
         loadMap();
@@ -109,93 +121,7 @@ public class GamePanel extends JPanel implements Runnable {
 
     // Cập nhật trạng thái game mỗi frame
     public void update() {
-        if (!gameOver) {
-            // Gọi hàm update của nhân vật
-            player.update();
-
-            // Update enemies
-            for (Enemy enemy : enemies) {
-                enemy.update();
-            }
-
-            // Check checkpoint collision
-            if (checkpoint != null) {
-                checkCheckpointCollision();
-            }
-
-            // Check collisions
-            checkCollisions();
-
-            // Check game over
-            if (player.health <= 0) {
-                gameOver = true;
-            }
-        }
-    }
-
-    // Sinh checkpoint tại vị trí trung tâm map
-    private void spawnCheckpoint() {
-        checkpoint = new Checkpoint(this, worldWidth / 2 - 40, worldHeight / 2 - 40);
-    }
-
-    // Kiểm tra va chạm với checkpoint
-    private void checkCheckpointCollision() {
-        if (player.worldX + 80 >= checkpoint.worldX && player.worldX <= checkpoint.worldX + checkpoint.sizeX &&
-            player.worldY + 80 >= checkpoint.worldY && player.worldY <= checkpoint.worldY + checkpoint.sizeY) {
-            // Chuyển map
-            nextMap();
-        }
-    }
-
-    // Chuyển sang map tiếp theo
-    private void nextMap() {
-        currentMap++;
-        if (currentMap >= mapPaths.length) {
-            // Nếu hết map, thắng game
-            gameOver = true;
-            return;
-        }
-        loadMap();
-        // Reset enemies và checkpoint
-        enemies.clear();
-        checkpoint = null;
-        spawnEnemies();
-        // Có thể reset vị trí player nếu cần
-        // player.worldX = 1000; player.worldY = 1000;
-    }
-
-    // Kiểm tra va chạm giữa đạn và thực thể
-    private void checkCollisions() {
-        // Player bullets hitting enemies
-        Iterator<Bullet> playerBulletIter = player.bullets.iterator();
-        while (playerBulletIter.hasNext()) {
-            Bullet b = playerBulletIter.next();
-            for (Enemy e : enemies) {
-                if (b.worldX >= e.worldX && b.worldX <= e.worldX + 80 &&
-                    b.worldY >= e.worldY && b.worldY <= e.worldY + 80) {
-                    e.health -= 10; // Damage to enemy
-                    playerBulletIter.remove();
-                    break;
-                }
-            }
-        }
-
-        // Enemy bullets hitting player
-        for (Enemy e : enemies) {
-            Iterator<Bullet> enemyBulletIter = e.bullets.iterator();
-            while (enemyBulletIter.hasNext()) {
-                Bullet b = enemyBulletIter.next();
-                if (b.worldX >= player.worldX && b.worldX <= player.worldX + 80 &&
-                    b.worldY >= player.worldY && b.worldY <= player.worldY + 80) {
-                    player.health -= 10; // Damage to player
-                    enemyBulletIter.remove();
-                    break;
-                }
-            }
-        }
-
-        // Remove dead enemies
-        enemies.removeIf(e -> e.health <= 0);
+        currentState.update();
     }
 
     // Vẽ tất cả các thành phần game
@@ -204,49 +130,13 @@ public class GamePanel extends JPanel implements Runnable {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
 
-        // Tính toán vị trí camera dựa trên vị trí nhân vật
-        int cameraX = player.worldX  - (screenWidth / 2);
-        int cameraY = player.worldY  - (screenHeight / 2);
-
-        // Giới hạn camera không được nhìn thấy ngoài phạm vi map
-        clampCameraPosition(cameraX, cameraY);
-        
-        int mapScreenX = -cameraX;
-        int screenY = -cameraY;
-
-        g2.drawImage(mapImage, mapScreenX, screenY, worldWidth, worldHeight, null);
-
-        if (!gameOver) {
-            // Gọi hàm draw của nhân vật
-            player.draw(g2);
-
-            // Draw enemies
-            for (Enemy enemy : enemies) {
-                enemy.draw(g2);
-            }
-
-            // Draw checkpoint
-            if (checkpoint != null) {
-                checkpoint.draw(g2, player.worldX, player.worldY);
-            }
-        } else {
-            // Draw game over screen
-            g2.setColor(Color.BLACK);
-            g2.fillRect(0, 0, screenWidth, screenHeight);
-            g2.setColor(Color.WHITE);
-            g2.setFont(new Font("Arial", Font.BOLD, 48));
-            FontMetrics fm = g2.getFontMetrics();
-            String text = currentMap >= mapPaths.length ? "YOU WIN!" : "GAME OVER";
-            int x = (screenWidth - fm.stringWidth(text)) / 2;
-            int y = screenHeight / 2;
-            g2.drawString(text, x, y);
-        }
+        currentState.draw(g2);
 
         g2.dispose();
     }
 
     // Giới hạn camera không được nhìn thấy ngoài phạm vi map
-    private int[] clampCameraPosition(int cameraX, int cameraY) {
+    public int[] clampCameraPosition(int cameraX, int cameraY) {
         // Clamp camera X
         if (cameraX < 50) {
             cameraX = 0;
@@ -272,5 +162,100 @@ public class GamePanel extends JPanel implements Runnable {
         enemies.add(new Enemy(this, player, 300, 300, 0));
         enemies.add(new Enemy(this, player, 800, 500, 1));
         enemies.add(new Enemy(this, player, 1200, 700, 2));
+    }
+
+    // Sinh checkpoint tại vị trí giữa map
+    private void spawnCheckpoint() {
+        checkpoint = new Checkpoint(this, worldWidth / 2 - 40, worldHeight / 2 - 40);
+    }
+
+    // Set a new game state
+    public void setState(GameState newState) {
+        if (currentState != null) {
+            currentState.exit();
+        }
+        currentState = newState;
+        currentState.enter();
+    }
+
+    // MouseListener methods
+    @Override
+    public void mouseClicked(MouseEvent e) {
+        currentState.handleMouseClick(e);
+    }
+
+    @Override
+    public void mousePressed(MouseEvent e) {}
+
+    @Override
+    public void mouseReleased(MouseEvent e) {}
+
+    @Override
+    public void mouseEntered(MouseEvent e) {}
+
+    @Override
+    public void mouseExited(MouseEvent e) {}
+
+    // Kiểm tra va chạm giữa player và enemies
+    public void checkCollisions() {
+        // Check player-enemy collisions
+        for (Enemy enemy : enemies) {
+            if (player.worldX + 80 > enemy.worldX &&
+                player.worldX < enemy.worldX + 80 &&
+                player.worldY + 80 > enemy.worldY &&
+                player.worldY < enemy.worldY + 80) {
+                // Player hit by enemy
+                player.health -= 1;
+            }
+
+            // Check player bullets hitting enemy
+            for (int i = 0; i < player.bullets.size(); i++) {
+                Bullet bullet = player.bullets.get(i);
+                if (bullet.worldX + 10 > enemy.worldX &&
+                    bullet.worldX < enemy.worldX + 80 &&
+                    bullet.worldY + 10 > enemy.worldY &&
+                    bullet.worldY < enemy.worldY + 80) {
+                    // Enemy hit by player bullet
+                    enemy.health -= 25;
+                    player.bullets.remove(i);
+                    i--;
+                }
+            }
+
+            // Check enemy bullets hitting player
+            for (int i = 0; i < enemy.bullets.size(); i++) {
+                Bullet bullet = enemy.bullets.get(i);
+                if (bullet.worldX + 10 > player.worldX &&
+                    bullet.worldX < player.worldX + 80 &&
+                    bullet.worldY + 10 > player.worldY &&
+                    bullet.worldY < player.worldY + 80) {
+                    // Player hit by enemy bullet
+                    player.health -= 10;
+                    enemy.bullets.remove(i);
+                    i--;
+                }
+            }
+        }
+
+        // Remove dead enemies
+        for (int i = 0; i < enemies.size(); i++) {
+            if (enemies.get(i).health <= 0) {
+                enemies.remove(i);
+                i--;
+            }
+        }
+    }
+
+    // Chuyển sang map tiếp theo
+    public void nextMap() {
+        currentMap++;
+        if (currentMap < mapPaths.length) {
+            gameOver = false;
+            player.health = player.maxHealth;
+            // Transition to next level
+            setState(new ZombieState(this));
+        } else {
+            gameOver = true;
+        }
     }
 }
