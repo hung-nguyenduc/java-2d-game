@@ -38,7 +38,7 @@ public class MenuState extends GameState {
         g2.setColor(Color.WHITE);
         g2.setFont(new Font("Arial", Font.BOLD, 48));
         FontMetrics fm = g2.getFontMetrics();
-        String title = "Zombie Survival Game";
+        String title = "Sinh tồn ở HUST";
         int titleX = (gp.screenWidth - fm.stringWidth(title)) / 2;
         g2.drawString(title, titleX, 100);
 
@@ -65,7 +65,12 @@ public class MenuState extends GameState {
     public void handleMouseClick(MouseEvent e) {
         Point p = e.getPoint();
         if (playButton.contains(p)) {
+            gp.currentMap = 0;
+            gp.loadMap();
+            gp.player.setDefaultValues();
+            gp.gameOver = false;
             gp.setState(new ZombieState(gp));
+            gp.requestFocusInWindow();
         } else if (instructionsButton.contains(p)) {
             gp.setState(new InstructionsState(gp));
         } else if (infoButton.contains(p)) {

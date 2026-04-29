@@ -10,7 +10,6 @@ import javax.swing.ImageIcon;
 public class ZombieState extends GameState {
     private Image mapImage;
     private Checkpoint checkpoint;
-    private String mapPath = "/maps/c1.png"; // Current map path
 
     // Constructor: Initialize with GamePanel
     public ZombieState(GamePanel gp) {
@@ -20,15 +19,19 @@ public class ZombieState extends GameState {
     // Enter the state: Load map, spawn enemies, and checkpoint
     @Override
     public void enter() {
-        // Load map image
+        // Load map image from current map path
+        String mapPath = gp.mapPaths[gp.currentMap];
         mapImage = new ImageIcon(getClass().getResource(mapPath)).getImage();
 
-        // Clear and spawn enemies (reuse GamePanel's spawnEnemies logic)
+        // Clear and spawn enemies
         gp.enemies.clear();
         spawnEnemies();
 
         // Spawn checkpoint
         spawnCheckpoint();
+
+        // Reset player health
+        gp.player.health = gp.player.maxHealth;
     }
 
     // Exit the state: Cleanup resources
@@ -41,6 +44,18 @@ public class ZombieState extends GameState {
     // Update logic for this level
     @Override
     public void update() {
+        // Check if player is dead -> Game Over
+        if (gp.player.health <= 0) {
+            gp.setState(new GameOverState(gp));
+            return;
+        }
+
+        // Check if all enemies are defeated -> Next Map
+        if (gp.enemies.isEmpty()) {
+            gp.nextMap();
+            return;
+        }
+
         // Update player and enemies (delegate to GamePanel for shared logic)
         gp.player.update();
         for (Enemy enemy : gp.enemies) {

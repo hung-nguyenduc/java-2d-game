@@ -43,8 +43,8 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
     Player player = new Player(this, keyH, enemies); // Truyền Panel và Bàn phím cho Player
 
     // Map management
-    String[] mapPaths = {"/maps/c1.png", "/res/maps/test.png"};
-    int currentMap = 0;
+    public String[] mapPaths = {"/maps/c1.png", "/res/maps/test.png"};
+    public int currentMap = 0;
     Image mapImage;
 
     // Checkpoint
@@ -84,7 +84,7 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
     }
 
     // Load map dựa trên currentMap
-    private void loadMap() {
+    public void loadMap() {
         mapImage = new ImageIcon(getClass().getResource(mapPaths[currentMap])).getImage();
     }
 
@@ -92,6 +92,7 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
     public void startGameThread() {
         gameThread = new Thread(this);
         gameThread.start();
+        requestFocusInWindow();
     }
 
     // Vòng lặp game chính (chạy ở 60 FPS)
@@ -182,10 +183,14 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
     @Override
     public void mouseClicked(MouseEvent e) {
         currentState.handleMouseClick(e);
+        requestFocusInWindow();
     }
 
     @Override
-    public void mousePressed(MouseEvent e) {}
+    public void mousePressed(MouseEvent e) {
+        currentState.handleMouseClick(e);
+        requestFocusInWindow();
+    }
 
     @Override
     public void mouseReleased(MouseEvent e) {}
@@ -250,12 +255,13 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
     public void nextMap() {
         currentMap++;
         if (currentMap < mapPaths.length) {
-            gameOver = false;
             player.health = player.maxHealth;
+            loadMap();
             // Transition to next level
             setState(new ZombieState(this));
         } else {
-            gameOver = true;
+            // All maps completed - show victory state
+            setState(new VictoryState(this));
         }
     }
 }
