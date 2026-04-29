@@ -31,12 +31,14 @@ public class Player extends Entity {
     // Hàm chuyên dụng để tải ảnh từ thư mục
     public void getPlayerImage() {
         try {
-            // Dùng getResourceAsStream để load ảnh an toàn, sau này build ra .jar không bị lỗi
-            // Chú ý: Cần có dấu "/" ở đầu chuỗi
-            playerImage = ImageIO.read(getClass().getResourceAsStream("/player/player.png"));
-
+            var is = getClass().getResourceAsStream("/player/player.png");
+            if (is == null) {
+                System.out.println("LỖI: Không tìm thấy ảnh nhân vật!");
+                return;
+            }
+            playerImage = ImageIO.read(is);
         } catch (IOException e) {
-            System.out.println("LỖI: Không tìm thấy ảnh nhân vật!");
+            System.out.println("LỖI: Không đọc được ảnh nhân vật!");
             e.printStackTrace();
         }
     }

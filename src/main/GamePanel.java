@@ -42,7 +42,7 @@ public class GamePanel extends JPanel implements Runnable {
     @Override
     public void run() {
         // Game Loop 60 FPS chuẩn
-        double drawInterval = 1000000000 / 60; // 1 giây chia cho 60 FPS
+        double drawInterval = 1000000000.0 / 60; // 1 giây chia cho 60 FPS
         double nextDrawTime = System.nanoTime() + drawInterval;
 
         while(gameThread != null) {
