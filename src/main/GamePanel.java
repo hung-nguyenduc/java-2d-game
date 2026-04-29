@@ -43,7 +43,7 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
     Player player = new Player(this, keyH, enemies); // Truyền Panel và Bàn phím cho Player
 
     // Map management
-    String[] mapPaths = {"/maps/c1.png", "/res/maps/test.png"};
+    String[] mapPaths = {"/maps/c1.png", "/maps/test.png"};
     int currentMap = 0;
     Image mapImage;
 
@@ -52,6 +52,9 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
 
     // Game over flag
     public boolean gameOver = false;
+
+    // Kill counter (reset mỗi level)
+    public int killCount = 0;
 
     // Game state management
     private GameState currentState;
@@ -237,10 +240,11 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
             }
         }
 
-        // Remove dead enemies
+        // Remove dead enemies and count kills
         for (int i = 0; i < enemies.size(); i++) {
             if (enemies.get(i).health <= 0) {
                 enemies.remove(i);
+                killCount++;
                 i--;
             }
         }
