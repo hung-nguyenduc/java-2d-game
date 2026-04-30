@@ -25,4 +25,6 @@ replay_pid*
 
 # IntelliJ build output
 out/
+build/
 .idea/
+*.iml
