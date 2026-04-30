@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="be5cdae7-6070-4abd-a5a5-17b817b3f940" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/java-2d-game.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/java-2d-game.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/java-2d-game/checkpoint/checkpoint.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/java-2d-game/congratulations/5.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/java-2d-game/enemy/enemy1.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/java-2d-game/enemy/enemy2.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/java-2d-game/enemy/enemy3.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/java-2d-game/hust/C1.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/java-2d-game/hust/thu-vien.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/java-2d-game/maps/c1.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/java-2d-game/maps/test.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/java-2d-game/player/CatMeme.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/java-2d-game/player/System.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/java-2d-game/player/boy_down_1.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/java-2d-game/player/boy_down_2.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/java-2d-game/player/boy_left_1.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/java-2d-game/player/boy_left_2.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/java-2d-game/player/boy_right_1.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/java-2d-game/player/boy_right_2.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/java-2d-game/player/boy_up_1.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/java-2d-game/player/boy_up_2.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/java-2d-game/player/character_icon.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/java-2d-game/player/character_move_down (1).png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/java-2d-game/player/character_move_down (2).png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/java-2d-game/player/character_move_down (3).png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/java-2d-game/player/character_move_down (4).png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/java-2d-game/player/character_move_left (1).png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/java-2d-game/player/character_move_left (2).png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/java-2d-game/player/character_move_left (3).png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/java-2d-game/player/character_move_left (4).png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/java-2d-game/player/character_move_right (1).png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/java-2d-game/player/character_move_right (2).png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/java-2d-game/player/character_move_right (3).png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/java-2d-game/player/character_move_right (4).png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/java-2d-game/player/character_move_up (1).png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/java-2d-game/player/character_move_up (2).png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/java-2d-game/player/character_move_up (3).png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/java-2d-game/player/character_move_up (4).png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/java-2d-game/player/character_stand_back (1).png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/java-2d-game/player/character_stand_back (2).png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/java-2d-game/player/character_stand_back (3).png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/java-2d-game/player/character_stand_front (1).png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/java-2d-game/player/character_stand_front (2).png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/java-2d-game/player/character_stand_front (3).png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/java-2d-game/player/character_stand_left (1).png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/java-2d-game/player/character_stand_left (2).png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/java-2d-game/player/character_stand_left (3).png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/java-2d-game/player/character_stand_right (1).png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/java-2d-game/player/character_stand_right (2).png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/java-2d-game/player/character_stand_right (3).png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/java-2d-game/player/player.png" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="CopilotPersistence">
+    <persistenceIdMap>
+      <entry key="_D:/SourceCode/java-2d-game" value="3D5F3CawBMyvVOdshqKHq01DLMn" />
+    </persistenceIdMap>
+  </component>
+  <component name="EmbeddingIndexingInfo">
+    <option name="cachedIndexableFilesCount" value="136" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+  "lastFilter": {
+    "state": "OPEN",
+    "assignee": "hung-nguyenduc"
+  }
+}]]></component>
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/hung-nguyenduc/java-2d-game",
+    "accountId": "20e0e0ea-7bb1-4d47-bd07-8dc66280d82e"
+  }
+}]]></component>
+  <component name="McpProjectServerCommands">
+    <commands />
+    <urls />
+  </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "customColor": "",
+  "associatedIndex": 2
+}]]></component>
+  <component name="ProjectId" id="3D5F3CawBMyvVOdshqKHq01DLMn" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Application.Main.executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.MCP Project settings loaded": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "codeWithMe.voiceChat.enabledByDefault": "false",
+    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
+    "git-widget-placeholder": "main",
+    "junie.onboarding.icon.badge.shown": "true",
+    "kotlin-language-version-configured": "true",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "project.structure.last.edited": "Project",
+    "project.structure.proportion": "0.0",
+    "project.structure.side.proportion": "0.0",
+    "to.speed.mode.migration.done": "true",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="be5cdae7-6070-4abd-a5a5-17b817b3f940" name="Changes" comment="" />
+      <created>1777563824082</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1777563824082</updated>
+      <workItem from="1777563833882" duration="358000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="github-copilot-workspace">
+    <instructionFileLocations>
+      <option value=".github/instructions" />
+    </instructionFileLocations>
+    <promptFileLocations>
+      <option value=".github/prompts" />
+    </promptFileLocations>
+  </component>
+</project>
