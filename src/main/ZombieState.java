@@ -3,10 +3,12 @@ package main;
 import entity.Enemy;
 import java.awt.*;
 import java.awt.event.MouseEvent;
-import javax.swing.ImageIcon;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import javax.imageio.ImageIO;
 
 public class ZombieState extends GameState {
-    private Image mapImage;
+    private BufferedImage mapImage; // Pre-scaled to worldWidth x worldHeight
     private static final String MAP_PATH = "/maps/c1.png";
 
     public ZombieState(GamePanel gp) {
@@ -15,7 +17,17 @@ public class ZombieState extends GameState {
 
     @Override
     public void enter() {
-        mapImage = new ImageIcon(getClass().getResource(MAP_PATH)).getImage();
+        // Pre-scale map một lần duy nhất → mỗi frame chỉ copy vùng nhìn thấy
+        try {
+            BufferedImage src = ImageIO.read(getClass().getResourceAsStream(MAP_PATH));
+            mapImage = new BufferedImage(gp.worldWidth, gp.worldHeight, BufferedImage.TYPE_INT_RGB);
+            Graphics2D mg = mapImage.createGraphics();
+            mg.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            mg.drawImage(src, 0, 0, gp.worldWidth, gp.worldHeight, null);
+            mg.dispose();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         gp.enemies.clear();
         gp.killCount = 0;
         gp.player.health = gp.player.maxHealth;
@@ -36,13 +48,13 @@ public class ZombieState extends GameState {
         }
         gp.checkCollisions();
 
-        if (gp.killCount >= 3) {
-            gp.setState(new Level2State(gp));
+        if (gp.player.health <= 0) {
+            gp.setState(new GameOverState(gp));
             return;
         }
 
-        if (gp.player.health <= 0) {
-            gp.setState(new GameOverState(gp));
+        if (gp.killCount >= 3) {
+            gp.setState(new LevelCompleteState(gp, 1, new Level2State(gp)));
         }
     }
 
@@ -54,7 +66,11 @@ public class ZombieState extends GameState {
         cameraX = clamped[0];
         cameraY = clamped[1];
 
-        g2.drawImage(mapImage, -cameraX, -cameraY, gp.worldWidth, gp.worldHeight, null);
+        // Chỉ copy vùng camera nhìn thấy (~768×576) thay vì toàn bộ 2000×2000
+        g2.drawImage(mapImage,
+            0, 0, gp.screenWidth, gp.screenHeight,
+            cameraX, cameraY, cameraX + gp.screenWidth, cameraY + gp.screenHeight,
+            null);
 
         gp.player.draw(g2);
         for (Enemy enemy : gp.enemies) {

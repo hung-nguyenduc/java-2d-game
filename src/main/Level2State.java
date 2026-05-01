@@ -3,10 +3,12 @@ package main;
 import entity.Enemy;
 import java.awt.*;
 import java.awt.event.MouseEvent;
-import javax.swing.ImageIcon;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import javax.imageio.ImageIO;
 
 public class Level2State extends GameState {
-    private Image mapImage;
+    private BufferedImage mapImage;
     private static final String MAP_PATH = "/maps/test.png";
 
     public Level2State(GamePanel gp) {
@@ -15,9 +17,19 @@ public class Level2State extends GameState {
 
     @Override
     public void enter() {
-        mapImage = new ImageIcon(getClass().getResource(MAP_PATH)).getImage();
+        try {
+            BufferedImage src = ImageIO.read(getClass().getResourceAsStream(MAP_PATH));
+            mapImage = new BufferedImage(gp.worldWidth, gp.worldHeight, BufferedImage.TYPE_INT_RGB);
+            Graphics2D mg = mapImage.createGraphics();
+            mg.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            mg.drawImage(src, 0, 0, gp.worldWidth, gp.worldHeight, null);
+            mg.dispose();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         gp.enemies.clear();
         gp.killCount = 0;
+        gp.player.health = gp.player.maxHealth;
         gp.player.bullets.clear();
         spawnEnemies();
     }
@@ -37,6 +49,11 @@ public class Level2State extends GameState {
 
         if (gp.player.health <= 0) {
             gp.setState(new GameOverState(gp));
+            return;
+        }
+
+        if (gp.enemies.isEmpty()) {
+            gp.setState(new LevelCompleteState(gp, 2, new MenuState(gp)));
         }
     }
 
@@ -49,7 +66,10 @@ public class Level2State extends GameState {
         cameraY = clamped[1];
 
         // Phủ màu tối lên map để tạo cảm giác khác biệt với màn 1
-        g2.drawImage(mapImage, -cameraX, -cameraY, gp.worldWidth, gp.worldHeight, null);
+        g2.drawImage(mapImage,
+            0, 0, gp.screenWidth, gp.screenHeight,
+            cameraX, cameraY, cameraX + gp.screenWidth, cameraY + gp.screenHeight,
+            null);
         g2.setColor(new Color(0, 0, 60, 80));
         g2.fillRect(0, 0, gp.screenWidth, gp.screenHeight);
 

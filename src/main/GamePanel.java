@@ -5,17 +5,12 @@ import entity.Enemy; // Import Enemy class
 import entity.Bullet; // Import Bullet class
 import entity.Checkpoint; // Import Checkpoint class
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.image.BufferedImage; // Import lớp để xử lý ảnh
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 // Lớp chính quản lý panel game, vòng lặp game, và rendering
@@ -42,11 +37,6 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
     Thread gameThread;
     Player player = new Player(this, keyH, enemies); // Truyền Panel và Bàn phím cho Player
 
-    // Map management
-    String[] mapPaths = {"/maps/c1.png", "/maps/test.png"};
-    int currentMap = 0;
-    Image mapImage;
-
     // Checkpoint
     Checkpoint checkpoint = null;
 
@@ -72,23 +62,18 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
         // Add mouse listener for button clicks
         this.addMouseListener(this);
 
-        // Load initial map
-        loadMap();
-
-        // HAI DÒNG NÀY CỰC KỲ QUAN TRỌNG ĐỂ NHẬN PHÍM
+        this.setFocusable(true);
+        this.setFocusTraversalKeysEnabled(false); // Tắt Tab/Shift-Tab cướp focus
         this.addKeyListener(keyH);
-        this.setFocusable(true); // Để GamePanel tập trung nhận input từ bàn phím
-
-        // Spawn initial enemies
-        spawnEnemies();
+        // Global dispatcher: bắt key events dù focus ở bất cứ đâu trong JVM
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(e -> {
+            if (e.getID() == KeyEvent.KEY_PRESSED)  keyH.keyPressed(e);
+            else if (e.getID() == KeyEvent.KEY_RELEASED) keyH.keyReleased(e);
+            return false;
+        });
 
         // Spawn checkpoint at map center
         spawnCheckpoint();
-    }
-
-    // Load map dựa trên currentMap
-    private void loadMap() {
-        mapImage = new ImageIcon(getClass().getResource(mapPaths[currentMap])).getImage();
     }
 
     // Khởi động luồng game
@@ -101,24 +86,24 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
     // Vòng lặp game chính (chạy ở 60 FPS)
     @Override
     public void run() {
-        // Game Loop 60 FPS chuẩn
-        double drawInterval = 1000000000.0 / 60; // 1 giây chia cho 60 FPS
-        double nextDrawTime = System.nanoTime() + drawInterval;
+        final long drawInterval = 1_000_000_000L / 60;
+        long lastTime = System.nanoTime();
 
-        while(gameThread != null) {
-            update();
-            repaint();
-
-            try {
-                double remainingTime = nextDrawTime - System.nanoTime();
-                remainingTime = remainingTime / 1000000;
-
-                if(remainingTime < 0) remainingTime = 0;
-                Thread.sleep((long) remainingTime);
-
-                nextDrawTime += drawInterval;
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+        while (gameThread != null) {
+            long now = System.nanoTime();
+            if (now - lastTime >= drawInterval) {
+                lastTime += drawInterval;
+                // Tránh vòng lặp catch-up khi bị chậm quá nhiều
+                if (lastTime < now - drawInterval) lastTime = now;
+                update();
+                repaint();
+            } else {
+                // Sleep 1ms giữ Windows timer resolution ở 1ms thay vì 15ms mặc định
+                try {
+                    Thread.sleep(1);
+                } catch (InterruptedException e) {
+                    break;
+                }
             }
         }
     }
@@ -158,14 +143,6 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
         }
 
         return new int[]{cameraX, cameraY};
-    }
-
-    // Sinh các enemy ban đầu
-    private void spawnEnemies() {
-        // Spawn 3 enemies with different types
-        enemies.add(new Enemy(this, player, 300, 300, 0));
-        enemies.add(new Enemy(this, player, 800, 500, 1));
-        enemies.add(new Enemy(this, player, 1200, 700, 2));
     }
 
     // Sinh checkpoint tại vị trí giữa map
@@ -253,16 +230,4 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
         }
     }
 
-    // Chuyển sang map tiếp theo
-    public void nextMap() {
-        currentMap++;
-        if (currentMap < mapPaths.length) {
-            gameOver = false;
-            player.health = player.maxHealth;
-            // Transition to next level
-            setState(new ZombieState(this));
-        } else {
-            gameOver = true;
-        }
-    }
 }

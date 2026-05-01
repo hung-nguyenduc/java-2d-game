@@ -73,6 +73,10 @@ public class Enemy extends Entity {
             worldY += (int) vy;
         }
 
+        // Giới hạn enemy trong phạm vi map
+        worldX = Math.max(0, Math.min(worldX, gp.worldWidth - 80));
+        worldY = Math.max(0, Math.min(worldY, gp.worldHeight - 80));
+
         // Update bullets
         for (int i = 0; i < bullets.size(); i++) {
             bullets.get(i).update();
@@ -99,8 +103,8 @@ public class Enemy extends Entity {
 
     // Vẽ Enemy và đạn của nó
     public void draw(Graphics2D g2) {
-        int screenX = (int)(worldX - player.worldX + gp.screenWidth / 2);
-        int screenY = (int)(worldY - player.worldY + gp.screenHeight / 2);
+        int screenX = (int) Math.round(worldX - player.worldX + gp.screenWidth / 2.0);
+        int screenY = (int) Math.round(worldY - player.worldY + gp.screenHeight / 2.0);
 
         // Only draw if on screen
         if(screenX > -80 && screenX < gp.screenWidth + 80 && screenY > -80 && screenY < gp.screenHeight + 80) {

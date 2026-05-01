@@ -15,6 +15,7 @@ public class Main {
         GamePanel gamePanel = new GamePanel();
         frame.add(gamePanel);
 
+
         frame.pack(); // Tự động co giãn JFrame cho vừa khít với kích thước của GamePanel
 
         frame.setLocationRelativeTo(null); // Hiển thị ở giữa màn hình

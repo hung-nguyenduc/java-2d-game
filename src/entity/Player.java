@@ -14,8 +14,11 @@ public class Player extends Entity {
     List<Enemy> enemies;
 
     public BufferedImage playerImage;
-    private int shootCooldown = 0; // Cooldown để tránh bắn quá nhanh
-    private final int shootInterval = 30; // Shoot every 30 frames
+    private int shootCooldown = 0;
+    private final int shootInterval = 30;
+
+    // Accumulate position as double để tránh mất precision khi normalize chéo
+    private double accX = 1000, accY = 1000;
 
     // Constructor: Khởi tạo Player với GamePanel và KeyHandler
     public Player(GamePanel gp, KeyHandler keyH, List<Enemy> enemies) {
@@ -31,9 +34,11 @@ public class Player extends Entity {
     public void setDefaultValues() {
         worldX = 1000;
         worldY = 1000;
+        accX = 1000;
+        accY = 1000;
         speed = 4;
-        aimAngle = 0; // Mặc định hướng sang phải
-        health = maxHealth; // Đặt máu ban đầu
+        aimAngle = 0;
+        health = maxHealth;
     }
 
     // Tải hình ảnh của Player
@@ -53,30 +58,32 @@ public class Player extends Entity {
 
     // Cập nhật trạng thái của Player mỗi frame
     public void update() {
-        // Reset velocity
         vx = 0;
         vy = 0;
 
-        // AWSD for movement
-        if (keyH.upPressed) {
-            vy -= speed;
-        }
-        if (keyH.downPressed) {
-            vy += speed;
-        }
-        if (keyH.leftPressed) {
-            vx -= speed;
-        }
-        if (keyH.rightPressed) {
-            vx += speed;
+        if (keyH.upPressed)    vy -= speed;
+        if (keyH.downPressed)  vy += speed;
+        if (keyH.leftPressed)  vx -= speed;
+        if (keyH.rightPressed) vx += speed;
+
+        // Normalize diagonal: giữ tốc độ bằng nhau mọi hướng
+        if (vx != 0 && vy != 0) {
+            double factor = 1.0 / Math.sqrt(2);
+            vx *= factor;
+            vy *= factor;
         }
 
-        // Apply velocity to position
-        worldX += (int) vx;
-        worldY += (int) vy;
+        // Tích lũy bằng double, gán int sau để tránh mất precision
+        accX += vx;
+        accY += vy;
+        worldX = (int) accX;
+        worldY = (int) accY;
 
         // Giới hạn vị trí nhân vật trong map
         clampPlayerPosition();
+        // Sync accumulator sau khi clamp để tránh drift vào tường
+        accX = worldX;
+        accY = worldY;
 
         // Find nearest enemy and aim at it
         Enemy nearestEnemy = findNearestEnemy();

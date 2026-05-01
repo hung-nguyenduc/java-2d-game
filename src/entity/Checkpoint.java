@@ -35,8 +35,8 @@ public class Checkpoint {
 
     // Vẽ Checkpoint
     public void draw(Graphics2D g2, int playerWorldX, int playerWorldY) {
-        int screenX = (int)(worldX - playerWorldX + gp.screenWidth / 2) + 500;
-        int screenY = (int)(worldY - playerWorldY + gp.screenHeight / 2) + 500;
+        int screenX = (int)(worldX - playerWorldX + gp.screenWidth / 2);
+        int screenY = (int)(worldY - playerWorldY + gp.screenHeight / 2);
 
         // Only draw if on screen
         if(screenX > -80 && screenX < gp.screenWidth + 80 && screenY > -80 && screenY < gp.screenHeight + 80) {
