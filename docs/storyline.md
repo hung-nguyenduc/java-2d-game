@@ -1,0 +1,33 @@
+Giới thiệu nhân vật (nền cổng parabol bk, có hội thoại giới thiệu nhân vật): Đây là Vũ, Vũ là một tân sinh viên Bách Khoa K36, tự tin bước vào trường với ước mơ ra trường đúng hạn và trở thành một kỹ sư tài ba.
+
+(Chuyển cảnh)
+Năm 1: học giải tích 3
+Bối cảnh: kí túc xá, Vũ đang ngủ, ngáy khò khò, bỗng nhiên chuông điện thoại reo, Vũ nhấc máy lên. 
+
+![DoMiMi.png](../res/NPC/DoMixi/DoMiMi.png)
+Độ mimi: Alo Vũ à Vũ? Ôi em ơi, số điện thoại, địa chỉ nhà anh đều có ở đây hết rồi, em đừng có chối
+Vũ: Ơ anh nhầm người rồi...
+Độ Mimi: Thế em có định đi học giải tích ko?
+Vũ: Ôi thôi chết quên mẹ giờ học rồi, phải đi ngay thôi
+
+(Chuyển cảnh: animation Vũ chạy sml đi học)
+
+
+![giang-duong.png](../res/maps/giang-duong.png)
+Đến giảng đường, Vũ với quyết tâm A+ giải tích nên đã lên thẳng bàn đầu ngồi.
+Vừa ngồi vào bản, Vũ đã phải chạm trán thử thách đầu tiên: làm 3 câu fami sohoa
+
+- Nếu đỗ --> qua năm 2
+
+- Nếu trượt --> chưa tày --> đuổi học
+ 
+- ![img.png](img.png)
+
+(Chuyển cảnh)
+Người ngoài hành tinh đổ bộ xâm lược trái đất, Vũ phải gác lại ước mơ học hành để cầm súng lên đường chiến đấu với quái vật.
+- Nếu sống --> năm 3   
+- Nếu chết --> sayonara (chuyển cảnh ending đài tưởng niệm bk: 10 năm sau, ở đài tưởng niệm bk, có một tấm bia ghi tên những sinh viên đã hy sinh trong cuộc chiến chống lại người ngoài hành tinh, Vũ là một trong số đó)
+
+Năm 4: ...
+- Nếu qua --> tốt nghiệp xs, lương triệu đô
+- Không qua --> bằng khá, đi chạy grab
