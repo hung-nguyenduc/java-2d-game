@@ -9,7 +9,7 @@ Năm 1: học giải tích 3
     Nội dung: làm 5 câu fami sohoa
     - Nếu đỗ --> qua năm 2
     ![img.png](img.png)
-    - Nếu trượt --> đuổi học
+    - Nếu trượt --> chưa tày --> đuổi học
 Năm 2: Đại dịch zombie, cầm súng lên đường
     - Nếu sống --> năm 3   
     - Nếu chết --> sayonara
