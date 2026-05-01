@@ -23,7 +23,7 @@ Vừa ngồi vào bản, Vũ đã phải chạm trán thử thách đầu tiên:
  
 - ![img.png](img.png)
 
-(Chuyển cảnh)
+(Chuyển cảnh UFO xâm chiếm trái đất)
 Người ngoài hành tinh đổ bộ xâm lược trái đất, Vũ phải gác lại ước mơ học hành để cầm súng lên đường chiến đấu với quái vật.
 - Nếu sống --> năm 3   
 - Nếu chết --> sayonara (chuyển cảnh ending đài tưởng niệm bk: 10 năm sau, ở đài tưởng niệm bk, có một tấm bia ghi tên những sinh viên đã hy sinh trong cuộc chiến chống lại người ngoài hành tinh, Vũ là một trong số đó)
