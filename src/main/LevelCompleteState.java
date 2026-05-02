@@ -133,6 +133,7 @@ public class LevelCompleteState extends GameState {
         fm = g2.getFontMetrics();
         String sub = (level == 1)
             ? "Tiếp tục chiến đấu - Chặng 2 đang chờ!"
+            : (level == 2) ? "Vào giảng đường - Chặng 3 đang chờ!"
             : "Xuất sắc! Hãy chuẩn bị cho những gì tiếp theo!";
         g2.setColor(new Color(accentColor.getRed(), accentColor.getGreen(), accentColor.getBlue(), 210));
         g2.drawString(sub, pX + (pW - fm.stringWidth(sub)) / 2, pY + 188);
@@ -148,7 +149,9 @@ public class LevelCompleteState extends GameState {
             hint = "Chuẩn bị...";
             hintColor = Color.GRAY;
         } else if ((frameCount / 28) % 2 == 0) {
-            hint = (level == 1) ? "Nhấn SPACE để vào Chặng 2" : "Nhấn SPACE để quay về Menu";
+            hint = (level == 1) ? "Nhấn SPACE để vào Chặng 2"
+                 : (level == 2) ? "Nhấn SPACE để vào Chặng 3"
+                 : "Nhấn SPACE để quay về Menu";
             hintColor = Color.WHITE;
         } else {
             hint = null;

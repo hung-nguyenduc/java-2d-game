@@ -53,7 +53,8 @@ public class Level2State extends GameState {
         }
 
         if (gp.enemies.isEmpty()) {
-            gp.setState(new LevelCompleteState(gp, 2, new MenuState(gp)));
+            gp.setState(new LevelCompleteState(gp, 2,
+                    new Level3CutsceneState(gp, new Level3State(gp))));
         }
     }
 
