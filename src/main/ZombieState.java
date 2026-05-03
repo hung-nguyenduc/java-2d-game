@@ -8,8 +8,9 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 
 public class ZombieState extends GameState {
-    private BufferedImage mapImage; // Pre-scaled to worldWidth x worldHeight
+    private Image mapImage; // GPU-friendly compatible image
     private static final String MAP_PATH = "/maps/c1.png";
+    private static final Font HUD_FONT = new Font("Arial", Font.BOLD, 20);
 
     public ZombieState(GamePanel gp) {
         super(gp);
@@ -17,14 +18,17 @@ public class ZombieState extends GameState {
 
     @Override
     public void enter() {
-        // Pre-scale map một lần duy nhất → mỗi frame chỉ copy vùng nhìn thấy
+        // Pre-scale map một lần duy nhất → mỗi frame chỉ blit vùng nhìn thấy (GPU accelerated)
         try {
             BufferedImage src = ImageIO.read(getClass().getResourceAsStream(MAP_PATH));
-            mapImage = new BufferedImage(gp.worldWidth, gp.worldHeight, BufferedImage.TYPE_INT_RGB);
-            Graphics2D mg = mapImage.createGraphics();
+            GraphicsConfiguration gc = GraphicsEnvironment.getLocalGraphicsEnvironment()
+                    .getDefaultScreenDevice().getDefaultConfiguration();
+            BufferedImage compat = gc.createCompatibleImage(gp.worldWidth, gp.worldHeight, Transparency.OPAQUE);
+            Graphics2D mg = compat.createGraphics();
             mg.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
             mg.drawImage(src, 0, 0, gp.worldWidth, gp.worldHeight, null);
             mg.dispose();
+            mapImage = compat;
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -78,7 +82,7 @@ public class ZombieState extends GameState {
         }
 
         g2.setColor(Color.WHITE);
-        g2.setFont(new Font("Arial", Font.BOLD, 20));
+        g2.setFont(HUD_FONT);
         g2.drawString("Man 1 - Giet quai: " + gp.killCount + " / 3", 10, 30);
     }
 

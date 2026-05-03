@@ -98,7 +98,7 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
                 update();
                 repaint();
             } else {
-                // Sleep 1ms giữ Windows timer resolution ở 1ms thay vì 15ms mặc định
+                // Sleep 1ms — vừa nhường CPU cho EDT (xử lý phím), vừa giữ Windows timer ở 1ms
                 try {
                     Thread.sleep(1);
                 } catch (InterruptedException e) {
@@ -118,10 +118,11 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
-
+        // Render hint cho text mượt, không cần đặt mỗi state
+        g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
+                RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         currentState.draw(g2);
-
-        g2.dispose();
+        // KHÔNG dispose Graphics do Swing cấp — đó là lỗi, dispose sẽ làm hỏng các vẽ tiếp theo
     }
 
     // Giới hạn camera không được nhìn thấy ngoài phạm vi map

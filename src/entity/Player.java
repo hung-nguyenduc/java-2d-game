@@ -20,6 +20,9 @@ public class Player extends Entity {
     // Accumulate position as double để tránh mất precision khi normalize chéo
     private double accX = 1000, accY = 1000;
 
+    private static final double DIAGONAL_FACTOR = 1.0 / Math.sqrt(2);
+    private static final BasicStroke AIM_STROKE = new BasicStroke(2);
+
     // Constructor: Khởi tạo Player với GamePanel và KeyHandler
     public Player(GamePanel gp, KeyHandler keyH, List<Enemy> enemies) {
         this.gp = gp;
@@ -68,9 +71,8 @@ public class Player extends Entity {
 
         // Normalize diagonal: giữ tốc độ bằng nhau mọi hướng
         if (vx != 0 && vy != 0) {
-            double factor = 1.0 / Math.sqrt(2);
-            vx *= factor;
-            vy *= factor;
+            vx *= DIAGONAL_FACTOR;
+            vy *= DIAGONAL_FACTOR;
         }
 
         // Tích lũy bằng double, gán int sau để tránh mất precision
@@ -132,16 +134,17 @@ public class Player extends Entity {
         }
     }
 
-    // Tìm enemy gần nhất
+    // Tìm enemy gần nhất (so sánh bình phương khoảng cách → bỏ sqrt)
     private Enemy findNearestEnemy() {
         Enemy nearest = null;
-        double minDistance = Double.MAX_VALUE;
-        for (Enemy enemy : enemies) {
+        double minDistanceSq = Double.MAX_VALUE;
+        for (int i = 0; i < enemies.size(); i++) {
+            Enemy enemy = enemies.get(i);
             double dx = enemy.worldX - worldX;
             double dy = enemy.worldY - worldY;
-            double distance = Math.sqrt(dx * dx + dy * dy);
-            if (distance < minDistance) {
-                minDistance = distance;
+            double distanceSq = dx * dx + dy * dy;
+            if (distanceSq < minDistanceSq) {
+                minDistanceSq = distanceSq;
                 nearest = enemy;
             }
         }
@@ -196,7 +199,7 @@ public class Player extends Entity {
         int endY = (int)(centerY + indicatorLength * Math.sin(radians));
 
         g2.setColor(Color.RED);
-        g2.setStroke(new BasicStroke(2));
+        g2.setStroke(AIM_STROKE);
         g2.drawLine(centerX, centerY, endX, endY);
     }
 }

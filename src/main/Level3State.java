@@ -9,8 +9,13 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 
 public class Level3State extends GameState {
-    private BufferedImage mapImage;
+    private Image mapImage;
     private static final String MAP_PATH = "/maps/giang-duong.png";
+    private static final Font HUD_FONT_BIG = new Font("Arial", Font.BOLD, 20);
+    private static final Font HUD_FONT_SMALL = new Font("Arial", Font.BOLD, 15);
+    private static final Color HUD_COLOR = new Color(255, 220, 80);
+    private static final Color HUD_COLOR_FADED = new Color(255, 220, 80, 210);
+    private static final Color FALLBACK_BG = new Color(55, 48, 38);
 
     public Level3State(GamePanel gp) {
         super(gp);
@@ -22,11 +27,30 @@ public class Level3State extends GameState {
             InputStream is = getClass().getResourceAsStream(MAP_PATH);
             if (is != null) {
                 BufferedImage src = ImageIO.read(is);
-                mapImage = new BufferedImage(gp.worldWidth, gp.worldHeight, BufferedImage.TYPE_INT_RGB);
-                Graphics2D mg = mapImage.createGraphics();
-                mg.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-                mg.drawImage(src, 0, 0, gp.worldWidth, gp.worldHeight, null);
+                int srcW = src.getWidth();
+                int srcH = src.getHeight();
+
+                // Giữ nguyên tỉ lệ ảnh gốc (contain): scale theo chiều bé hơn để toàn bộ ảnh đều hiện
+                double scale = Math.min(
+                        (double) gp.worldWidth / srcW,
+                        (double) gp.worldHeight / srcH);
+                int scaledW = (int) Math.round(srcW * scale);
+                int scaledH = (int) Math.round(srcH * scale);
+                int offsetX = (gp.worldWidth - scaledW) / 2;
+                int offsetY = (gp.worldHeight - scaledH) / 2;
+
+                GraphicsConfiguration gc = GraphicsEnvironment.getLocalGraphicsEnvironment()
+                        .getDefaultScreenDevice().getDefaultConfiguration();
+                BufferedImage compat = gc.createCompatibleImage(gp.worldWidth, gp.worldHeight, Transparency.OPAQUE);
+                Graphics2D mg = compat.createGraphics();
+                // Nền viền quanh ảnh khi tỉ lệ không khớp world (màu tường giảng đường)
+                mg.setColor(new Color(232, 226, 210));
+                mg.fillRect(0, 0, gp.worldWidth, gp.worldHeight);
+                mg.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+                mg.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+                mg.drawImage(src, offsetX, offsetY, scaledW, scaledH, null);
                 mg.dispose();
+                mapImage = compat;
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -75,14 +99,9 @@ public class Level3State extends GameState {
                 cameraX, cameraY, cameraX + gp.screenWidth, cameraY + gp.screenHeight,
                 null);
         } else {
-            // Fallback: nền giảng đường đơn giản
-            g2.setColor(new Color(55, 48, 38));
+            g2.setColor(FALLBACK_BG);
             g2.fillRect(0, 0, gp.screenWidth, gp.screenHeight);
         }
-
-        // Overlay nhẹ (bầu không khí lớp học buổi sáng)
-        g2.setColor(new Color(20, 15, 5, 40));
-        g2.fillRect(0, 0, gp.screenWidth, gp.screenHeight);
 
         gp.player.draw(g2);
         for (Enemy enemy : gp.enemies) {
@@ -90,12 +109,12 @@ public class Level3State extends GameState {
         }
 
         // HUD chặng 3
-        g2.setColor(new Color(255, 220, 80));
-        g2.setFont(new Font("Arial", Font.BOLD, 20));
+        g2.setColor(HUD_COLOR);
+        g2.setFont(HUD_FONT_BIG);
         g2.drawString("CHẶNG 3 - Giảng đường: " + gp.enemies.size() + " kẻ phá rối", 10, 30);
 
-        g2.setFont(new Font("Arial", Font.BOLD, 15));
-        g2.setColor(new Color(255, 220, 80, 210));
+        g2.setFont(HUD_FONT_SMALL);
+        g2.setColor(HUD_COLOR_FADED);
         String sub = "Tiêu diệt tất cả để tập trung học!";
         FontMetrics fm = g2.getFontMetrics();
         g2.drawString(sub, (gp.screenWidth - fm.stringWidth(sub)) / 2, 30);

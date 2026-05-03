@@ -8,8 +8,11 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 
 public class Level2State extends GameState {
-    private BufferedImage mapImage;
+    private Image mapImage;
     private static final String MAP_PATH = "/maps/test.png";
+    private static final Font HUD_FONT_BIG = new Font("Arial", Font.BOLD, 20);
+    private static final Font HUD_FONT_SMALL = new Font("Arial", Font.BOLD, 16);
+    private static final Color OVERLAY = new Color(0, 0, 60, 80);
 
     public Level2State(GamePanel gp) {
         super(gp);
@@ -19,11 +22,14 @@ public class Level2State extends GameState {
     public void enter() {
         try {
             BufferedImage src = ImageIO.read(getClass().getResourceAsStream(MAP_PATH));
-            mapImage = new BufferedImage(gp.worldWidth, gp.worldHeight, BufferedImage.TYPE_INT_RGB);
-            Graphics2D mg = mapImage.createGraphics();
+            GraphicsConfiguration gc = GraphicsEnvironment.getLocalGraphicsEnvironment()
+                    .getDefaultScreenDevice().getDefaultConfiguration();
+            BufferedImage compat = gc.createCompatibleImage(gp.worldWidth, gp.worldHeight, Transparency.OPAQUE);
+            Graphics2D mg = compat.createGraphics();
             mg.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
             mg.drawImage(src, 0, 0, gp.worldWidth, gp.worldHeight, null);
             mg.dispose();
+            mapImage = compat;
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -71,7 +77,7 @@ public class Level2State extends GameState {
             0, 0, gp.screenWidth, gp.screenHeight,
             cameraX, cameraY, cameraX + gp.screenWidth, cameraY + gp.screenHeight,
             null);
-        g2.setColor(new Color(0, 0, 60, 80));
+        g2.setColor(OVERLAY);
         g2.fillRect(0, 0, gp.screenWidth, gp.screenHeight);
 
         gp.player.draw(g2);
@@ -81,11 +87,10 @@ public class Level2State extends GameState {
 
         // HUD màn 2
         g2.setColor(Color.CYAN);
-        g2.setFont(new Font("Arial", Font.BOLD, 20));
+        g2.setFont(HUD_FONT_BIG);
         g2.drawString("MAN 2 - Quan quai: " + gp.enemies.size(), 10, 30);
 
-        // Tiêu đề màn 2 ở góc trên giữa
-        g2.setFont(new Font("Arial", Font.BOLD, 16));
+        g2.setFont(HUD_FONT_SMALL);
         String sub = "Tieu diet tat ca de chien thang!";
         FontMetrics fm = g2.getFontMetrics();
         g2.drawString(sub, (gp.screenWidth - fm.stringWidth(sub)) / 2, 30);
