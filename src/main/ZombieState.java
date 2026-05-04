@@ -64,8 +64,8 @@ public class ZombieState extends GameState {
 
     @Override
     public void draw(Graphics2D g2) {
-        int cameraX = gp.player.worldX - (gp.screenWidth / 2);
-        int cameraY = gp.player.worldY - (gp.screenHeight / 2);
+        int cameraX = (int) gp.player.worldX - (gp.screenWidth / 2);
+        int cameraY = (int) gp.player.worldY - (gp.screenHeight / 2);
         int[] clamped = gp.clampCameraPosition(cameraX, cameraY);
         cameraX = clamped[0];
         cameraY = clamped[1];

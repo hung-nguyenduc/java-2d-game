@@ -68,9 +68,9 @@ public class Enemy extends Entity {
             // Calculate aim angle towards player
             aimAngle = Math.toDegrees(Math.atan2(dy, dx));
 
-            // Apply movement
-            worldX += (int) vx;
-            worldY += (int) vy;
+            // Apply movement (worldX/worldY là double → tránh mất precision khi normalize)
+            worldX += vx;
+            worldY += vy;
         }
 
         // Giới hạn enemy trong phạm vi map

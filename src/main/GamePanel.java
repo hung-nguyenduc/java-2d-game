@@ -82,6 +82,14 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
 
     // Khởi động luồng game
     public void startGameThread() {
+        // Trick Windows: 1 daemon thread sleep mãi → buộc OS giữ timer resolution ở 1ms
+        // (mặc định Windows ~15.6ms khiến Thread.sleep ms-level cực kỳ kém chính xác → giật frame)
+        Thread timerHack = new Thread(() -> {
+            try { Thread.sleep(Long.MAX_VALUE); } catch (InterruptedException ignored) {}
+        }, "WindowsTimerHack");
+        timerHack.setDaemon(true);
+        timerHack.start();
+
         gameThread = new Thread(this);
         gameThread.start();
         requestFocusInWindow();
@@ -90,24 +98,30 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
     // Vòng lặp game chính (chạy ở 60 FPS)
     @Override
     public void run() {
-        final long drawInterval = 1_000_000_000L / 60;
-        long lastTime = System.nanoTime();
+        final double drawInterval = 1_000_000_000.0 / 60; // nanosecond mỗi frame
+        double nextDrawTime = System.nanoTime() + drawInterval;
 
         while (gameThread != null) {
-            long now = System.nanoTime();
-            if (now - lastTime >= drawInterval) {
-                lastTime += drawInterval;
-                // Tránh vòng lặp catch-up khi bị chậm quá nhiều
-                if (lastTime < now - drawInterval) lastTime = now;
-                update();
-                repaint();
-            } else {
-                // Sleep 1ms — vừa nhường CPU cho EDT (xử lý phím), vừa giữ Windows timer ở 1ms
+            update();
+            repaint();
+            // Flush back-buffer xuống màn hình ngay → giảm tearing/jitter khi camera di chuyển
+            Toolkit.getDefaultToolkit().sync();
+
+            // Sleep đúng phần thời gian còn lại đến frame kế tiếp (không busy-wait, không drift)
+            long remainingNs = (long) (nextDrawTime - System.nanoTime());
+            if (remainingNs > 0) {
                 try {
-                    Thread.sleep(1);
+                    Thread.sleep(remainingNs / 1_000_000L, (int) (remainingNs % 1_000_000L));
                 } catch (InterruptedException e) {
                     break;
                 }
+            }
+            nextDrawTime += drawInterval;
+
+            // Nếu bị tụt quá xa (GC pause, OS treo) → reset để tránh catch-up dồn dập
+            long now = System.nanoTime();
+            if (now > nextDrawTime + drawInterval) {
+                nextDrawTime = now + drawInterval;
             }
         }
     }
@@ -130,23 +144,12 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
     }
 
     // Giới hạn camera không được nhìn thấy ngoài phạm vi map
+    // Clamp thẳng — không có dead zone, tránh camera "nhảy" hàng chục pixel khi tới rìa map
     public int[] clampCameraPosition(int cameraX, int cameraY) {
-        // Clamp camera X
-        if (cameraX < 50) {
-            cameraX = 0;
-        }
-        if (cameraX + screenWidth - 40 > worldWidth) {
-            cameraX = worldWidth - screenWidth;
-        }
-
-        // Clamp camera Y
-        if (cameraY < 50) {
-            cameraY = 0;
-        }
-        if (cameraY + screenHeight -40 > worldHeight) {
-            cameraY = worldHeight - screenHeight;
-        }
-
+        if (cameraX < 0) cameraX = 0;
+        if (cameraX > worldWidth - screenWidth) cameraX = worldWidth - screenWidth;
+        if (cameraY < 0) cameraY = 0;
+        if (cameraY > worldHeight - screenHeight) cameraY = worldHeight - screenHeight;
         return new int[]{cameraX, cameraY};
     }
 
@@ -204,7 +207,7 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
                     bullet.worldY + 10 > enemy.worldY &&
                     bullet.worldY < enemy.worldY + 80) {
                     // Enemy hit by player bullet
-                    enemy.health -= 25;
+                    enemy.health -= 35;
                     player.bullets.remove(i);
                     i--;
                 }

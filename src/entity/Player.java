@@ -17,11 +17,9 @@ public class Player extends Entity {
     private int shootCooldown = 0;
     private final int shootInterval = 30;
 
-    // Accumulate position as double để tránh mất precision khi normalize chéo
-    private double accX = 1000, accY = 1000;
-
     private static final double DIAGONAL_FACTOR = 1.0 / Math.sqrt(2);
     private static final BasicStroke AIM_STROKE = new BasicStroke(2);
+    private static final Color BULLET_COLOR = new Color(0, 80, 200); // Xanh nước biển đậm
 
     // Constructor: Khởi tạo Player với GamePanel, KeyHandler và MouseHandler
     public Player(GamePanel gp, KeyHandler keyH, MouseHandler mouseH) {
@@ -37,10 +35,9 @@ public class Player extends Entity {
     public void setDefaultValues() {
         worldX = 1000;
         worldY = 1000;
-        accX = 1000;
-        accY = 1000;
-        speed = 4;
+        speed = 4.5;
         aimAngle = 0;
+        maxHealth = 150;
         health = maxHealth;
     }
 
@@ -75,17 +72,12 @@ public class Player extends Entity {
             vy *= DIAGONAL_FACTOR;
         }
 
-        // Tích lũy bằng double, gán int sau để tránh mất precision
-        accX += vx;
-        accY += vy;
-        worldX = (int) accX;
-        worldY = (int) accY;
+        // worldX/worldY là double → cộng trực tiếp vận tốc, di chuyển subpixel mượt mà
+        worldX += vx;
+        worldY += vy;
 
         // Giới hạn vị trí nhân vật trong map
         clampPlayerPosition();
-        // Sync accumulator sau khi clamp để tránh drift vào tường
-        accX = worldX;
-        accY = worldY;
 
         // Ngắm theo vị trí chuột: tính góc từ tâm player trên screen tới chuột
         int playerCenterScreenX = gp.screenWidth / 2 - gp.tileSize / 2 + 40;
@@ -137,6 +129,7 @@ public class Player extends Entity {
     public void shoot() {
         // Create bullet at player position
         Bullet bullet = new Bullet(worldX + 40, worldY + 40, aimAngle);
+        bullet.color = BULLET_COLOR;
         bullets.add(bullet);
     }
 

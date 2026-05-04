@@ -34,7 +34,7 @@ public class Checkpoint {
     }
 
     // Vẽ Checkpoint
-    public void draw(Graphics2D g2, int playerWorldX, int playerWorldY) {
+    public void draw(Graphics2D g2, double playerWorldX, double playerWorldY) {
         int screenX = (int)(worldX - playerWorldX + gp.screenWidth / 2);
         int screenY = (int)(worldY - playerWorldY + gp.screenHeight / 2);
 

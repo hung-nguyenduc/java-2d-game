@@ -27,28 +27,13 @@ public class Level3State extends GameState {
             InputStream is = getClass().getResourceAsStream(MAP_PATH);
             if (is != null) {
                 BufferedImage src = ImageIO.read(is);
-                int srcW = src.getWidth();
-                int srcH = src.getHeight();
-
-                // Giữ nguyên tỉ lệ ảnh gốc (contain): scale theo chiều bé hơn để toàn bộ ảnh đều hiện
-                double scale = Math.min(
-                        (double) gp.worldWidth / srcW,
-                        (double) gp.worldHeight / srcH);
-                int scaledW = (int) Math.round(srcW * scale);
-                int scaledH = (int) Math.round(srcH * scale);
-                int offsetX = (gp.worldWidth - scaledW) / 2;
-                int offsetY = (gp.worldHeight - scaledH) / 2;
-
                 GraphicsConfiguration gc = GraphicsEnvironment.getLocalGraphicsEnvironment()
                         .getDefaultScreenDevice().getDefaultConfiguration();
                 BufferedImage compat = gc.createCompatibleImage(gp.worldWidth, gp.worldHeight, Transparency.OPAQUE);
                 Graphics2D mg = compat.createGraphics();
-                // Nền viền quanh ảnh khi tỉ lệ không khớp world (màu tường giảng đường)
-                mg.setColor(new Color(232, 226, 210));
-                mg.fillRect(0, 0, gp.worldWidth, gp.worldHeight);
-                mg.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-                mg.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-                mg.drawImage(src, offsetX, offsetY, scaledW, scaledH, null);
+                mg.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+                // Stretch ảnh giảng đường phủ kín toàn bộ map (y hệt cách Level2 làm)
+                mg.drawImage(src, 0, 0, gp.worldWidth, gp.worldHeight, null);
                 mg.dispose();
                 mapImage = compat;
             }
@@ -88,8 +73,8 @@ public class Level3State extends GameState {
     @Override
     public void draw(Graphics2D g2) {
         if (mapImage != null) {
-            int cameraX = gp.player.worldX - (gp.screenWidth / 2);
-            int cameraY = gp.player.worldY - (gp.screenHeight / 2);
+            int cameraX = (int) gp.player.worldX - (gp.screenWidth / 2);
+            int cameraY = (int) gp.player.worldY - (gp.screenHeight / 2);
             int[] clamped = gp.clampCameraPosition(cameraX, cameraY);
             cameraX = clamped[0];
             cameraY = clamped[1];
