@@ -13,7 +13,8 @@ import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.List;
 
-// Lớp chính quản lý panel game, vòng lặp game, và rendering
+// Lớp chính
+//quản lý panel game, vòng lặp game, và rendering
 public class GamePanel extends JPanel implements Runnable, MouseListener {
 
     // -- CẤU HÌNH MÀN HÌNH (Giữ nguyên như cũ) --
@@ -34,8 +35,9 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
 
     // -- THÊM VÀO 3 ÔNG TƯỚNG NÀY --
     KeyHandler keyH = new KeyHandler();
+    MouseHandler mouseH = new MouseHandler();
     Thread gameThread;
-    Player player = new Player(this, keyH, enemies); // Truyền Panel và Bàn phím cho Player
+    Player player = new Player(this, keyH, mouseH); // Truyền Panel, Bàn phím, Chuột cho Player
 
     // Checkpoint
     Checkpoint checkpoint = null;
@@ -61,6 +63,8 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
 
         // Add mouse listener for button clicks
         this.addMouseListener(this);
+        // Theo dõi vị trí chuột để ngắm bắn
+        this.addMouseMotionListener(mouseH);
 
         this.setFocusable(true);
         this.setFocusTraversalKeysEnabled(false); // Tắt Tab/Shift-Tab cướp focus

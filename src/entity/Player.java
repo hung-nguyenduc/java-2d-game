@@ -2,16 +2,16 @@ package entity;
 
 import main.GamePanel;
 import main.KeyHandler;
+import main.MouseHandler;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.util.List;
 import javax.imageio.ImageIO;
 
 public class Player extends Entity {
     GamePanel gp;
     KeyHandler keyH;
-    List<Enemy> enemies;
+    MouseHandler mouseH;
 
     public BufferedImage playerImage;
     private int shootCooldown = 0;
@@ -23,11 +23,11 @@ public class Player extends Entity {
     private static final double DIAGONAL_FACTOR = 1.0 / Math.sqrt(2);
     private static final BasicStroke AIM_STROKE = new BasicStroke(2);
 
-    // Constructor: Khởi tạo Player với GamePanel và KeyHandler
-    public Player(GamePanel gp, KeyHandler keyH, List<Enemy> enemies) {
+    // Constructor: Khởi tạo Player với GamePanel, KeyHandler và MouseHandler
+    public Player(GamePanel gp, KeyHandler keyH, MouseHandler mouseH) {
         this.gp = gp;
         this.keyH = keyH;
-        this.enemies = enemies;
+        this.mouseH = mouseH;
 
         setDefaultValues();
         getPlayerImage();
@@ -87,17 +87,16 @@ public class Player extends Entity {
         accX = worldX;
         accY = worldY;
 
-        // Find nearest enemy and aim at it
-        Enemy nearestEnemy = findNearestEnemy();
-        if (nearestEnemy != null) {
-            double dx = nearestEnemy.worldX - worldX;
-            double dy = nearestEnemy.worldY - worldY;
-            aimAngle = Math.toDegrees(Math.atan2(dy, dx));
-        }
+        // Ngắm theo vị trí chuột: tính góc từ tâm player trên screen tới chuột
+        int playerCenterScreenX = gp.screenWidth / 2 - gp.tileSize / 2 + 40;
+        int playerCenterScreenY = gp.screenHeight / 2 - gp.tileSize / 2 + 40;
+        double dx = mouseH.mouseX - playerCenterScreenX;
+        double dy = mouseH.mouseY - playerCenterScreenY;
+        aimAngle = Math.toDegrees(Math.atan2(dy, dx));
 
-        // Automatic shooting at nearest enemy
+        // Bắn liên tục theo hướng chuột
         shootCooldown++;
-        if (shootCooldown >= shootInterval && nearestEnemy != null) {
+        if (shootCooldown >= shootInterval) {
             shoot();
             shootCooldown = 0;
         }
@@ -132,23 +131,6 @@ public class Player extends Entity {
         if (worldY + playerSize > gp.worldHeight) {
             worldY = gp.worldHeight - playerSize;
         }
-    }
-
-    // Tìm enemy gần nhất (so sánh bình phương khoảng cách → bỏ sqrt)
-    private Enemy findNearestEnemy() {
-        Enemy nearest = null;
-        double minDistanceSq = Double.MAX_VALUE;
-        for (int i = 0; i < enemies.size(); i++) {
-            Enemy enemy = enemies.get(i);
-            double dx = enemy.worldX - worldX;
-            double dy = enemy.worldY - worldY;
-            double distanceSq = dx * dx + dy * dy;
-            if (distanceSq < minDistanceSq) {
-                minDistanceSq = distanceSq;
-                nearest = enemy;
-            }
-        }
-        return nearest;
     }
 
     // Bắn đạn nếu cooldown cho phép
