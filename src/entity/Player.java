@@ -37,7 +37,7 @@ public class Player extends Entity {
         worldY = 1000;
         speed = 4.5;
         aimAngle = 0;
-        maxHealth = 150;
+        maxHealth = 300;
         health = maxHealth;
     }
 
