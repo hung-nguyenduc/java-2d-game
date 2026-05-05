@@ -103,8 +103,20 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
 
         while (gameThread != null) {
             update();
-            repaint();
-            // Flush back-buffer xuống màn hình ngay → giảm tearing/jitter khi camera di chuyển
+
+            // Vẽ ĐỒNG BỘ trên EDT: chặn game thread tới khi paint xong → không có race
+            // condition giữa update() và paintComponent() (state đọc giữa chừng), và biết chính
+            // xác lúc nào sync() flush sẽ có hiệu lực
+            try {
+                SwingUtilities.invokeAndWait(() -> {
+                    if (isShowing()) paintImmediately(0, 0, getWidth(), getHeight());
+                });
+            } catch (InterruptedException e) {
+                break;
+            } catch (java.lang.reflect.InvocationTargetException e) {
+                e.printStackTrace();
+            }
+            // Sau khi EDT đã vẽ xong, flush GDI/back-buffer xuống màn hình → giảm tearing
             Toolkit.getDefaultToolkit().sync();
 
             // Sleep đúng phần thời gian còn lại đến frame kế tiếp (không busy-wait, không drift)

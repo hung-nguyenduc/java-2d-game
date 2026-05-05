@@ -101,22 +101,19 @@ public class Enemy extends Entity {
         bullets.add(bullet);
     }
 
-    // Vẽ Enemy và đạn của nó
-    public void draw(Graphics2D g2) {
-        int screenX = (int) Math.round(worldX - player.worldX + gp.screenWidth / 2.0);
-        int screenY = (int) Math.round(worldY - player.worldY + gp.screenHeight / 2.0);
+    // Vẽ Enemy theo camera đã clamp (tránh enemy "trượt" khi player tới rìa map)
+    public void draw(Graphics2D g2, int cameraX, int cameraY) {
+        int screenX = (int) (worldX - cameraX);
+        int screenY = (int) (worldY - cameraY);
 
-        // Only draw if on screen
-        if(screenX > -80 && screenX < gp.screenWidth + 80 && screenY > -80 && screenY < gp.screenHeight + 80) {
+        if (screenX > -80 && screenX < gp.screenWidth + 80 && screenY > -80 && screenY < gp.screenHeight + 80) {
             g2.drawImage(enemyImage, screenX, screenY, 80, 80, null);
-
-            // Draw health bar
             drawHealthBar(g2, screenX, screenY - 10, 80, 10);
+        }
 
-            // Draw bullets
-            for (Bullet bullet : bullets) {
-                bullet.draw(g2, player.worldX, player.worldY, gp.screenWidth, gp.screenHeight, gp.tileSize);
-            }
+        // Vẽ đạn ngoài khối culling: đạn đã ra khỏi enemy nhưng có thể vẫn trong screen
+        for (Bullet bullet : bullets) {
+            bullet.draw(g2, cameraX, cameraY);
         }
     }
 

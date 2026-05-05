@@ -34,15 +34,12 @@ public class Bullet {
         return travelDistance > maxRange;
     }
 
-    // Vẽ đạn lên màn hình
-    public void draw(Graphics2D g2, double playerWorldX, double playerWorldY, int screenWidth, int screenHeight, int tileSize) {
-        int screenX = (int)(worldX - playerWorldX + screenWidth / 2);
-        int screenY = (int)(worldY - playerWorldY + screenHeight / 2);
+    // Vẽ đạn theo camera đã clamp
+    public void draw(Graphics2D g2, int cameraX, int cameraY) {
+        int screenX = (int) (worldX - cameraX);
+        int screenY = (int) (worldY - cameraY);
 
-        // Only draw if on screen
-        if(screenX > -20 && screenX < screenWidth + 20 && screenY > -20 && screenY < screenHeight + 20) {
-            g2.setColor(color);
-            g2.fillOval(screenX, screenY, bulletSize, bulletSize);
-        }
+        g2.setColor(color);
+        g2.fillOval(screenX, screenY, bulletSize, bulletSize);
     }
 }
