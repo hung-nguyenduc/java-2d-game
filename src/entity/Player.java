@@ -40,21 +40,28 @@ public class Player extends Entity {
         aimAngle = 0;
         maxHealth = 300;
         health = maxHealth;
+        direction = "down";
     }
 
     // Tải hình ảnh của Player
     public void getPlayerImage() {
         try {
-            var is = getClass().getResourceAsStream("/player/player.png");
-            if (is == null) {
-                System.out.println("LỖI: Không tìm thấy ảnh nhân vật!");
-                return;
-            }
-            playerImage = ImageIO.read(is);
-        } catch (IOException e) {
-            System.out.println("LỖI: Không đọc được ảnh nhân vật!");
-            e.printStackTrace();
+            up1 = ImageIO.read(getClass().getResourceAsStream("/player/up1.png"));
+            up1 = ImageIO.read(getClass().getResourceAsStream("/player/up1.png"));
+
+
+            down1 = ImageIO.read(getClass().getResourceAsStream("/player/down1.png"));
+            down2 = ImageIO.read(getClass().getResourceAsStream("/player/down2.png"));
+
+            left1 = ImageIO.read(getClass().getResourceAsStream("/player/left1.png"));
+            left2 = ImageIO.read(getClass().getResourceAsStream("/player/left2.png"));
+
+            right1 = ImageIO.read(getClass().getResourceAsStream("/player/right1.png"));
+            right2 = ImageIO.read(getClass().getResourceAsStream("/player/right2.png"));
+            } catch (IOException ex) {
+            throw new RuntimeException(ex);
         }
+
     }
 
     // Cập nhật trạng thái của Player mỗi frame
@@ -62,11 +69,31 @@ public class Player extends Entity {
         vx = 0;
         vy = 0;
 
-        if (keyH.upPressed)    vy -= speed;
-        if (keyH.downPressed)  vy += speed;
-        if (keyH.leftPressed)  vx -= speed;
-        if (keyH.rightPressed) vx += speed;
-
+        if (keyH.upPressed) {
+            vy -= speed;
+            direction = "up";
+        }
+        if (keyH.downPressed) {
+            vy += speed;
+            direction = "down";
+        }
+        if (keyH.leftPressed) {
+            vx -= speed;
+            direction = "left";
+        }
+        if (keyH.rightPressed) {
+            vx += speed;
+            direction = "right";
+        }
+        spriteCounter++;
+        if (spriteCounter > 100) {
+            if (spriteNum == 1) {
+                spriteNum = 2;
+            }
+            else if (spriteNum == 2) {
+                spriteNum = 1;
+            }
+        }
         // Normalize diagonal: giữ tốc độ bằng nhau mọi hướng
         if (vx != 0 && vy != 0) {
             vx *= DIAGONAL_FACTOR;
@@ -143,7 +170,43 @@ public class Player extends Entity {
         int screenX = (int) (worldX - cameraX);
         int screenY = (int) (worldY - cameraY);
 
-        g2.drawImage(playerImage, screenX, screenY, 80, 80, null);
+        BufferedImage img = null;
+        switch (direction) {
+            case "up":
+                if (spriteNum == 1) {
+                    img = up1;
+                }
+                if (spriteNum == 2) {
+                    img = up2;
+                }
+                break;
+            case "down":
+                if (spriteNum == 1) {
+                    img = down1;
+                }
+                if (spriteNum == 2) {
+                    img = down2;
+                }
+                break;
+            case "left":
+                if (spriteNum == 1) {
+                    img = left1;
+                }
+                if (spriteNum == 2) {
+                    img = left2;
+                }
+                break;
+            case "right":
+                if (spriteNum == 1) {
+                    img = right1;
+                }
+                if (spriteNum == 2) {
+                    img = right2;
+                }
+                break;
+
+        }
+        g2.drawImage(img, screenX, screenY, 80, 80, null);
 
         drawHealthBar(g2, screenX, screenY - 16, 80, 14);
         drawAimingIndicator(g2, screenX + 40, screenY + 40);
