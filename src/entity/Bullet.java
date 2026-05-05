@@ -7,9 +7,10 @@ public class Bullet {
     public double worldX, worldY; // Vị trí trong thế giới
     public double vx, vy; // Vận tốc
     public double bulletSpeed = 8; // Tốc độ đạn
-    public int bulletSize = 8; // Kích thước đạn
+    public int bulletSize = 12; // Kích thước đạn
     public int maxRange = 1000; // Phạm vi tối đa
     public double travelDistance = 0; // Khoảng cách đã đi
+    public Color color = Color.RED; // Màu đạn (mặc định đỏ — đạn quái)
 
     // Constructor: Khởi tạo đạn với vị trí và góc bắn
     public Bullet(double startX, double startY, double angle) {
@@ -33,15 +34,12 @@ public class Bullet {
         return travelDistance > maxRange;
     }
 
-    // Vẽ đạn lên màn hình
-    public void draw(Graphics2D g2, int playerWorldX, int playerWorldY, int screenWidth, int screenHeight, int tileSize) {
-        int screenX = (int)(worldX - playerWorldX + screenWidth / 2);
-        int screenY = (int)(worldY - playerWorldY + screenHeight / 2);
+    // Vẽ đạn theo camera đã clamp
+    public void draw(Graphics2D g2, int cameraX, int cameraY) {
+        int screenX = (int) (worldX - cameraX);
+        int screenY = (int) (worldY - cameraY);
 
-        // Only draw if on screen
-        if(screenX > -20 && screenX < screenWidth + 20 && screenY > -20 && screenY < screenHeight + 20) {
-            g2.setColor(Color.RED);
-            g2.fillOval(screenX, screenY, bulletSize, bulletSize);
-        }
+        g2.setColor(color);
+        g2.fillOval(screenX, screenY, bulletSize, bulletSize);
     }
 }

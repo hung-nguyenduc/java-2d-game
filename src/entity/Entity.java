@@ -5,8 +5,9 @@ import java.util.List;
 
 // Lớp cơ sở cho tất cả các thực thể trong game (Player, Enemy, etc.)
 public class Entity {
-    public int worldX, worldY; // Vị trí trong thế giới game
-    public int speed; // Tốc độ di chuyển
+    // double để di chuyển subpixel mượt mà (tránh jitter khi đi chéo: speed*0.7071 không tròn)
+    public double worldX, worldY; // Vị trí trong thế giới game
+    public double speed; // Tốc độ di chuyển (double để hỗ trợ giá trị lẻ như 4.5)
 
     // Velocity for smooth diagonal movement
     public double vx = 0; // Vận tốc theo trục X

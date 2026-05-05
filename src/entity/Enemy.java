@@ -68,10 +68,14 @@ public class Enemy extends Entity {
             // Calculate aim angle towards player
             aimAngle = Math.toDegrees(Math.atan2(dy, dx));
 
-            // Apply movement
-            worldX += (int) vx;
-            worldY += (int) vy;
+            // Apply movement (worldX/worldY là double → tránh mất precision khi normalize)
+            worldX += vx;
+            worldY += vy;
         }
+
+        // Giới hạn enemy trong phạm vi map
+        worldX = Math.max(0, Math.min(worldX, gp.worldWidth - 80));
+        worldY = Math.max(0, Math.min(worldY, gp.worldHeight - 80));
 
         // Update bullets
         for (int i = 0; i < bullets.size(); i++) {
@@ -97,22 +101,19 @@ public class Enemy extends Entity {
         bullets.add(bullet);
     }
 
-    // Vẽ Enemy và đạn của nó
-    public void draw(Graphics2D g2) {
-        int screenX = (int)(worldX - player.worldX + gp.screenWidth / 2);
-        int screenY = (int)(worldY - player.worldY + gp.screenHeight / 2);
+    // Vẽ Enemy theo camera đã clamp (tránh enemy "trượt" khi player tới rìa map)
+    public void draw(Graphics2D g2, int cameraX, int cameraY) {
+        int screenX = (int) (worldX - cameraX);
+        int screenY = (int) (worldY - cameraY);
 
-        // Only draw if on screen
-        if(screenX > -80 && screenX < gp.screenWidth + 80 && screenY > -80 && screenY < gp.screenHeight + 80) {
+        if (screenX > -80 && screenX < gp.screenWidth + 80 && screenY > -80 && screenY < gp.screenHeight + 80) {
             g2.drawImage(enemyImage, screenX, screenY, 80, 80, null);
-
-            // Draw health bar
             drawHealthBar(g2, screenX, screenY - 10, 80, 10);
+        }
 
-            // Draw bullets
-            for (Bullet bullet : bullets) {
-                bullet.draw(g2, player.worldX, player.worldY, gp.screenWidth, gp.screenHeight, gp.tileSize);
-            }
+        // Vẽ đạn ngoài khối culling: đạn đã ra khỏi enemy nhưng có thể vẫn trong screen
+        for (Bullet bullet : bullets) {
+            bullet.draw(g2, cameraX, cameraY);
         }
     }
 

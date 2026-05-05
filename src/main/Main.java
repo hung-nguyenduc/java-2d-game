@@ -3,9 +3,8 @@ package main;
 import javax.swing.JFrame;
 //import main.GamePanel;
 
-// Lớp chính khởi động ứng dụng game
+
 public class Main {
-    // Phương thức main: Điểm vào của chương trình
     public static void main(String[] args) {
 
         JFrame frame = new JFrame("Sinh ton o HUST");

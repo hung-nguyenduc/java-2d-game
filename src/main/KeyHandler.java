@@ -6,7 +6,8 @@ import java.awt.event.KeyListener;
 // Lớp xử lý sự kiện bàn phím
 public class KeyHandler implements KeyListener {
 
-    public boolean upPressed, downPressed, leftPressed, rightPressed;
+    // volatile: đảm bảo game thread luôn thấy giá trị mới nhất từ EDT
+    public volatile boolean upPressed, downPressed, leftPressed, rightPressed, spacePressed;
 
     // Xử lý khi gõ phím (không dùng cho game di chuyển)
     @Override
@@ -19,10 +20,11 @@ public class KeyHandler implements KeyListener {
     public void keyPressed(KeyEvent e) {
         int code = e.getKeyCode(); // Lấy mã của phím vừa bấm
 
-        if (code == KeyEvent.VK_W) { upPressed = true; }
-        if (code == KeyEvent.VK_S) { downPressed = true; }
-        if (code == KeyEvent.VK_A) { leftPressed = true; }
-        if (code == KeyEvent.VK_D) { rightPressed = true; }
+        if (code == KeyEvent.VK_UP || code == KeyEvent.VK_W)    { upPressed = true; }
+        if (code == KeyEvent.VK_DOWN || code == KeyEvent.VK_S)  { downPressed = true; }
+        if (code == KeyEvent.VK_LEFT || code == KeyEvent.VK_A)  { leftPressed = true; }
+        if (code == KeyEvent.VK_RIGHT || code == KeyEvent.VK_D) { rightPressed = true; }
+        if (code == KeyEvent.VK_SPACE) { spacePressed = true; }
     }
 
     // Xử lý khi thả phím
@@ -30,9 +32,10 @@ public class KeyHandler implements KeyListener {
     public void keyReleased(KeyEvent e) {
         int code = e.getKeyCode(); // Khi thả phím ra thì gán lại thành false
 
-        if (code == KeyEvent.VK_W) { upPressed = false; }
-        if (code == KeyEvent.VK_S) { downPressed = false; }
-        if (code == KeyEvent.VK_A) { leftPressed = false; }
-        if (code == KeyEvent.VK_D) { rightPressed = false; }
+        if (code == KeyEvent.VK_UP || code == KeyEvent.VK_W)    { upPressed = false; }
+        if (code == KeyEvent.VK_DOWN || code == KeyEvent.VK_S)  { downPressed = false; }
+        if (code == KeyEvent.VK_LEFT || code == KeyEvent.VK_A)  { leftPressed = false; }
+        if (code == KeyEvent.VK_RIGHT || code == KeyEvent.VK_D) { rightPressed = false; }
+        if (code == KeyEvent.VK_SPACE) { spacePressed = false; }
     }
 }
