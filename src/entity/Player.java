@@ -20,6 +20,7 @@ public class Player extends Entity {
     private static final double DIAGONAL_FACTOR = 1.0 / Math.sqrt(2);
     private static final BasicStroke AIM_STROKE = new BasicStroke(2);
     private static final Color BULLET_COLOR = new Color(0, 80, 200); // Xanh nước biển đậm
+    private static final Font HEALTH_FONT = new Font("Arial", Font.BOLD, 11);
 
     // Constructor: Khởi tạo Player với GamePanel, KeyHandler và MouseHandler
     public Player(GamePanel gp, KeyHandler keyH, MouseHandler mouseH) {
@@ -79,9 +80,13 @@ public class Player extends Entity {
         // Giới hạn vị trí nhân vật trong map
         clampPlayerPosition();
 
-        // Ngắm theo vị trí chuột: tính góc từ tâm player trên screen tới chuột
-        int playerCenterScreenX = gp.screenWidth / 2 - gp.tileSize / 2 + 40;
-        int playerCenterScreenY = gp.screenHeight / 2 - gp.tileSize / 2 + 40;
+        // Ngắm theo vị trí chuột: phải tính theo camera đã clamp, vì khi player ở rìa map
+        // camera đứng yên còn player dịch sang rìa screen → tâm player KHÔNG còn ở giữa screen
+        int rawCamX = (int) (worldX - gp.screenWidth / 2.0);
+        int rawCamY = (int) (worldY - gp.screenHeight / 2.0);
+        int[] cam = gp.clampCameraPosition(rawCamX, rawCamY);
+        int playerCenterScreenX = (int) (worldX - cam[0]) + 40;
+        int playerCenterScreenY = (int) (worldY - cam[1]) + 40;
         double dx = mouseH.mouseX - playerCenterScreenX;
         double dy = mouseH.mouseY - playerCenterScreenY;
         aimAngle = Math.toDegrees(Math.atan2(dy, dx));
@@ -133,37 +138,44 @@ public class Player extends Entity {
         bullets.add(bullet);
     }
 
-    // Vẽ Player và các thành phần liên quan
-    public void draw(Graphics2D g2) {
-        int screenX = gp.screenWidth / 2 - (gp.tileSize / 2);
-        int screenY = gp.screenHeight / 2 - (gp.tileSize / 2);
+    // Vẽ Player tại vị trí thực trên screen (theo camera đã clamp)
+    public void draw(Graphics2D g2, int cameraX, int cameraY) {
+        int screenX = (int) (worldX - cameraX);
+        int screenY = (int) (worldY - cameraY);
 
         g2.drawImage(playerImage, screenX, screenY, 80, 80, null);
 
-        // Draw health bar
-        drawHealthBar(g2, screenX, screenY - 10, 80, 10);
-
-        // Draw aiming direction indicator
+        drawHealthBar(g2, screenX, screenY - 16, 80, 14);
         drawAimingIndicator(g2, screenX + 40, screenY + 40);
 
-        // Draw bullets
         for (Bullet bullet : bullets) {
-            bullet.draw(g2, worldX, worldY, gp.screenWidth, gp.screenHeight, gp.tileSize);
+            bullet.draw(g2, cameraX, cameraY);
         }
     }
 
-    // Vẽ thanh máu
+    // Vẽ thanh máu kèm số máu hiện tại / tối đa (vd "175/200")
     private void drawHealthBar(Graphics2D g2, int x, int y, int width, int height) {
-        // Background (red)
         g2.setColor(Color.RED);
         g2.fillRect(x, y, width, height);
-        // Foreground (green)
         g2.setColor(Color.GREEN);
-        int healthWidth = (int)((double)health / maxHealth * width);
+        int healthWidth = (int) ((double) health / maxHealth * width);
         g2.fillRect(x, y, healthWidth, height);
-        // Border
         g2.setColor(Color.BLACK);
         g2.drawRect(x, y, width, height);
+
+        String text = health + "/" + maxHealth;
+        g2.setFont(HEALTH_FONT);
+        FontMetrics fm = g2.getFontMetrics();
+        int tx = x + (width - fm.stringWidth(text)) / 2;
+        int ty = y + (height + fm.getAscent()) / 2 - 2;
+        // Vẽ stroke đen mỏng để text luôn đọc được dù background đỏ hay xanh
+        g2.setColor(Color.BLACK);
+        g2.drawString(text, tx - 1, ty);
+        g2.drawString(text, tx + 1, ty);
+        g2.drawString(text, tx, ty - 1);
+        g2.drawString(text, tx, ty + 1);
+        g2.setColor(Color.WHITE);
+        g2.drawString(text, tx, ty);
     }
 
     // Vẽ chỉ báo hướng nhắm

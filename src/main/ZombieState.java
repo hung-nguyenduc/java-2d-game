@@ -64,8 +64,8 @@ public class ZombieState extends GameState {
 
     @Override
     public void draw(Graphics2D g2) {
-        int cameraX = (int) gp.player.worldX - (gp.screenWidth / 2);
-        int cameraY = (int) gp.player.worldY - (gp.screenHeight / 2);
+        int cameraX = (int) (gp.player.worldX - gp.screenWidth / 2.0);
+        int cameraY = (int) (gp.player.worldY - gp.screenHeight / 2.0);
         int[] clamped = gp.clampCameraPosition(cameraX, cameraY);
         cameraX = clamped[0];
         cameraY = clamped[1];
@@ -76,9 +76,9 @@ public class ZombieState extends GameState {
             cameraX, cameraY, cameraX + gp.screenWidth, cameraY + gp.screenHeight,
             null);
 
-        gp.player.draw(g2);
+        gp.player.draw(g2, cameraX, cameraY);
         for (Enemy enemy : gp.enemies) {
-            enemy.draw(g2);
+            enemy.draw(g2, cameraX, cameraY);
         }
 
         g2.setColor(Color.WHITE);
