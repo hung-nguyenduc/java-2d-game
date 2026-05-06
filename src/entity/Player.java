@@ -86,12 +86,14 @@ public class Player extends Entity {
             direction = "right";
         }
         spriteCounter++;
-        if (spriteCounter > 100) {
+        if (spriteCounter > 10) {
             if (spriteNum == 1) {
                 spriteNum = 2;
+                spriteCounter = 0;
             }
             else if (spriteNum == 2) {
                 spriteNum = 1;
+                spriteCounter = 0;
             }
         }
         // Normalize diagonal: giữ tốc độ bằng nhau mọi hướng
@@ -170,41 +172,44 @@ public class Player extends Entity {
         int screenX = (int) (worldX - cameraX);
         int screenY = (int) (worldY - cameraY);
 
-        BufferedImage img = null;
-        switch (direction) {
-            case "up":
-                if (spriteNum == 1) {
-                    img = up1;
-                }
-                if (spriteNum == 2) {
-                    img = up2;
-                }
-                break;
-            case "down":
-                if (spriteNum == 1) {
-                    img = down1;
-                }
-                if (spriteNum == 2) {
-                    img = down2;
-                }
-                break;
-            case "left":
-                if (spriteNum == 1) {
-                    img = left1;
-                }
-                if (spriteNum == 2) {
-                    img = left2;
-                }
-                break;
-            case "right":
-                if (spriteNum == 1) {
-                    img = right1;
-                }
-                if (spriteNum == 2) {
-                    img = right2;
-                }
-                break;
+        BufferedImage img = down1;
+        if (keyH.upPressed ||  keyH.downPressed || keyH.leftPressed || keyH.rightPressed) {
 
+            switch (direction) {
+                case "up":
+                    if (spriteNum == 1) {
+                        img = up1;
+                    }
+                    if (spriteNum == 2) {
+                        img = up2;
+                    }
+                    break;
+                case "down":
+                    if (spriteNum == 1) {
+                        img = down1;
+                    }
+                    if (spriteNum == 2) {
+                        img = down2;
+                    }
+                    break;
+                case "left":
+                    if (spriteNum == 1) {
+                        img = left1;
+                    }
+                    if (spriteNum == 2) {
+                        img = left2;
+                    }
+                    break;
+                case "right":
+                    if (spriteNum == 1) {
+                        img = right1;
+                    }
+                    if (spriteNum == 2) {
+                        img = right2;
+                    }
+                    break;
+
+            }
         }
         g2.drawImage(img, screenX, screenY, 80, 80, null);
 
