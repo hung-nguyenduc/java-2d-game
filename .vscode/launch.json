@@ -1,0 +1,16 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Main",
+            "request": "launch",
+            "mainClass": "main.Main",
+            "projectName": "java-2d-game_954a0533"
+        },
+        "name",
+        "type",
+        "request",
+        "program",
+        "console"
+    ]
+}
