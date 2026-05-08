@@ -5,20 +5,16 @@ import entity.Enemy; // Import Enemy class
 import entity.Bullet; // Import Bullet class
 import entity.Checkpoint; // Import Checkpoint class
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.image.BufferedImage; // Import lớp để xử lý ảnh
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
-// Lớp chính quản lý panel game, vòng lặp game, và rendering
+// Lớp chính
+//quản lý panel game, vòng lặp game, và rendering
 public class GamePanel extends JPanel implements Runnable, MouseListener {
 
     // -- CẤU HÌNH MÀN HÌNH (Giữ nguyên như cũ) --
@@ -39,19 +35,18 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
 
     // -- THÊM VÀO 3 ÔNG TƯỚNG NÀY --
     KeyHandler keyH = new KeyHandler();
+    MouseHandler mouseH = new MouseHandler();
     Thread gameThread;
-    Player player = new Player(this, keyH, enemies); // Truyền Panel và Bàn phím cho Player
-
-    // Map management
-    String[] mapPaths = {"/maps/c1.png", "/res/maps/test.png"};
-    int currentMap = 0;
-    Image mapImage;
+    Player player = new Player(this, keyH, mouseH); // Truyền Panel, Bàn phím, Chuột cho Player
 
     // Checkpoint
     Checkpoint checkpoint = null;
 
     // Game over flag
     public boolean gameOver = false;
+
+    // Kill counter (reset mỗi level)
+    public int killCount = 0;
 
     // Game state management
     private GameState currentState;
@@ -68,53 +63,77 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
 
         // Add mouse listener for button clicks
         this.addMouseListener(this);
+        // Theo dõi vị trí chuột để ngắm bắn
+        this.addMouseMotionListener(mouseH);
 
-        // Load initial map
-        loadMap();
-
-        // HAI DÒNG NÀY CỰC KỲ QUAN TRỌNG ĐỂ NHẬN PHÍM
+        this.setFocusable(true);
+        this.setFocusTraversalKeysEnabled(false); // Tắt Tab/Shift-Tab cướp focus
         this.addKeyListener(keyH);
-        this.setFocusable(true); // Để GamePanel tập trung nhận input từ bàn phím
-
-        // Spawn initial enemies
-        spawnEnemies();
+        // Global dispatcher: bắt key events dù focus ở bất cứ đâu trong JVM
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(e -> {
+            if (e.getID() == KeyEvent.KEY_PRESSED)  keyH.keyPressed(e);
+            else if (e.getID() == KeyEvent.KEY_RELEASED) keyH.keyReleased(e);
+            return false;
+        });
 
         // Spawn checkpoint at map center
         spawnCheckpoint();
     }
 
-    // Load map dựa trên currentMap
-    private void loadMap() {
-        mapImage = new ImageIcon(getClass().getResource(mapPaths[currentMap])).getImage();
-    }
-
     // Khởi động luồng game
     public void startGameThread() {
+        // Trick Windows: 1 daemon thread sleep mãi → buộc OS giữ timer resolution ở 1ms
+        // (mặc định Windows ~15.6ms khiến Thread.sleep ms-level cực kỳ kém chính xác → giật frame)
+        Thread timerHack = new Thread(() -> {
+            try { Thread.sleep(Long.MAX_VALUE); } catch (InterruptedException ignored) {}
+        }, "WindowsTimerHack");
+        timerHack.setDaemon(true);
+        timerHack.start();
+
         gameThread = new Thread(this);
         gameThread.start();
+        requestFocusInWindow();
     }
 
     // Vòng lặp game chính (chạy ở 60 FPS)
     @Override
     public void run() {
-        // Game Loop 60 FPS chuẩn
-        double drawInterval = 1000000000 / 60; // 1 giây chia cho 60 FPS
+        final double drawInterval = 1_000_000_000.0 / 60; // nanosecond mỗi frame
         double nextDrawTime = System.nanoTime() + drawInterval;
 
-        while(gameThread != null) {
+        while (gameThread != null) {
             update();
-            repaint();
 
+            // Vẽ ĐỒNG BỘ trên EDT: chặn game thread tới khi paint xong → không có race
+            // condition giữa update() và paintComponent() (state đọc giữa chừng), và biết chính
+            // xác lúc nào sync() flush sẽ có hiệu lực
             try {
-                double remainingTime = nextDrawTime - System.nanoTime();
-                remainingTime = remainingTime / 1000000;
-
-                if(remainingTime < 0) remainingTime = 0;
-                Thread.sleep((long) remainingTime);
-
-                nextDrawTime += drawInterval;
+                SwingUtilities.invokeAndWait(() -> {
+                    if (isShowing()) paintImmediately(0, 0, getWidth(), getHeight());
+                });
             } catch (InterruptedException e) {
+                break;
+            } catch (java.lang.reflect.InvocationTargetException e) {
                 e.printStackTrace();
+            }
+            // Sau khi EDT đã vẽ xong, flush GDI/back-buffer xuống màn hình → giảm tearing
+            Toolkit.getDefaultToolkit().sync();
+
+            // Sleep đúng phần thời gian còn lại đến frame kế tiếp (không busy-wait, không drift)
+            long remainingNs = (long) (nextDrawTime - System.nanoTime());
+            if (remainingNs > 0) {
+                try {
+                    Thread.sleep(remainingNs / 1_000_000L, (int) (remainingNs % 1_000_000L));
+                } catch (InterruptedException e) {
+                    break;
+                }
+            }
+            nextDrawTime += drawInterval;
+
+            // Nếu bị tụt quá xa (GC pause, OS treo) → reset để tránh catch-up dồn dập
+            long now = System.nanoTime();
+            if (now > nextDrawTime + drawInterval) {
+                nextDrawTime = now + drawInterval;
             }
         }
     }
@@ -129,39 +148,21 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
-
+        // Render hint cho text mượt, không cần đặt mỗi state
+        g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
+                RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         currentState.draw(g2);
-
-        g2.dispose();
+        // KHÔNG dispose Graphics do Swing cấp — đó là lỗi, dispose sẽ làm hỏng các vẽ tiếp theo
     }
 
     // Giới hạn camera không được nhìn thấy ngoài phạm vi map
+    // Clamp thẳng — không có dead zone, tránh camera "nhảy" hàng chục pixel khi tới rìa map
     public int[] clampCameraPosition(int cameraX, int cameraY) {
-        // Clamp camera X
-        if (cameraX < 50) {
-            cameraX = 0;
-        }
-        if (cameraX + screenWidth - 40 > worldWidth) {
-            cameraX = worldWidth - screenWidth;
-        }
-
-        // Clamp camera Y
-        if (cameraY < 50) {
-            cameraY = 0;
-        }
-        if (cameraY + screenHeight -40 > worldHeight) {
-            cameraY = worldHeight - screenHeight;
-        }
-
+        if (cameraX < 0) cameraX = 0;
+        if (cameraX > worldWidth - screenWidth) cameraX = worldWidth - screenWidth;
+        if (cameraY < 0) cameraY = 0;
+        if (cameraY > worldHeight - screenHeight) cameraY = worldHeight - screenHeight;
         return new int[]{cameraX, cameraY};
-    }
-
-    // Sinh các enemy ban đầu
-    private void spawnEnemies() {
-        // Spawn 3 enemies with different types
-        enemies.add(new Enemy(this, player, 300, 300, 0));
-        enemies.add(new Enemy(this, player, 800, 500, 1));
-        enemies.add(new Enemy(this, player, 1200, 700, 2));
     }
 
     // Sinh checkpoint tại vị trí giữa map
@@ -176,6 +177,8 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
         }
         currentState = newState;
         currentState.enter();
+        // Lấy lại focus bàn phím sau mỗi lần chuyển state
+        requestFocusInWindow();
     }
 
     // MouseListener methods
@@ -216,7 +219,7 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
                     bullet.worldY + 10 > enemy.worldY &&
                     bullet.worldY < enemy.worldY + 80) {
                     // Enemy hit by player bullet
-                    enemy.health -= 25;
+                    enemy.health -= 35;
                     player.bullets.remove(i);
                     i--;
                 }
@@ -237,25 +240,14 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
             }
         }
 
-        // Remove dead enemies
+        // Remove dead enemies and count kills
         for (int i = 0; i < enemies.size(); i++) {
             if (enemies.get(i).health <= 0) {
                 enemies.remove(i);
+                killCount++;
                 i--;
             }
         }
     }
 
-    // Chuyển sang map tiếp theo
-    public void nextMap() {
-        currentMap++;
-        if (currentMap < mapPaths.length) {
-            gameOver = false;
-            player.health = player.maxHealth;
-            // Transition to next level
-            setState(new ZombieState(this));
-        } else {
-            gameOver = true;
-        }
-    }
 }
