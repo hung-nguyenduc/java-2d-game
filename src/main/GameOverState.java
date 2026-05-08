@@ -1,16 +1,28 @@
 package main;
 
+import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 
 public class GameOverState extends GameState {
     private Rectangle retryButton = new Rectangle(300, 320, 200, 50);
     private Rectangle menuButton  = new Rectangle(300, 400, 200, 50);
-
+    private BufferedImage img;
     public GameOverState(GamePanel gp) {
-        super(gp);
-    }
 
+        super(gp);
+        getImg();
+    }
+    public void getImg() {
+        try {
+            img = ImageIO.read(getClass().getResourceAsStream("/endgame/endgame2.png"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
     @Override
     public void enter() {}
 
@@ -23,9 +35,9 @@ public class GameOverState extends GameState {
     @Override
     public void draw(Graphics2D g2) {
         // Nền tối mờ
-        g2.setColor(new Color(0, 0, 0, 200));
-        g2.fillRect(0, 0, gp.screenWidth, gp.screenHeight);
-
+//        g2.setColor(new Color(0, 0, 0, 200));
+//        g2.fillRect(0, 0, gp.screenWidth, gp.screenHeight);
+        g2.drawImage(img, 0, 0, gp.screenWidth, gp.screenHeight, null);
         // Chữ GAME OVER
         g2.setColor(Color.RED);
         g2.setFont(new Font("Arial", Font.BOLD, 80));
