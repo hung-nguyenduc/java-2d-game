@@ -23,7 +23,7 @@ public class Enemy extends Entity {
         this.enemyType = enemyType;
         worldX = startX;
         worldY = startY;
-        speed = 3; // Slower than player
+        speed = 1; // Slower than player
         aimAngle = 0;
         health = maxHealth; // Đặt máu ban đầu
 

@@ -36,9 +36,9 @@ public class Player extends Entity {
     public void setDefaultValues() {
         worldX = 1000;
         worldY = 1000;
-        speed = 4.5;
+        speed = 9;
         aimAngle = 0;
-        maxHealth = 300;
+        maxHealth = 30000;
         health = maxHealth;
         direction = "down";
     }
@@ -211,7 +211,7 @@ public class Player extends Entity {
 
             }
         }
-        g2.drawImage(img, screenX, screenY, 80, 80, null);
+            g2.drawImage(img, screenX, screenY, 80, 80, null);
 
         drawHealthBar(g2, screenX, screenY - 16, 80, 14);
         drawAimingIndicator(g2, screenX + 40, screenY + 40);

@@ -69,7 +69,7 @@ public class MenuState extends GameState {
         drawTitle(g2, titleButton, "Sinh tồn ở HUST");
     }
     private void drawTitle(Graphics2D g2, Rectangle rect, String text) {
-        g2.setColor(Color.YELLOW);
+        g2.setColor(Color.ORANGE);
         g2.fillRect(rect.x, rect.y, rect.width, rect.height);
         g2.setColor(Color.BLACK);
         g2.drawRect(rect.x, rect.y, rect.width, rect.height);
@@ -80,7 +80,7 @@ public class MenuState extends GameState {
         g2.drawString(text, textX, textY);
     }
     private void drawButton(Graphics2D g2, Rectangle rect, String text) {
-        g2.setColor(Color.GRAY);
+        g2.setColor(Color.DARK_GRAY);
         g2.fillRect(rect.x, rect.y, rect.width, rect.height);
         g2.setColor(Color.BLACK);
         g2.drawRect(rect.x, rect.y, rect.width, rect.height);
