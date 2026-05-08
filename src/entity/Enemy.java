@@ -157,7 +157,7 @@ public class Enemy extends Entity {
         int screenY = (int) (worldY - cameraY);
 
         if (screenX > -80 && screenX < gp.screenWidth + 80 && screenY > -80 && screenY < gp.screenHeight + 80) {
-            g2.drawImage(currentImage, screenX, screenY, 80, 80, null);
+            g2.drawImage(currentImage, screenX, screenY, 100, 100, null);
             drawHealthBar(g2, screenX, screenY - 10, 80, 10);
         }
 

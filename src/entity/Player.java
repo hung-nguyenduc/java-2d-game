@@ -4,6 +4,7 @@ import main.GamePanel;
 import main.KeyHandler;
 import main.MouseHandler;
 import java.awt.*;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import javax.imageio.ImageIO;
@@ -14,6 +15,7 @@ public class Player extends Entity {
     MouseHandler mouseH;
 
     public BufferedImage playerImage;
+    private BufferedImage weaponImage;
     private int shootCooldown = 0;
     private final int shootInterval = 30;
 
@@ -58,6 +60,7 @@ public class Player extends Entity {
 
             right1 = ImageIO.read(getClass().getResourceAsStream("/player/right1.png"));
             right2 = ImageIO.read(getClass().getResourceAsStream("/player/right2.png"));
+            weaponImage = ImageIO.read(getClass().getResourceAsStream("/weapon/shotgun.png"));
             } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
@@ -213,12 +216,14 @@ public class Player extends Entity {
         }
             g2.drawImage(img, screenX, screenY, 80, 80, null);
 
+
         drawHealthBar(g2, screenX, screenY - 16, 80, 14);
-        drawAimingIndicator(g2, screenX + 40, screenY + 40);
+        //drawAimingIndicator(g2, screenX + 40, screenY + 40);
 
         for (Bullet bullet : bullets) {
             bullet.draw(g2, cameraX, cameraY);
         }
+        drawWeapon(g2, screenX, screenY);
     }
 
     // Vẽ thanh máu kèm số máu hiện tại / tối đa (vd "175/200")
@@ -245,16 +250,53 @@ public class Player extends Entity {
         g2.setColor(Color.WHITE);
         g2.drawString(text, tx, ty);
     }
+//    private void drawWeapon(Graphics2D g2, int screenX, int screenY) {
+//        int centerX = screenX + 40;
+//        int centerY = screenY + 40;
+//        AffineTransform original = g2.getTransform();
+//        g2.translate(centerX, centerY);
+//        g2.rotate(Math.toRadians(aimAngle));
+//        g2.drawImage(weaponImage, 0, -weaponImage.getHeight() / 2, null);
+//        g2.setTransform(original);
+//    }
+    private void drawWeapon(Graphics2D g2, int screenX, int screenY) {
+        int centerX = screenX + 40;
+        int centerY = screenY + 40;
 
-    // Vẽ chỉ báo hướng nhắm
-    private void drawAimingIndicator(Graphics2D g2, int centerX, int centerY) {
-        int indicatorLength = 30;
-        double radians = Math.toRadians(aimAngle);
-        int endX = (int)(centerX + indicatorLength * Math.cos(radians));
-        int endY = (int)(centerY + indicatorLength * Math.sin(radians));
+        // Giả sử tâm xoay (báng súng) nằm ở tọa độ (10, 20) trên ảnh
+        int pivotX = 10;
+        int pivotY = 20;
 
-        g2.setColor(Color.RED);
-        g2.setStroke(AIM_STROKE);
-        g2.drawLine(centerX, centerY, endX, endY);
+        AffineTransform original = g2.getTransform();
+        g2.translate(centerX, centerY);
+        g2.rotate(Math.toRadians(aimAngle));
+
+        // Kiểm tra nếu súng đang hướng sang trái
+        // (Góc > 90 hoặc < -90 độ)
+        if (aimAngle > 90 || aimAngle < -90) {
+            // Lật ngược súng theo trục Y để không bị lộn bụng lên trên
+            g2.scale(1, -1);
+
+            // Khi lật ngược trục Y, điểm vẽ pivotY cũng phải đảo ngược lại
+            // thay vì -pivotY, ta dùng -(chiều cao - pivotY) hoặc chỉ đơn giản là vẽ bù trừ
+            g2.drawImage(weaponImage, -pivotX, - (weaponImage.getHeight() - pivotY), null);
+        } else {
+            // Vẽ bình thường khi hướng sang phải
+            g2.drawImage(weaponImage, -pivotX, -pivotY, null);
+        }
+
+        g2.setTransform(original);
     }
+    // Vẽ chỉ báo hướng nhắm
+//    private void drawAimingIndicator(Graphics2D g2, int centerX, int centerY) {
+//        int indicatorLength = 30;
+//        double radians = Math.toRadians(aimAngle);
+//        int endX = (int)(centerX + indicatorLength * Math.cos(radians));
+//        int endY = (int)(centerY + indicatorLength * Math.sin(radians));
+//
+//        g2.setColor(Color.RED);
+//        g2.setStroke(AIM_STROKE);
+//        g2.drawLine(centerX, centerY, endX, endY);
+//        g2.drawImage()
+//    }
 }
