@@ -1,27 +1,27 @@
 package main;
 
-import javax.swing.JFrame;
-//import main.GamePanel;
-
+import javax.swing.*;
 
 public class Main {
     public static void main(String[] args) {
-
-        JFrame frame = new JFrame("Sinh ton o HUST");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setResizable(false);
-
-        // Khởi tạo GamePanel và add vào frame
+        // Tạo cửa sổ game
+        JFrame frame = new JFrame("2D Survival Shooter Game");
         GamePanel gamePanel = new GamePanel();
+        
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.add(gamePanel);
-
-        frame.pack(); // Tự động co giãn JFrame cho vừa khít với kích thước của GamePanel
-
-        frame.setLocationRelativeTo(null); // Hiển thị ở giữa màn hình
+        frame.pack();
+        frame.setLocationRelativeTo(null);
+        frame.setResizable(false);
         frame.setVisible(true);
-
-
-        // Khởi động vòng lặp game
-        gamePanel.startGameThread();
+        
+        // Khởi động game
+        gamePanel.startGame();
+        
+        System.out.println("Game started! Controls:");
+        System.out.println("  WASD - Move");
+        System.out.println("  Mouse - Aim");
+        System.out.println("  Left Click - Shoot");
+        System.out.println("  R - Restart when game over");
     }
 }

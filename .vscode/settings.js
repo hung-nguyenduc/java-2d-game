@@ -1,0 +1,9 @@
+module.exports = {
+    "java.project.sourcePaths": ["src"],
+    "java.project.outputPath": "bin",
+    "java.project.referencedLibraries": [
+        "lib/**/*.jar"
+    ],
+    "java.project.mainClass": "main.Main",
+    "files.encoding": "utf8"
+};

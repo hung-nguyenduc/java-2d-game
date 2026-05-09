@@ -1,133 +1,234 @@
 package entity;
 
-import main.GamePanel;
+import main.GameConfig;
+import manager.CollisionManager;
+import manager.AssetManager;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
-import javax.imageio.ImageIO;
+import java.util.Random;
 
-// Lớp đại diện cho enemy trong game
-public class Enemy extends Entity {
-    GamePanel gp;
-    Player player;
-    public BufferedImage enemyImage;
+public class Enemy {
+    private float x, y;
+    private int health;
+    private int maxHealth;
+    private float speed;
+    private Rectangle hitbox;
+    private boolean isAlive;
+    private String direction;
+    
+    private Player player;
+    private CollisionManager collisionManager;
+    private Random random;
+    
+    // AI states
+    private enum State { IDLE, CHASE }
+    private State currentState = State.IDLE;
+    
+    private int idleTimer = 0;
+    private String idleDirection = "down";
+    
+    // Bắn đạn
     private int shootCooldown = 0;
-    private final int shootInterval = 60; // Shoot every 60 frames (1 second at 60 FPS)
-    private final double minDistance = 50; // Minimum distance from player
-    private int enemyType; // 0, 1, 2 for 3 different enemy types
-
-    // Constructor: Khởi tạo Enemy với vị trí ban đầu
-    public Enemy(GamePanel gp, Player player, int startX, int startY, int enemyType) {
-        this.gp = gp;
+    private int shootDelay = 60;
+    private int attackRange = 350;
+    
+    // Ảnh quái
+    private BufferedImage enemyImage;
+    
+    public Enemy(float x, float y, Player player, CollisionManager cm) {
+        this.x = x;
+        this.y = y;
+        this.health = 50;
+        this.maxHealth = 50;
+        this.speed = GameConfig.ENEMY_SPEED;
+        this.isAlive = true;
+        this.direction = "down";
         this.player = player;
-        this.enemyType = enemyType;
-        worldX = startX;
-        worldY = startY;
-        speed = 3; // Slower than player
-        aimAngle = 0;
-        health = maxHealth; // Đặt máu ban đầu
-
-        getEnemyImage();
+        this.collisionManager = cm;
+        this.random = new Random();
+        this.hitbox = new Rectangle((int)x, (int)y, GameConfig.ENEMY_SIZE, GameConfig.ENEMY_SIZE);
+        
+        // Load ảnh quái
+        enemyImage = AssetManager.getImage("enemy_red");
     }
-
-    // Tải hình ảnh của Enemy dựa trên loại enemy
-    public void getEnemyImage() {
-        try {
-            // Load 3 different enemy images from enemy folder
-            switch(enemyType) {
-                case 0:
-                    enemyImage = ImageIO.read(getClass().getResourceAsStream("/enemy/enemy1.png"));
-                    break;
-                case 1:
-                    enemyImage = ImageIO.read(getClass().getResourceAsStream("/enemy/enemy2.png"));
-                    break;
-                case 2:
-                    enemyImage = ImageIO.read(getClass().getResourceAsStream("/enemy/enemy3.png"));
-                    break;
-                default:
-                    enemyImage = ImageIO.read(getClass().getResourceAsStream("/enemy/enemy1.png"));
-            }
-        } catch (IOException e) {
-            System.out.println("LỖI: Không tìm thấy ảnh quái vật!");
-            e.printStackTrace();
-        }
-    }
-
-    // Cập nhật trạng thái của Enemy mỗi frame
+    
     public void update() {
-        // Calculate direction towards player
-        double dx = player.worldX - worldX;
-        double dy = player.worldY - worldY;
-        double distance = Math.sqrt(dx * dx + dy * dy);
-
-        if (distance > minDistance) { // Only move if not too close
-            // Normalize direction
-            vx = (dx / distance) * speed;
-            vy = (dy / distance) * speed;
-
-            // Calculate aim angle towards player
-            aimAngle = Math.toDegrees(Math.atan2(dy, dx));
-
-            // Apply movement (worldX/worldY là double → tránh mất precision khi normalize)
-            worldX += vx;
-            worldY += vy;
+        if (!isAlive) return;
+        
+        float dx = player.getX() - x;
+        float dy = player.getY() - y;
+        float distance = (float)Math.sqrt(dx*dx + dy*dy);
+        
+        if (distance < attackRange) {
+            currentState = State.CHASE;
+        } else {
+            currentState = State.IDLE;
         }
-
-        // Giới hạn enemy trong phạm vi map
-        worldX = Math.max(0, Math.min(worldX, gp.worldWidth - 80));
-        worldY = Math.max(0, Math.min(worldY, gp.worldHeight - 80));
-
-        // Update bullets
-        for (int i = 0; i < bullets.size(); i++) {
-            bullets.get(i).update();
-            if (bullets.get(i).isOutOfRange()) {
-                bullets.remove(i);
-                i--;
+        
+        switch(currentState) {
+            case CHASE:
+                chasePlayer(dx, dy);
+                break;
+            case IDLE:
+                idleWander();
+                break;
+        }
+        
+        updateHitbox();
+    }
+    
+    private void chasePlayer(float dx, float dy) {
+        float length = (float)Math.sqrt(dx*dx + dy*dy);
+        if (length > 0) {
+            int moveX = (int)((dx / length) * speed);
+            int moveY = (int)((dy / length) * speed);
+            
+            float newX = x + moveX;
+            float newY = y + moveY;
+            
+            // Giới hạn trong map
+            newX = Math.max(0, Math.min(newX, GameConfig.WORLD_WIDTH - GameConfig.ENEMY_SIZE));
+            newY = Math.max(0, Math.min(newY, GameConfig.WORLD_HEIGHT - GameConfig.ENEMY_SIZE));
+            
+            Rectangle newHitbox = new Rectangle((int)newX, (int)y, GameConfig.ENEMY_SIZE, GameConfig.ENEMY_SIZE);
+            if (!collisionManager.checkWallCollision(newHitbox) && !collisionManager.checkObjectCollision(newHitbox)) {
+                x = newX;
+            }
+            
+            newHitbox = new Rectangle((int)x, (int)newY, GameConfig.ENEMY_SIZE, GameConfig.ENEMY_SIZE);
+            if (!collisionManager.checkWallCollision(newHitbox) && !collisionManager.checkObjectCollision(newHitbox)) {
+                y = newY;
             }
         }
-
-        // Periodic shooting
-        shootCooldown++;
-        if (shootCooldown >= shootInterval) {
-            shoot();
-            shootCooldown = 0;
+        
+        if (Math.abs(dx) > Math.abs(dy)) {
+            direction = dx > 0 ? "right" : "left";
+        } else {
+            direction = dy > 0 ? "down" : "up";
         }
     }
-
-    // Bắn đạn về phía Player
-    public void shoot() {
-        // Create bullet towards player
-        Bullet bullet = new Bullet(worldX + 40, worldY + 40, aimAngle);
-        bullets.add(bullet);
+    
+    private void idleWander() {
+        idleTimer++;
+        
+        if (idleTimer > 60) {
+            idleTimer = 0;
+            int randDir = random.nextInt(4);
+            switch(randDir) {
+                case 0: idleDirection = "up"; break;
+                case 1: idleDirection = "down"; break;
+                case 2: idleDirection = "left"; break;
+                case 3: idleDirection = "right"; break;
+            }
+        }
+        
+        int moveX = 0, moveY = 0;
+        switch(idleDirection) {
+            case "up": moveY = -1; break;
+            case "down": moveY = 1; break;
+            case "left": moveX = -1; break;
+            case "right": moveX = 1; break;
+        }
+        
+        float newX = x + moveX;
+        float newY = y + moveY;
+        
+        newX = Math.max(0, Math.min(newX, GameConfig.WORLD_WIDTH - GameConfig.ENEMY_SIZE));
+        newY = Math.max(0, Math.min(newY, GameConfig.WORLD_HEIGHT - GameConfig.ENEMY_SIZE));
+        
+        Rectangle newHitbox = new Rectangle((int)newX, (int)newY, GameConfig.ENEMY_SIZE, GameConfig.ENEMY_SIZE);
+        if (!collisionManager.checkWallCollision(newHitbox) && !collisionManager.checkObjectCollision(newHitbox)) {
+            x = newX;
+            y = newY;
+            direction = idleDirection;
+        } else {
+            idleTimer = 60;
+        }
     }
-
-    // Vẽ Enemy theo camera đã clamp (tránh enemy "trượt" khi player tới rìa map)
+    
+    public void takeDamage(int damage) {
+        health -= damage;
+        if (health <= 0) {
+            isAlive = false;
+        }
+    }
+    
+    private void updateHitbox() {
+        hitbox.x = (int)x;
+        hitbox.y = (int)y;
+    }
+    
+    public void updateCooldown() {
+        if (shootCooldown > 0) {
+            shootCooldown--;
+        }
+    }
+    
+    public boolean canShoot() {
+        return isAlive && shootCooldown <= 0;
+    }
+    
+    public void shotFired() {
+        shootCooldown = shootDelay;
+    }
+    
+    public boolean isInRange(Player p) {
+        float dx = p.getX() - x;
+        float dy = p.getY() - y;
+        float distance = (float)Math.sqrt(dx*dx + dy*dy);
+        return distance < attackRange;
+    }
+    
+    // Getters
+    public float getX() { return x; }
+    public float getY() { return y; }
+    public boolean isAlive() { return isAlive; }
+    public Rectangle getHitbox() { return hitbox; }
+    
     public void draw(Graphics2D g2, int cameraX, int cameraY) {
-        int screenX = (int) (worldX - cameraX);
-        int screenY = (int) (worldY - cameraY);
-
-        if (screenX > -80 && screenX < gp.screenWidth + 80 && screenY > -80 && screenY < gp.screenHeight + 80) {
-            g2.drawImage(enemyImage, screenX, screenY, 80, 80, null);
-            drawHealthBar(g2, screenX, screenY - 10, 80, 10);
+        int screenX = (int)x - cameraX;
+        int screenY = (int)y - cameraY;
+        
+        if (enemyImage != null && AssetManager.hasImages()) {
+            g2.drawImage(enemyImage, screenX, screenY, GameConfig.ENEMY_SIZE, GameConfig.ENEMY_SIZE, null);
+        } else {
+            // Fallback
+            g2.setColor(GameConfig.ENEMY_COLOR);
+            g2.fillOval(screenX, screenY, GameConfig.ENEMY_SIZE, GameConfig.ENEMY_SIZE);
+            
+            g2.setColor(Color.WHITE);
+            switch(direction) {
+                case "up":
+                    g2.fillOval(screenX + 12, screenY + 12, 6, 6);
+                    g2.fillOval(screenX + 30, screenY + 12, 6, 6);
+                    break;
+                case "down":
+                    g2.fillOval(screenX + 12, screenY + 30, 6, 6);
+                    g2.fillOval(screenX + 30, screenY + 30, 6, 6);
+                    break;
+                case "left":
+                    g2.fillOval(screenX + 10, screenY + 15, 6, 6);
+                    g2.fillOval(screenX + 10, screenY + 27, 6, 6);
+                    break;
+                case "right":
+                    g2.fillOval(screenX + 32, screenY + 15, 6, 6);
+                    g2.fillOval(screenX + 32, screenY + 27, 6, 6);
+                    break;
+            }
         }
-
-        // Vẽ đạn ngoài khối culling: đạn đã ra khỏi enemy nhưng có thể vẫn trong screen
-        for (Bullet bullet : bullets) {
-            bullet.draw(g2, cameraX, cameraY);
-        }
-    }
-
-    // Vẽ thanh máu
-    private void drawHealthBar(Graphics2D g2, int x, int y, int width, int height) {
-        // Background (red)
+        
+        // Vẽ thanh máu
+        int barWidth = GameConfig.ENEMY_SIZE;
+        int barHeight = 5;
+        int healthPercent = (health * barWidth) / maxHealth;
         g2.setColor(Color.RED);
-        g2.fillRect(x, y, width, height);
-        // Foreground (green)
+        g2.fillRect(screenX, screenY - 8, barWidth, barHeight);
         g2.setColor(Color.GREEN);
-        int healthWidth = (int)((double)health / maxHealth * width);
-        g2.fillRect(x, y, healthWidth, height);
-        // Border
-        g2.setColor(Color.BLACK);
-        g2.drawRect(x, y, width, height);
+        g2.fillRect(screenX, screenY - 8, healthPercent, barHeight);
+        
+        if (GameConfig.DEBUG_MODE) {
+            g2.setColor(Color.RED);
+            g2.drawRect(screenX, screenY, GameConfig.ENEMY_SIZE, GameConfig.ENEMY_SIZE);
+        }
     }
 }

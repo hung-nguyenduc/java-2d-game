@@ -1,255 +1,162 @@
 package entity;
 
-import main.GamePanel;
-import main.KeyHandler;
-import main.MouseHandler;
-import java.awt.*;
+import main.GameConfig;
+import manager.CollisionManager;
+import manager.AssetManager;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
-import javax.imageio.ImageIO;
+import java.awt.Color;  // ← THÊM DÒNG NÀY
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.image.BufferedImage;
 
-public class Player extends Entity {
-    GamePanel gp;
-    KeyHandler keyH;
-    MouseHandler mouseH;
-
-    public BufferedImage playerImage;
+public class Player {
+    private float x, y;
+    private int health;
+    private int maxHealth;
+    private Rectangle hitbox;
+    private String direction;
+    private boolean isAlive;
+    
+    // Bắn đạn
     private int shootCooldown = 0;
-    private final int shootInterval = 30;
-
-    private static final double DIAGONAL_FACTOR = 1.0 / Math.sqrt(2);
-    private static final BasicStroke AIM_STROKE = new BasicStroke(2);
-    private static final Color BULLET_COLOR = new Color(0, 80, 200); // Xanh nước biển đậm
-    private static final Font HEALTH_FONT = new Font("Arial", Font.BOLD, 11);
-
-    // Constructor: Khởi tạo Player với GamePanel, KeyHandler và MouseHandler
-    public Player(GamePanel gp, KeyHandler keyH, MouseHandler mouseH) {
-        this.gp = gp;
-        this.keyH = keyH;
-        this.mouseH = mouseH;
-
-        setDefaultValues();
-        getPlayerImage();
+    private int shootDelay = 15;
+    
+    private CollisionManager collisionManager;
+    
+    // Ảnh player
+    private BufferedImage currentImage;
+    private BufferedImage[] playerImages;
+    
+    public Player(float startX, float startY, CollisionManager cm) {
+        this.x = startX;
+        this.y = startY;
+        this.health = 100;
+        this.maxHealth = 100;
+        this.direction = "down";
+        this.isAlive = true;
+        this.collisionManager = cm;
+        this.hitbox = new Rectangle((int)x, (int)y, GameConfig.PLAYER_SIZE, GameConfig.PLAYER_SIZE);
+        
+        // Load ảnh player (nếu có)
+        playerImages = new BufferedImage[5];
+        playerImages[0] = AssetManager.getImage("player_idle");
+        playerImages[1] = AssetManager.getImage("player_up");
+        playerImages[2] = AssetManager.getImage("player_down");
+        playerImages[3] = AssetManager.getImage("player_left");
+        playerImages[4] = AssetManager.getImage("player_right");
+        currentImage = playerImages[0];
     }
-
-    // Thiết lập giá trị mặc định cho Player
-    public void setDefaultValues() {
-        worldX = 1000;
-        worldY = 1000;
-        speed = 4.5;
-        aimAngle = 0;
-        maxHealth = 300;
-        health = maxHealth;
-        direction = "down";
+    
+    public void move(int dx, int dy) {
+        if (!isAlive) return;
+        
+        float newX = x + dx;
+        float newY = y + dy;
+        
+        // Giới hạn trong map
+        newX = Math.max(0, Math.min(newX, GameConfig.WORLD_WIDTH - GameConfig.PLAYER_SIZE));
+        newY = Math.max(0, Math.min(newY, GameConfig.WORLD_HEIGHT - GameConfig.PLAYER_SIZE));
+        
+        Rectangle newHitbox = new Rectangle((int)newX, (int)y, GameConfig.PLAYER_SIZE, GameConfig.PLAYER_SIZE);
+        if (!collisionManager.checkWallCollision(newHitbox) && !collisionManager.checkObjectCollision(newHitbox)) {
+            x = newX;
+        }
+        
+        newHitbox = new Rectangle((int)x, (int)newY, GameConfig.PLAYER_SIZE, GameConfig.PLAYER_SIZE);
+        if (!collisionManager.checkWallCollision(newHitbox) && !collisionManager.checkObjectCollision(newHitbox)) {
+            y = newY;
+        }
+        
+        updateHitbox();
     }
-
-    // Tải hình ảnh của Player
-    public void getPlayerImage() {
-        try {
-            up1 = ImageIO.read(getClass().getResourceAsStream("/player/up1.png"));
-            up1 = ImageIO.read(getClass().getResourceAsStream("/player/up1.png"));
-
-
-            down1 = ImageIO.read(getClass().getResourceAsStream("/player/down1.png"));
-            down2 = ImageIO.read(getClass().getResourceAsStream("/player/down2.png"));
-
-            left1 = ImageIO.read(getClass().getResourceAsStream("/player/left1.png"));
-            left2 = ImageIO.read(getClass().getResourceAsStream("/player/left2.png"));
-
-            right1 = ImageIO.read(getClass().getResourceAsStream("/player/right1.png"));
-            right2 = ImageIO.read(getClass().getResourceAsStream("/player/right2.png"));
-            } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
-
-    }
-
-    // Cập nhật trạng thái của Player mỗi frame
-    public void update() {
-        vx = 0;
-        vy = 0;
-
-        if (keyH.upPressed) {
-            vy -= speed;
-            direction = "up";
-        }
-        if (keyH.downPressed) {
-            vy += speed;
-            direction = "down";
-        }
-        if (keyH.leftPressed) {
-            vx -= speed;
-            direction = "left";
-        }
-        if (keyH.rightPressed) {
-            vx += speed;
-            direction = "right";
-        }
-        spriteCounter++;
-        if (spriteCounter > 100) {
-            if (spriteNum == 1) {
-                spriteNum = 2;
-            }
-            else if (spriteNum == 2) {
-                spriteNum = 1;
-            }
-        }
-        // Normalize diagonal: giữ tốc độ bằng nhau mọi hướng
-        if (vx != 0 && vy != 0) {
-            vx *= DIAGONAL_FACTOR;
-            vy *= DIAGONAL_FACTOR;
-        }
-
-        // worldX/worldY là double → cộng trực tiếp vận tốc, di chuyển subpixel mượt mà
-        worldX += vx;
-        worldY += vy;
-
-        // Giới hạn vị trí nhân vật trong map
-        clampPlayerPosition();
-
-        // Ngắm theo vị trí chuột: phải tính theo camera đã clamp, vì khi player ở rìa map
-        // camera đứng yên còn player dịch sang rìa screen → tâm player KHÔNG còn ở giữa screen
-        int rawCamX = (int) (worldX - gp.screenWidth / 2.0);
-        int rawCamY = (int) (worldY - gp.screenHeight / 2.0);
-        int[] cam = gp.clampCameraPosition(rawCamX, rawCamY);
-        int playerCenterScreenX = (int) (worldX - cam[0]) + 40;
-        int playerCenterScreenY = (int) (worldY - cam[1]) + 40;
-        double dx = mouseH.mouseX - playerCenterScreenX;
-        double dy = mouseH.mouseY - playerCenterScreenY;
-        aimAngle = Math.toDegrees(Math.atan2(dy, dx));
-
-        // Bắn liên tục theo hướng chuột
-        shootCooldown++;
-        if (shootCooldown >= shootInterval) {
-            shoot();
-            shootCooldown = 0;
-        }
-
-        // Update bullets
-        for (int i = 0; i < bullets.size(); i++) {
-            bullets.get(i).update();
-            if (bullets.get(i).isOutOfRange()) {
-                bullets.remove(i);
-                i--;
-            }
+    
+    public void takeDamage(int damage) {
+        if (!isAlive) return;
+        health -= damage;
+        if (health <= 0) {
+            health = 0;
+            isAlive = false;
         }
     }
-
-    // Giới hạn vị trí nhân vật không cho phép vượt ra ngoài map
-    private void clampPlayerPosition() {
-        // Player size is 80x80
-        int playerSize = 80;
-
-        // Clamp X position
-        if (worldX < 0) {
-            worldX = 0;
-        }
-        if (worldX + playerSize > gp.worldWidth) {
-            worldX = gp.worldWidth - playerSize;
-        }
-
-        // Clamp Y position
-        if (worldY < 0) {
-            worldY = 0;
-        }
-        if (worldY + playerSize > gp.worldHeight) {
-            worldY = gp.worldHeight - playerSize;
+    
+    private void updateHitbox() {
+        hitbox.x = (int)x;
+        hitbox.y = (int)y;
+    }
+    
+    public void updateCooldown() {
+        if (shootCooldown > 0) {
+            shootCooldown--;
         }
     }
-
-    // Bắn đạn nếu cooldown cho phép
-    public void shoot() {
-        // Create bullet at player position
-        Bullet bullet = new Bullet(worldX + 40, worldY + 40, aimAngle);
-        bullet.color = BULLET_COLOR;
-        bullets.add(bullet);
+    
+    public boolean canShoot() {
+        return isAlive && shootCooldown <= 0;
     }
-
-    // Vẽ Player tại vị trí thực trên screen (theo camera đã clamp)
+    
+    public void shotFired() {
+        shootCooldown = shootDelay;
+    }
+    
+    public void setDirection(String dir) {
+        this.direction = dir;
+    }
+    
+    // Getters
+    public float getX() { return x; }
+    public float getY() { return y; }
+    public int getHealth() { return health; }
+    public int getMaxHealth() { return maxHealth; }
+    public boolean isAlive() { return isAlive; }
+    public Rectangle getHitbox() { return hitbox; }
+    
     public void draw(Graphics2D g2, int cameraX, int cameraY) {
-        int screenX = (int) (worldX - cameraX);
-        int screenY = (int) (worldY - cameraY);
-
-        BufferedImage img = null;
-        switch (direction) {
-            case "up":
-                if (spriteNum == 1) {
-                    img = up1;
-                }
-                if (spriteNum == 2) {
-                    img = up2;
-                }
-                break;
-            case "down":
-                if (spriteNum == 1) {
-                    img = down1;
-                }
-                if (spriteNum == 2) {
-                    img = down2;
-                }
-                break;
-            case "left":
-                if (spriteNum == 1) {
-                    img = left1;
-                }
-                if (spriteNum == 2) {
-                    img = left2;
-                }
-                break;
-            case "right":
-                if (spriteNum == 1) {
-                    img = right1;
-                }
-                if (spriteNum == 2) {
-                    img = right2;
-                }
-                break;
-
+        int screenX = (int)x - cameraX;
+        int screenY = (int)y - cameraY;
+        
+        // Chọn ảnh theo hướng
+        switch(direction) {
+            case "up": currentImage = playerImages[1]; break;
+            case "down": currentImage = playerImages[2]; break;
+            case "left": currentImage = playerImages[3]; break;
+            case "right": currentImage = playerImages[4]; break;
+            default: currentImage = playerImages[0];
         }
-        g2.drawImage(img, screenX, screenY, 80, 80, null);
-
-        drawHealthBar(g2, screenX, screenY - 16, 80, 14);
-        drawAimingIndicator(g2, screenX + 40, screenY + 40);
-
-        for (Bullet bullet : bullets) {
-            bullet.draw(g2, cameraX, cameraY);
+        
+        // Vẽ player
+        if (currentImage != null && AssetManager.hasImages()) {
+            g2.drawImage(currentImage, screenX, screenY, GameConfig.PLAYER_SIZE, GameConfig.PLAYER_SIZE, null);
+        } else {
+            // Fallback: vẽ hình chữ nhật
+            g2.setColor(isAlive ? GameConfig.PLAYER_COLOR : Color.GRAY);
+            g2.fillRect(screenX, screenY, GameConfig.PLAYER_SIZE, GameConfig.PLAYER_SIZE);
+            
+            // Vẽ mặt
+            g2.setColor(Color.WHITE);
+            switch(direction) {
+                case "up":
+                    g2.fillRect(screenX + 15, screenY + 10, 6, 6);
+                    g2.fillRect(screenX + 27, screenY + 10, 6, 6);
+                    break;
+                case "down":
+                    g2.fillRect(screenX + 15, screenY + 32, 6, 6);
+                    g2.fillRect(screenX + 27, screenY + 32, 6, 6);
+                    break;
+                case "left":
+                    g2.fillRect(screenX + 10, screenY + 15, 6, 6);
+                    g2.fillRect(screenX + 10, screenY + 27, 6, 6);
+                    break;
+                case "right":
+                    g2.fillRect(screenX + 32, screenY + 15, 6, 6);
+                    g2.fillRect(screenX + 32, screenY + 27, 6, 6);
+                    break;
+            }
         }
-    }
-
-    // Vẽ thanh máu kèm số máu hiện tại / tối đa (vd "175/200")
-    private void drawHealthBar(Graphics2D g2, int x, int y, int width, int height) {
-        g2.setColor(Color.RED);
-        g2.fillRect(x, y, width, height);
-        g2.setColor(Color.GREEN);
-        int healthWidth = (int) ((double) health / maxHealth * width);
-        g2.fillRect(x, y, healthWidth, height);
-        g2.setColor(Color.BLACK);
-        g2.drawRect(x, y, width, height);
-
-        String text = health + "/" + maxHealth;
-        g2.setFont(HEALTH_FONT);
-        FontMetrics fm = g2.getFontMetrics();
-        int tx = x + (width - fm.stringWidth(text)) / 2;
-        int ty = y + (height + fm.getAscent()) / 2 - 2;
-        // Vẽ stroke đen mỏng để text luôn đọc được dù background đỏ hay xanh
-        g2.setColor(Color.BLACK);
-        g2.drawString(text, tx - 1, ty);
-        g2.drawString(text, tx + 1, ty);
-        g2.drawString(text, tx, ty - 1);
-        g2.drawString(text, tx, ty + 1);
-        g2.setColor(Color.WHITE);
-        g2.drawString(text, tx, ty);
-    }
-
-    // Vẽ chỉ báo hướng nhắm
-    private void drawAimingIndicator(Graphics2D g2, int centerX, int centerY) {
-        int indicatorLength = 30;
-        double radians = Math.toRadians(aimAngle);
-        int endX = (int)(centerX + indicatorLength * Math.cos(radians));
-        int endY = (int)(centerY + indicatorLength * Math.sin(radians));
-
-        g2.setColor(Color.RED);
-        g2.setStroke(AIM_STROKE);
-        g2.drawLine(centerX, centerY, endX, endY);
+        
+        // Vẽ hitbox (debug)
+        if (GameConfig.DEBUG_MODE) {
+            g2.setColor(Color.RED);
+            g2.drawRect(screenX, screenY, GameConfig.PLAYER_SIZE, GameConfig.PLAYER_SIZE);
+        }
     }
 }

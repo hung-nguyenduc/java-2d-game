@@ -1,253 +1,344 @@
 package main;
 
-import entity.Player; // Nhớ import package entity
-import entity.Enemy; // Import Enemy class
-import entity.Bullet; // Import Bullet class
-import entity.Checkpoint; // Import Checkpoint class
+import input.KeyHandler;
+import entity.Player;
+import entity.Enemy;
+import entity.Bullet;
+import manager.AssetManager;
+import manager.MapManager;
+import manager.ObjectManager;
+import manager.CollisionManager;
+import java.awt.Color;  // ← THÊM DÒNG NÀY
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 
-import javax.swing.*;
 import java.awt.*;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Random;
+import javax.swing.*;
 
-// Lớp chính
-//quản lý panel game, vòng lặp game, và rendering
-public class GamePanel extends JPanel implements Runnable, MouseListener {
-
-    // -- CẤU HÌNH MÀN HÌNH (Giữ nguyên như cũ) --
-    final int originalTileSize = 16;
-    final int scale = 3;
-    public final int tileSize = originalTileSize * scale;
-    final int maxScreenCol = 16;
-    final int maxScreenRow = 12;
-    public final int screenWidth = tileSize * maxScreenCol;
-    public final int screenHeight = tileSize * maxScreenRow;
-
-    // World dimensions
-    public final int worldWidth = 2000;
-    public final int worldHeight = 2000;
-
-    // Enemy management
-    public List<Enemy> enemies = new ArrayList<>();
-
-    // -- THÊM VÀO 3 ÔNG TƯỚNG NÀY --
-    KeyHandler keyH = new KeyHandler();
-    MouseHandler mouseH = new MouseHandler();
-    Thread gameThread;
-    Player player = new Player(this, keyH, mouseH); // Truyền Panel, Bàn phím, Chuột cho Player
-
-    // Checkpoint
-    Checkpoint checkpoint = null;
-
-    // Game over flag
-    public boolean gameOver = false;
-
-    // Kill counter (reset mỗi level)
-    public int killCount = 0;
-
-    // Game state management
-    private GameState currentState;
-
-    // Constructor: Khởi tạo GamePanel
+public class GamePanel extends JPanel implements Runnable {
+    private Thread gameThread;
+    private KeyHandler keyHandler;
+    
+    // Các manager
+    private MapManager mapManager;
+    private ObjectManager objectManager;
+    private CollisionManager collisionManager;
+    
+    // Entity
+    private Player player;
+    private ArrayList<Enemy> enemies;
+    private ArrayList<Bullet> bullets;
+    
+    // Camera (cho map lớn)
+    private int cameraX = 0, cameraY = 0;
+    
+    // Mouse để bắn
+    private int mouseX = 0, mouseY = 0;
+    private boolean mousePressed = false;
+    
+    private Random random;
+    private boolean gameRunning = true;
+    
     public GamePanel() {
-        this.setPreferredSize(new Dimension(screenWidth, screenHeight));
-        this.setBackground(Color.BLUE);
-        this.setDoubleBuffered(true);
-
-        // Initialize state management - start with MenuState
-        currentState = new MenuState(this);
-        currentState.enter();
-
-        // Add mouse listener for button clicks
-        this.addMouseListener(this);
-        // Theo dõi vị trí chuột để ngắm bắn
-        this.addMouseMotionListener(mouseH);
-
+        this.setPreferredSize(new Dimension(GameConfig.SCREEN_WIDTH, GameConfig.SCREEN_HEIGHT));
+        this.setBackground(GameConfig.BACKGROUND_COLOR);
         this.setFocusable(true);
-        this.setFocusTraversalKeysEnabled(false); // Tắt Tab/Shift-Tab cướp focus
-        this.addKeyListener(keyH);
-        // Global dispatcher: bắt key events dù focus ở bất cứ đâu trong JVM
-        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(e -> {
-            if (e.getID() == KeyEvent.KEY_PRESSED)  keyH.keyPressed(e);
-            else if (e.getID() == KeyEvent.KEY_RELEASED) keyH.keyReleased(e);
-            return false;
+        
+        // Khởi tạo input
+        keyHandler = new KeyHandler();
+        this.addKeyListener(keyHandler);
+        
+        // Mouse listener
+        this.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent e) {
+                mousePressed = true;
+                mouseX = e.getX();
+                mouseY = e.getY();
+            }
+            public void mouseReleased(java.awt.event.MouseEvent e) {
+                mousePressed = false;
+            }
         });
-
-        // Spawn checkpoint at map center
-        spawnCheckpoint();
+        
+        this.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
+            public void mouseMoved(java.awt.event.MouseEvent e) {
+                mouseX = e.getX();
+                mouseY = e.getY();
+            }
+        });
+        
+        // Load tài nguyên (nếu có ảnh)
+        AssetManager.loadAllImages();
+        
+        // Khởi tạo game
+        initGame();
     }
-
-    // Khởi động luồng game
-    public void startGameThread() {
-        // Trick Windows: 1 daemon thread sleep mãi → buộc OS giữ timer resolution ở 1ms
-        // (mặc định Windows ~15.6ms khiến Thread.sleep ms-level cực kỳ kém chính xác → giật frame)
-        Thread timerHack = new Thread(() -> {
-            try { Thread.sleep(Long.MAX_VALUE); } catch (InterruptedException ignored) {}
-        }, "WindowsTimerHack");
-        timerHack.setDaemon(true);
-        timerHack.start();
-
+    
+    private void initGame() {
+        // Khởi tạo các manager
+        mapManager = new MapManager();
+        objectManager = new ObjectManager();
+        collisionManager = new CollisionManager(mapManager, objectManager);
+        
+        // Khởi tạo player ở giữa map
+        player = new Player(GameConfig.WORLD_WIDTH / 2, GameConfig.WORLD_HEIGHT / 2, collisionManager);
+        
+        // Khởi tạo quái vật
+        enemies = new ArrayList<>();
+        random = new Random();
+        
+        // Thêm 5 con quái ở các vị trí khác nhau
+        enemies.add(new Enemy(500, 500, player, collisionManager));
+        enemies.add(new Enemy(800, 300, player, collisionManager));
+        enemies.add(new Enemy(300, 800, player, collisionManager));
+        enemies.add(new Enemy(1200, 600, player, collisionManager));
+        enemies.add(new Enemy(1500, 400, player, collisionManager));
+        
+        // Khởi tạo đạn
+        bullets = new ArrayList<>();
+        
+        gameRunning = true;
+    }
+    
+    public void startGame() {
         gameThread = new Thread(this);
         gameThread.start();
-        requestFocusInWindow();
     }
-
-    // Vòng lặp game chính (chạy ở 60 FPS)
+    
     @Override
     public void run() {
-        final double drawInterval = 1_000_000_000.0 / 60; // nanosecond mỗi frame
-        double nextDrawTime = System.nanoTime() + drawInterval;
-
+        double drawInterval = 1000000000.0 / GameConfig.FPS;
+        double delta = 0;
+        long lastTime = System.nanoTime();
+        
         while (gameThread != null) {
-            update();
-
-            // Vẽ ĐỒNG BỘ trên EDT: chặn game thread tới khi paint xong → không có race
-            // condition giữa update() và paintComponent() (state đọc giữa chừng), và biết chính
-            // xác lúc nào sync() flush sẽ có hiệu lực
-            try {
-                SwingUtilities.invokeAndWait(() -> {
-                    if (isShowing()) paintImmediately(0, 0, getWidth(), getHeight());
-                });
-            } catch (InterruptedException e) {
-                break;
-            } catch (java.lang.reflect.InvocationTargetException e) {
-                e.printStackTrace();
-            }
-            // Sau khi EDT đã vẽ xong, flush GDI/back-buffer xuống màn hình → giảm tearing
-            Toolkit.getDefaultToolkit().sync();
-
-            // Sleep đúng phần thời gian còn lại đến frame kế tiếp (không busy-wait, không drift)
-            long remainingNs = (long) (nextDrawTime - System.nanoTime());
-            if (remainingNs > 0) {
-                try {
-                    Thread.sleep(remainingNs / 1_000_000L, (int) (remainingNs % 1_000_000L));
-                } catch (InterruptedException e) {
-                    break;
-                }
-            }
-            nextDrawTime += drawInterval;
-
-            // Nếu bị tụt quá xa (GC pause, OS treo) → reset để tránh catch-up dồn dập
             long now = System.nanoTime();
-            if (now > nextDrawTime + drawInterval) {
-                nextDrawTime = now + drawInterval;
+            delta += (now - lastTime) / drawInterval;
+            lastTime = now;
+            
+            if (delta >= 1) {
+                update();
+                repaint();
+                delta--;
             }
         }
     }
-
-    // Cập nhật trạng thái game mỗi frame
-    public void update() {
-        currentState.update();
-    }
-
-    // Vẽ tất cả các thành phần game
-    @Override
-    public void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        Graphics2D g2 = (Graphics2D) g;
-        // Render hint cho text mượt, không cần đặt mỗi state
-        g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
-                RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-        currentState.draw(g2);
-        // KHÔNG dispose Graphics do Swing cấp — đó là lỗi, dispose sẽ làm hỏng các vẽ tiếp theo
-    }
-
-    // Giới hạn camera không được nhìn thấy ngoài phạm vi map
-    // Clamp thẳng — không có dead zone, tránh camera "nhảy" hàng chục pixel khi tới rìa map
-    public int[] clampCameraPosition(int cameraX, int cameraY) {
-        if (cameraX < 0) cameraX = 0;
-        if (cameraX > worldWidth - screenWidth) cameraX = worldWidth - screenWidth;
-        if (cameraY < 0) cameraY = 0;
-        if (cameraY > worldHeight - screenHeight) cameraY = worldHeight - screenHeight;
-        return new int[]{cameraX, cameraY};
-    }
-
-    // Sinh checkpoint tại vị trí giữa map
-    private void spawnCheckpoint() {
-        checkpoint = new Checkpoint(this, worldWidth / 2 - 40, worldHeight / 2 - 40);
-    }
-
-    // Set a new game state
-    public void setState(GameState newState) {
-        if (currentState != null) {
-            currentState.exit();
-        }
-        currentState = newState;
-        currentState.enter();
-        // Lấy lại focus bàn phím sau mỗi lần chuyển state
-        requestFocusInWindow();
-    }
-
-    // MouseListener methods
-    @Override
-    public void mouseClicked(MouseEvent e) {
-        currentState.handleMouseClick(e);
-    }
-
-    @Override
-    public void mousePressed(MouseEvent e) {}
-
-    @Override
-    public void mouseReleased(MouseEvent e) {}
-
-    @Override
-    public void mouseEntered(MouseEvent e) {}
-
-    @Override
-    public void mouseExited(MouseEvent e) {}
-
-    // Kiểm tra va chạm giữa player và enemies
-    public void checkCollisions() {
-        // Check player-enemy collisions
-        for (Enemy enemy : enemies) {
-            if (player.worldX + 80 > enemy.worldX &&
-                player.worldX < enemy.worldX + 80 &&
-                player.worldY + 80 > enemy.worldY &&
-                player.worldY < enemy.worldY + 80) {
-                // Player hit by enemy
-                player.health -= 1;
+    
+    private void update() {
+        if (!gameRunning) {
+            // Xử lý restart
+            if (keyHandler.restartPressed) {
+                initGame();
             }
-
-            // Check player bullets hitting enemy
-            for (int i = 0; i < player.bullets.size(); i++) {
-                Bullet bullet = player.bullets.get(i);
-                if (bullet.worldX + 10 > enemy.worldX &&
-                    bullet.worldX < enemy.worldX + 80 &&
-                    bullet.worldY + 10 > enemy.worldY &&
-                    bullet.worldY < enemy.worldY + 80) {
-                    // Enemy hit by player bullet
-                    enemy.health -= 35;
-                    player.bullets.remove(i);
-                    i--;
+            return;
+        }
+        
+        // ===== 1. XỬ LÝ DI CHUYỂN PLAYER =====
+        int dx = 0, dy = 0;
+        if (keyHandler.upPressed) dy -= 1;
+        if (keyHandler.downPressed) dy += 1;
+        if (keyHandler.leftPressed) dx -= 1;
+        if (keyHandler.rightPressed) dx += 1;
+        
+        // Cập nhật hướng player dựa trên vị trí chuột
+        if (mouseX >= 0 && mouseX <= GameConfig.SCREEN_WIDTH) {
+            int centerX = (int)player.getX() + GameConfig.PLAYER_SIZE/2 - cameraX;
+            int centerY = (int)player.getY() + GameConfig.PLAYER_SIZE/2 - cameraY;
+            
+            if (Math.abs(mouseX - centerX) > Math.abs(mouseY - centerY)) {
+                player.setDirection(mouseX > centerX ? "right" : "left");
+            } else {
+                player.setDirection(mouseY > centerY ? "down" : "up");
+            }
+        }
+        
+        // Di chuyển player
+        if (dx != 0 || dy != 0) {
+            double length = Math.sqrt(dx*dx + dy*dy);
+            dx = (int)Math.round(dx / length * GameConfig.PLAYER_SPEED);
+            dy = (int)Math.round(dy / length * GameConfig.PLAYER_SPEED);
+            player.move(dx, dy);
+        }
+        
+        // ===== 2. XỬ LÝ BẮN ĐẠN =====
+        if (mousePressed && player.canShoot() && gameRunning) {
+            // Tính góc từ player đến chuột
+            int playerCenterX = (int)player.getX() + GameConfig.PLAYER_SIZE/2;
+            int playerCenterY = (int)player.getY() + GameConfig.PLAYER_SIZE/2;
+            int targetX = mouseX + cameraX;
+            int targetY = mouseY + cameraY;
+            
+            double angle = Math.atan2(targetY - playerCenterY, targetX - playerCenterX);
+            
+            Bullet bullet = new Bullet(
+                player.getX() + GameConfig.PLAYER_SIZE/2 - GameConfig.BULLET_SIZE/2,
+                player.getY() + GameConfig.PLAYER_SIZE/2 - GameConfig.BULLET_SIZE/2,
+                angle, false, collisionManager
+            );
+            bullets.add(bullet);
+            player.shotFired();
+        }
+        
+        // ===== 3. CẬP NHẬT ĐẠN =====
+        for (int i = 0; i < bullets.size(); i++) {
+            Bullet bullet = bullets.get(i);
+            bullet.update();
+            
+            // Xóa đạn ra khỏi map
+            if (bullet.isOutOfBounds()) {
+                bullets.remove(i);
+                i--;
+                continue;
+            }
+            
+            // Đạn player chạm quái
+            if (!bullet.isFromEnemy()) {
+                for (int j = 0; j < enemies.size(); j++) {
+                    Enemy enemy = enemies.get(j);
+                    if (bullet.getHitbox().intersects(enemy.getHitbox())) {
+                        enemy.takeDamage(25);
+                        bullets.remove(i);
+                        i--;
+                        break;
+                    }
                 }
             }
-
-            // Check enemy bullets hitting player
-            for (int i = 0; i < enemy.bullets.size(); i++) {
-                Bullet bullet = enemy.bullets.get(i);
-                if (bullet.worldX + 10 > player.worldX &&
-                    bullet.worldX < player.worldX + 80 &&
-                    bullet.worldY + 10 > player.worldY &&
-                    bullet.worldY < player.worldY + 80) {
-                    // Player hit by enemy bullet
-                    player.health -= 10;
-                    enemy.bullets.remove(i);
+            
+            // Đạn quái chạm player
+            if (bullet.isFromEnemy()) {
+                if (bullet.getHitbox().intersects(player.getHitbox())) {
+                    player.takeDamage(10);
+                    bullets.remove(i);
                     i--;
                 }
             }
         }
-
-        // Remove dead enemies and count kills
+        
+        // ===== 4. XÓA QUÁI CHẾT =====
         for (int i = 0; i < enemies.size(); i++) {
-            if (enemies.get(i).health <= 0) {
+            if (!enemies.get(i).isAlive()) {
                 enemies.remove(i);
-                killCount++;
                 i--;
             }
         }
+        
+        // ===== 5. CẬP NHẬT QUÁI VẬT =====
+        for (Enemy enemy : enemies) {
+            enemy.update();
+            
+            // Quái bắn đạn
+            if (enemy.canShoot() && enemy.isInRange(player) && gameRunning) {
+                double angle = Math.atan2(
+                    player.getY() - enemy.getY(),
+                    player.getX() - enemy.getX()
+                );
+                
+                Bullet bullet = new Bullet(
+                    enemy.getX() + GameConfig.ENEMY_SIZE/2 - GameConfig.BULLET_SIZE/2,
+                    enemy.getY() + GameConfig.ENEMY_SIZE/2 - GameConfig.BULLET_SIZE/2,
+                    angle, true, collisionManager
+                );
+                bullets.add(bullet);
+                enemy.shotFired();
+            }
+        }
+        
+        // ===== 6. CẬP NHẬT COOLDOWN =====
+        player.updateCooldown();
+        for (Enemy enemy : enemies) {
+            enemy.updateCooldown();
+        }
+        
+        // ===== 7. KIỂM TRA GAME OVER =====
+        if (!player.isAlive()) {
+            gameRunning = false;
+        }
+        
+        // ===== 8. CẬP NHẬT CAMERA =====
+        cameraX = (int)player.getX() - GameConfig.SCREEN_WIDTH / 2;
+        cameraY = (int)player.getY() - GameConfig.SCREEN_HEIGHT / 2;
+        
+        // Giới hạn camera trong map
+        cameraX = Math.max(0, Math.min(cameraX, GameConfig.WORLD_WIDTH - GameConfig.SCREEN_WIDTH));
+        cameraY = Math.max(0, Math.min(cameraY, GameConfig.WORLD_HEIGHT - GameConfig.SCREEN_HEIGHT));
     }
-
+    
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        Graphics2D g2 = (Graphics2D) g;
+        
+        // Vẽ map (nền và tường)
+        mapManager.draw(g2, cameraX, cameraY);
+        
+        // Vẽ vật thể (bàn, ghế, tủ)
+        objectManager.draw(g2, cameraX, cameraY);
+        
+        // Vẽ quái vật
+        for (Enemy enemy : enemies) {
+            enemy.draw(g2, cameraX, cameraY);
+        }
+        
+        // Vẽ đạn
+        for (Bullet bullet : bullets) {
+            bullet.draw(g2, cameraX, cameraY);
+        }
+        
+        // Vẽ player
+        player.draw(g2, cameraX, cameraY);
+        
+        // Vẽ UI
+        drawUI(g2);
+        
+        g2.dispose();
+    }
+    
+    private void drawUI(Graphics2D g2) {
+        // Khung UI
+        g2.setColor(new Color(0, 0, 0, 180));
+        g2.fillRect(0, 0, GameConfig.SCREEN_WIDTH, 100);
+        
+        // Thanh máu
+        g2.setColor(Color.RED);
+        g2.fillRect(10, 15, 200, 20);
+        g2.setColor(Color.GREEN);
+        int healthPercent = (player.getHealth() * 200) / player.getMaxHealth();
+        g2.fillRect(10, 15, healthPercent, 20);
+        g2.setColor(Color.WHITE);
+        g2.drawRect(10, 15, 200, 20);
+        
+        // Text máu
+        g2.setFont(new Font("Arial", Font.BOLD, 14));
+        g2.setColor(Color.WHITE);
+        g2.drawString("Health: " + player.getHealth() + "/" + player.getMaxHealth(), 15, 32);
+        
+        // Số quái còn lại
+        g2.drawString("Enemies: " + enemies.size(), 10, 60);
+        
+        // Hướng dẫn
+        g2.setFont(new Font("Arial", Font.PLAIN, 12));
+        g2.drawString("WASD: Move | Mouse: Aim | Left Click: Shoot | R: Restart", 10, 85);
+        
+        // Tọa độ (debug)
+        if (GameConfig.DEBUG_MODE) {
+            g2.setColor(Color.YELLOW);
+            g2.drawString("Position: " + (int)player.getX() + ", " + (int)player.getY(), 
+                         GameConfig.SCREEN_WIDTH - 200, 20);
+            g2.drawString("Camera: " + cameraX + ", " + cameraY, 
+                         GameConfig.SCREEN_WIDTH - 200, 40);
+            g2.drawString("Bullets: " + bullets.size(), 
+                         GameConfig.SCREEN_WIDTH - 200, 60);
+        }
+        
+        // Game Over
+        if (!gameRunning) {
+            g2.setFont(new Font("Arial", Font.BOLD, 48));
+            g2.setColor(Color.RED);
+            String gameOver = "GAME OVER! Press R to restart";
+            int width = g2.getFontMetrics().stringWidth(gameOver);
+            g2.drawString(gameOver, GameConfig.SCREEN_WIDTH/2 - width/2, GameConfig.SCREEN_HEIGHT/2);
+        }
+    }
 }
