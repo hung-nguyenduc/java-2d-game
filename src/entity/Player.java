@@ -260,8 +260,8 @@ public class Player extends Entity {
 //        g2.setTransform(original);
 //    }
     private void drawWeapon(Graphics2D g2, int screenX, int screenY) {
-        int centerX = screenX + 40;
-        int centerY = screenY + 40;
+        int centerX = screenX + 43;
+        int centerY = screenY + 45;
 
         // Giả sử tâm xoay (báng súng) nằm ở tọa độ (10, 20) trên ảnh
         int pivotX = 10;
