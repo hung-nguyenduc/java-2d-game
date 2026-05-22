@@ -65,6 +65,8 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
         this.addMouseListener(this);
         // Theo dõi vị trí chuột để ngắm bắn
         this.addMouseMotionListener(mouseH);
+        // Xử lý sự kiện click chuột (bắn)
+        this.addMouseListener(mouseH);
 
         this.setFocusable(true);
         this.setFocusTraversalKeysEnabled(false); // Tắt Tab/Shift-Tab cướp focus

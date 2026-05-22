@@ -123,12 +123,13 @@ public class Player extends Entity {
         double dy = mouseH.mouseY - playerCenterScreenY;
         aimAngle = Math.toDegrees(Math.atan2(dy, dx));
 
-        // Bắn liên tục theo hướng chuột
+        // Bắn chỉ khi bấm chuột trái
         shootCooldown++;
-        if (shootCooldown >= shootInterval) {
+        if (mouseH.leftMousePressed && shootCooldown >= shootInterval) {
             shoot();
             shootCooldown = 0;
         }
+
 
         // Update bullets
         for (int i = 0; i < bullets.size(); i++) {
