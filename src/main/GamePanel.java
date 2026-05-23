@@ -27,8 +27,8 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
     public final int screenHeight = tileSize * maxScreenRow;
 
     // World dimensions
-    public final int worldWidth = 2000;
-    public final int worldHeight = 2000;
+    public int worldWidth = 2000;
+    public int worldHeight = 2000;
 
     // Enemy management
     public List<Enemy> enemies = new ArrayList<>();
@@ -250,6 +250,60 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
                 i--;
             }
         }
+        // Lấy danh sách vật cản từ State hiện tại (nếu có)
+        List<Obstacle> currentObstacles = new ArrayList<>();
+        if (currentState instanceof ZombieState) {
+            currentObstacles = ((ZombieState) currentState).getObstacles();
+        }
+
+        // --- 1. XỬ LÝ VA CHẠM VỚI VẬT CẢN (OBSTACLE) ---
+        for (Obstacle obs : currentObstacles) {
+            Rectangle obsBounds = obs.getBounds();
+
+            // Va chạm giữa Player và Vật cản
+            Rectangle playerBounds = new Rectangle((int)player.worldX, (int)player.worldY, 80, 80); // Giả định Player size 80x80 dựa theo code cũ
+            if (playerBounds.intersects(obsBounds)) {
+                // Đẩy Player lùi lại dựa trên phím vừa ấn (Ngăn đi xuyên tường)
+                if (keyH.upPressed)    player.worldY += player.speed;
+                if (keyH.downPressed)  player.worldY -= player.speed;
+                if (keyH.leftPressed)  player.worldX += player.speed;
+                if (keyH.rightPressed) player.worldX -= player.speed;
+            }
+
+            // Va chạm giữa Đạn của Player và Vật cản (Trúng tường thì mất đạn)
+            for (int i = 0; i < player.bullets.size(); i++) {
+                Bullet bullet = player.bullets.get(i);
+                Rectangle bulletBounds = new Rectangle((int) bullet.worldX, (int)bullet.worldY, 10, 10);
+                if (bulletBounds.intersects(obsBounds)) {
+                    player.bullets.remove(i);
+                    i--;
+                }
+            }
+
+            // Va chạm giữa Quái (Enemy) và Vật cản
+            for (Enemy enemy : enemies) {
+                Rectangle enemyBounds = new Rectangle((int)enemy.worldX, (int)enemy.worldY, 80, 80);
+                if (enemyBounds.intersects(obsBounds)) {
+                    // Đẩy quái lùi lại để không kẹt vào tường (Tùy thuộc vào cách AI của bạn di chuyển)
+                    // Cách đơn giản nhất: Đẩy quái ra xa tâm của vật cản một chút
+                    if (enemy.worldX < obs.worldX) enemy.worldX -= 2;
+                    else enemy.worldX += 2;
+                    if (enemy.worldY < obs.worldY) enemy.worldY -= 2;
+                    else enemy.worldY += 2;
+                }
+
+                // Va chạm giữa Đạn của Quái và Vật cản
+                for (int i = 0; i < enemy.bullets.size(); i++) {
+                    Bullet bullet = enemy.bullets.get(i);
+                    Rectangle bulletBounds = new Rectangle((int)bullet.worldX, (int)bullet.worldY, 10, 10);
+                    if (bulletBounds.intersects(obsBounds)) {
+                        enemy.bullets.remove(i);
+                        i--;
+                    }
+                }
+            }
+        }
+
     }
 
 }
