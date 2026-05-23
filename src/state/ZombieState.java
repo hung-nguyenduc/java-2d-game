@@ -76,14 +76,14 @@ public class ZombieState extends GameState {
         gp.player.health = gp.player.maxHealth;
         gp.player.bullets.clear();
 
-        this.obstacles = ObstacleManager.loadObstacles("/maps/obstacles.txt", this.scale);
+        this.obstacles = ObstacleManager.loadObstacles("/maps/ktx_obstacles.txt", this.scale);
         spawnEnemies();
     }
 //    private void initObstacles() {
 //        obstacles.clear(); // Xóa sạch danh sách cũ
 //
 //        // Đường dẫn đến file chứa tọa độ (đặt trong thư mục resource của bạn)
-//        String filePath = "/maps/obstacles.txt";
+//        String filePath = "/maps/ktx_obstacles.txt";
 //
 //        try {
 //            // Đọc file dưới dạng Stream từ thư mục resource (giống cách bạn đọc ảnh ktx.png)

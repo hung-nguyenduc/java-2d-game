@@ -5,6 +5,7 @@ import entity.Player; // Nhớ import package entity
 import entity.Enemy; // Import Enemy class
 import entity.Checkpoint; // Import Checkpoint class
 import state.GameState;
+import state.KTXState;
 import state.Level2State;
 import state.MenuState;
 
@@ -60,7 +61,7 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
         this.setDoubleBuffered(true);
 
         // Initialize state management - start with MenuState
-        currentState = new Menu(this);
+        currentState = new KTXState(this);
         currentState.enter();
 
         // Add mouse listener for button clicks

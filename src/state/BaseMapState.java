@@ -21,7 +21,7 @@ public class BaseMapState extends GameState {
     // KHU VỰC CẤU HÌNH (BẠN CHỈ CẦN CHỈNH SỬA CÁC THAM SỐ TẠI ĐÂY)
     // =========================================================================
     private static final String MAP_PATH = "/maps/ktx.png";         // Đường dẫn ảnh Map
-    private static final String OBSTACLES_PATH = "/maps/obstacles.txt"; // Đường dẫn file vật cản
+    private static final String OBSTACLES_PATH = "/maps/ktx_obstacles.txt"; // Đường dẫn file vật cản
     private static final double MAP_SCALE = 1.0 / 2.5;              // Tỷ lệ thu nhỏ map (Ví dụ: 1.0 / 2.5)
 
     // Cấu hình tính năng gameplay của Map
