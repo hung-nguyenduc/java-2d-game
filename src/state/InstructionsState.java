@@ -1,13 +1,15 @@
-package main;
+package state;
+
+import main.GamePanel;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
 
-// GameState for game info
-public class InfoState extends GameState {
+// GameState for instructions
+public class InstructionsState extends GameState {
     private Rectangle backButton = new Rectangle(300, 500, 200, 50);
 
-    public InfoState(GamePanel gp) {
+    public InstructionsState(GamePanel gp) {
         super(gp);
     }
 
@@ -23,7 +25,7 @@ public class InfoState extends GameState {
 
     @Override
     public void update() {
-        // No updates needed for info screen
+        // No updates needed for instructions screen
     }
 
     @Override
@@ -35,18 +37,17 @@ public class InfoState extends GameState {
         // Draw title
         g2.setColor(Color.WHITE);
         g2.setFont(new Font("Arial", Font.BOLD, 36));
-        g2.drawString("Thông tin game", 250, 100);
+        g2.drawString("Hướng dẫn", 300, 100);
 
-        // Draw storyline
+        // Draw instructions
         g2.setFont(new Font("Arial", Font.PLAIN, 24));
-        g2.drawString("Cốt truyện:", 150, 160);
-        g2.setFont(new Font("Arial", Font.PLAIN, 20));
-        g2.drawString("Trong một thế giới bị zombie xâm chiếm,", 150, 210);
-        g2.drawString("bạn phải điều hướng qua các màn chơi,", 150, 240);
-        g2.drawString("đánh bại kẻ thù, và đạt đến checkpoint", 150, 270);
-        g2.drawString("để sinh tồn. Sử dụng kỹ năng bắn súng", 150, 300);
-        g2.drawString("và di chuyển thông minh để chiến thắng", 150, 330);
-        g2.drawString("tất cả các màn chơi và cứu thế giới!", 150, 360);
+        g2.drawString("Sử dụng các phím mũi tên để di chuyển:", 150, 200);
+        g2.drawString("↑: Lên", 200, 250);
+        g2.drawString("↓: Xuống", 200, 280);
+        g2.drawString("←: Trái", 200, 310);
+        g2.drawString("→: Phải", 200, 340);
+        g2.drawString("Di chuột để ngắm, đạn bắn tự động liên tục.", 150, 400);
+        g2.drawString("Tiêu diệt tất cả kẻ thù để đạt checkpoint!", 150, 430);
 
         // Draw back button
         drawButton(g2, backButton, "Quay lại");

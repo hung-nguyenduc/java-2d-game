@@ -1,9 +1,12 @@
 package main;
 
+import collision.CollisionChecker;
 import entity.Player; // Nhớ import package entity
 import entity.Enemy; // Import Enemy class
-import entity.Bullet; // Import Bullet class
 import entity.Checkpoint; // Import Checkpoint class
+import state.GameState;
+import state.Level2State;
+import state.MenuState;
 
 import javax.swing.*;
 import java.awt.*;
@@ -33,13 +36,12 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
     // Enemy management
     public List<Enemy> enemies = new ArrayList<>();
 
-    // -- THÊM VÀO 3 ÔNG TƯỚNG NÀY --
-    KeyHandler keyH = new KeyHandler();
-    MouseHandler mouseH = new MouseHandler();
+    public KeyHandler keyH = new KeyHandler();
+    public MouseHandler mouseH = new MouseHandler();
     Thread gameThread;
-    Player player = new Player(this, keyH, mouseH); // Truyền Panel, Bàn phím, Chuột cho Player
+    public Player player = new Player(this, keyH, mouseH); // Truyền Panel, Bàn phím, Chuột cho Player
+    CollisionChecker cChecker = new CollisionChecker(this);
 
-    // Checkpoint
     Checkpoint checkpoint = null;
 
     // Game over flag
@@ -51,14 +53,14 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
     // Game state management
     private GameState currentState;
 
-    // Constructor: Khởi tạo GamePanel
+
     public GamePanel() {
         this.setPreferredSize(new Dimension(screenWidth, screenHeight));
         this.setBackground(Color.BLUE);
         this.setDoubleBuffered(true);
 
         // Initialize state management - start with MenuState
-        currentState = new MenuState(this);
+        currentState = new Menu(this);
         currentState.enter();
 
         // Add mouse listener for button clicks
@@ -71,6 +73,7 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
         this.setFocusable(true);
         this.setFocusTraversalKeysEnabled(false); // Tắt Tab/Shift-Tab cướp focus
         this.addKeyListener(keyH);
+
         // Global dispatcher: bắt key events dù focus ở bất cứ đâu trong JVM
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(e -> {
             if (e.getID() == KeyEvent.KEY_PRESSED)  keyH.keyPressed(e);
@@ -168,7 +171,7 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
     }
 
     // Sinh checkpoint tại vị trí giữa map
-    private void spawnCheckpoint() {
+    public void spawnCheckpoint() {
         checkpoint = new Checkpoint(this, worldWidth / 2 - 40, worldHeight / 2 - 40);
     }
 
@@ -182,7 +185,10 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
         // Lấy lại focus bàn phím sau mỗi lần chuyển state
         requestFocusInWindow();
     }
-
+    // Trong GamePanel.java
+    public void checkCollisions() {
+        cChecker.checkAllCollisions();
+    }
     // MouseListener methods
     @Override
     public void mouseClicked(MouseEvent e) {
@@ -201,111 +207,7 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
     @Override
     public void mouseExited(MouseEvent e) {}
 
-    // Kiểm tra va chạm giữa player và enemies
-    public void checkCollisions() {
-        // Check player-enemy collisions
-        for (Enemy enemy : enemies) {
-            if (player.worldX + 80 > enemy.worldX &&
-                player.worldX < enemy.worldX + 80 &&
-                player.worldY + 80 > enemy.worldY &&
-                player.worldY < enemy.worldY + 80) {
-                // Player hit by enemy
-                player.health -= 1;
-            }
-
-            // Check player bullets hitting enemy
-            for (int i = 0; i < player.bullets.size(); i++) {
-                Bullet bullet = player.bullets.get(i);
-                if (bullet.worldX + 10 > enemy.worldX &&
-                    bullet.worldX < enemy.worldX + 80 &&
-                    bullet.worldY + 10 > enemy.worldY &&
-                    bullet.worldY < enemy.worldY + 80) {
-                    // Enemy hit by player bullet
-                    enemy.health -= 35;
-                    player.bullets.remove(i);
-                    i--;
-                }
-            }
-
-            // Check enemy bullets hitting player
-            for (int i = 0; i < enemy.bullets.size(); i++) {
-                Bullet bullet = enemy.bullets.get(i);
-                if (bullet.worldX + 10 > player.worldX &&
-                    bullet.worldX < player.worldX + 80 &&
-                    bullet.worldY + 10 > player.worldY &&
-                    bullet.worldY < player.worldY + 80) {
-                    // Player hit by enemy bullet
-                    player.health -= 10;
-                    enemy.bullets.remove(i);
-                    i--;
-                }
-            }
-        }
-
-        // Remove dead enemies and count kills
-        for (int i = 0; i < enemies.size(); i++) {
-            if (enemies.get(i).health <= 0) {
-                enemies.remove(i);
-                killCount++;
-                i--;
-            }
-        }
-        // Lấy danh sách vật cản từ State hiện tại (nếu có)
-//        List<Obstacle> currentObstacles = new ArrayList<>();
-//        if (currentState instanceof ZombieState) {
-//            currentObstacles = ((ZombieState) currentState).getObstacles();
-//        }
-
-        List<Obstacle> currentObstacles = currentState.getObstacles();
-
-        // --- 1. XỬ LÝ VA CHẠM VỚI VẬT CẢN (OBSTACLE) ---
-        for (Obstacle obs : currentObstacles) {
-            Rectangle obsBounds = obs.getBounds();
-
-            // Va chạm giữa Player và Vật cản
-            Rectangle playerBounds = new Rectangle((int)player.worldX, (int)player.worldY, 80, 80); // Giả định Player size 80x80 dựa theo code cũ
-            if (playerBounds.intersects(obsBounds)) {
-                // Đẩy Player lùi lại dựa trên phím vừa ấn (Ngăn đi xuyên tường)
-                if (keyH.upPressed)    player.worldY += player.speed;
-                if (keyH.downPressed)  player.worldY -= player.speed;
-                if (keyH.leftPressed)  player.worldX += player.speed;
-                if (keyH.rightPressed) player.worldX -= player.speed;
-            }
-
-            // Va chạm giữa Đạn của Player và Vật cản (Trúng tường thì mất đạn)
-            for (int i = 0; i < player.bullets.size(); i++) {
-                Bullet bullet = player.bullets.get(i);
-                Rectangle bulletBounds = new Rectangle((int) bullet.worldX, (int)bullet.worldY, 10, 10);
-                if (bulletBounds.intersects(obsBounds)) {
-                    player.bullets.remove(i);
-                    i--;
-                }
-            }
-
-            // Va chạm giữa Quái (Enemy) và Vật cản
-            for (Enemy enemy : enemies) {
-                Rectangle enemyBounds = new Rectangle((int)enemy.worldX, (int)enemy.worldY, 80, 80);
-                if (enemyBounds.intersects(obsBounds)) {
-                    // Đẩy quái lùi lại để không kẹt vào tường (Tùy thuộc vào cách AI của bạn di chuyển)
-                    // Cách đơn giản nhất: Đẩy quái ra xa tâm của vật cản một chút
-                    if (enemy.worldX < obs.worldX) enemy.worldX -= 2;
-                    else enemy.worldX += 2;
-                    if (enemy.worldY < obs.worldY) enemy.worldY -= 2;
-                    else enemy.worldY += 2;
-                }
-
-                // Va chạm giữa Đạn của Quái và Vật cản
-                for (int i = 0; i < enemy.bullets.size(); i++) {
-                    Bullet bullet = enemy.bullets.get(i);
-                    Rectangle bulletBounds = new Rectangle((int)bullet.worldX, (int)bullet.worldY, 10, 10);
-                    if (bulletBounds.intersects(obsBounds)) {
-                        enemy.bullets.remove(i);
-                        i--;
-                    }
-                }
-            }
-        }
-
+    public GameState getCurrentState() {
+        return currentState;
     }
-
 }

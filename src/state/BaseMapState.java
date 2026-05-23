@@ -1,6 +1,9 @@
-package main;
+package state;
 
 import entity.Enemy;
+import main.GamePanel;
+import collision.Obstacle;
+
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -172,7 +175,7 @@ public class BaseMapState extends GameState {
                 gp.setState(new LevelCompleteState(gp, CURRENT_LEVEL_NUMBER, NEXT_LEVEL_STATE));
             }
         }
-        gp.checkCollisions();
+        //.checkCollisions();
     }
 
     @Override

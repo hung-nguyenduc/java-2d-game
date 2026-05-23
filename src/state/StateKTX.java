@@ -1,4 +1,6 @@
-package main;
+package state;
+
+import main.GamePanel;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;

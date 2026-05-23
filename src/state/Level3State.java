@@ -1,7 +1,9 @@
-package main;
+package state;
 
 import entity.Door;
 import entity.Enemy;
+import main.GamePanel;
+
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;

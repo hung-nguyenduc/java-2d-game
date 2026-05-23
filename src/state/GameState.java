@@ -1,4 +1,7 @@
-package main;
+package state;
+
+import main.GamePanel;
+import collision.Obstacle;
 
 import java.awt.Graphics2D;
 import java.awt.event.MouseEvent;

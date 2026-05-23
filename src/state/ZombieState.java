@@ -1,6 +1,10 @@
-package main;
+package state;
 
+import collision.CollisionChecker;
 import entity.Enemy;
+import main.*;
+import collision.Obstacle;
+import collision.ObstacleManager;
 
 //import java.awt.*;
 import java.awt.*;
@@ -17,7 +21,7 @@ public class ZombieState extends GameState {
     private static final String MAP_PATH = "/maps/ktx.png";
     private static final Font HUD_FONT = new Font("Arial", Font.BOLD, 20);
     private List<Obstacle> obstacles;
-
+    private CollisionChecker collisionChecker;
     public ZombieState(GamePanel gp) {
         super(gp);
         obstacles = new ArrayList<>();
@@ -143,8 +147,8 @@ public class ZombieState extends GameState {
         for (int i = 0; i < gp.enemies.size(); i++) {
             gp.enemies.get(i).update();
         }
+        //collisionChecker.checkAllCollisions();
         gp.checkCollisions();
-
         if (gp.player.health <= 0) {
             gp.setState(new GameOverState(gp));
             return;

@@ -145,7 +145,7 @@ public class Player extends Entity {
     }
 
     // Giới hạn vị trí nhân vật không cho phép vượt ra ngoài map
-    private void clampPlayerPosition() {
+    public void clampPlayerPosition() {
         // Player size is 80x80
         int playerSize = 80;
 
