@@ -22,7 +22,7 @@ Vừa ngồi vào bản, Vũ đã phải chạm trán thử thách đầu tiên:
 
 - Nếu đỗ --> qua năm 2
 
-- Nếu trượt --> chưa tày --> đuổi học
+- Nếu trượt --> chưa tày --> đuổi học. Chuyển cảnh: Vũ bị bảo vệ trường bế ra khỏi cổng Parabol. Vũ quyết định về quê nuôi cá và trồng thêm rau.
  
 - ![img.png](img.png)
 

@@ -1,24 +1,24 @@
-package main;
+package state;
 
-import entity.Enemy;
+import main.GamePanel;
+
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import javax.imageio.ImageIO;
 
-public class ZombieState extends GameState {
-    private Image mapImage; // GPU-friendly compatible image
-    private static final String MAP_PATH = "/maps/c1.png";
+public class StateKTX extends GameState {
+    private Image mapImage;
+    private static final String MAP_PATH = "/maps/ktx.png";
     private static final Font HUD_FONT = new Font("Arial", Font.BOLD, 20);
 
-    public ZombieState(GamePanel gp) {
+    public StateKTX(GamePanel gp) {
         super(gp);
     }
 
     @Override
     public void enter() {
-        // Pre-scale map một lần duy nhất → mỗi frame chỉ blit vùng nhìn thấy (GPU accelerated)
         try {
             BufferedImage src = ImageIO.read(getClass().getResourceAsStream(MAP_PATH));
             GraphicsConfiguration gc = GraphicsEnvironment.getLocalGraphicsEnvironment()
@@ -32,34 +32,17 @@ public class ZombieState extends GameState {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        gp.enemies.clear();
-        gp.killCount = 0;
-        gp.player.health = gp.player.maxHealth;
-        gp.player.bullets.clear();
-        spawnEnemies();
     }
 
     @Override
     public void exit() {
-        gp.enemies.clear();
+        // Không cần dọn dẹp quái vật nữa
     }
 
     @Override
     public void update() {
+        // Chỉ cập nhật di chuyển của người chơi, không check va chạm sát thương hay Game Over
         gp.player.update();
-        for (int i = 0; i < gp.enemies.size(); i++) {
-            gp.enemies.get(i).update();
-        }
-        gp.checkCollisions();
-
-        if (gp.player.health <= 0) {
-            gp.setState(new GameOverState(gp));
-            return;
-        }
-
-        if (gp.killCount >= 3) {
-            gp.setState(new LevelCompleteState(gp, 1, new Level2State(gp)));
-        }
     }
 
     @Override
@@ -70,28 +53,23 @@ public class ZombieState extends GameState {
         cameraX = clamped[0];
         cameraY = clamped[1];
 
-        // Chỉ copy vùng camera nhìn thấy (~768×576) thay vì toàn bộ 2000×2000
+        // Vẽ bản đồ
         g2.drawImage(mapImage,
-            0, 0, gp.screenWidth, gp.screenHeight,
-            cameraX, cameraY, cameraX + gp.screenWidth, cameraY + gp.screenHeight,
-            null);
+                0, 0, gp.screenWidth, gp.screenHeight,
+                cameraX, cameraY, cameraX + gp.screenWidth, cameraY + gp.screenHeight,
+                null);
 
+        // Chỉ vẽ duy nhất nhân vật người chơi
         gp.player.draw(g2, cameraX, cameraY);
-        for (Enemy enemy : gp.enemies) {
-            enemy.draw(g2, cameraX, cameraY);
-        }
 
-        g2.setColor(Color.WHITE);
-        g2.setFont(HUD_FONT);
-        g2.drawString("Man 1 - Giet quai: " + gp.killCount + " / 3", 10, 30);
-    }
-
-    private void spawnEnemies() {
-        gp.enemies.add(new Enemy(gp, gp.player, 300, 300, 0));
-        gp.enemies.add(new Enemy(gp, gp.player, 800, 500, 1));
-        gp.enemies.add(new Enemy(gp, gp.player, 1200, 700, 2));
+        // Hiển thị UI text đơn giản, không hiển thị thanh máu hay số quái
+//        g2.setColor(Color.WHITE);
+//        g2.setFont(HUD_FONT);
+//        g2.drawString("Che do: Kham pha khu vuc", 10, 30);
     }
 
     @Override
     public void handleMouseClick(MouseEvent e) {}
+
+
 }

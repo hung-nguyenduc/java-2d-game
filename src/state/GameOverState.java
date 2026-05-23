@@ -1,10 +1,11 @@
-package main;
+package state;
+
+import main.GamePanel;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 
 public class GameOverState extends GameState {

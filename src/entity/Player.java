@@ -36,15 +36,18 @@ public class Player extends Entity {
 
     // Thiết lập giá trị mặc định cho Player
     public void setDefaultValues() {
-        worldX = 1000;
-        worldY = 1000;
-        speed = 9;
+//        worldX = 1000;
+//        worldY = 1000;
+        speed = 5;
         aimAngle = 0;
         maxHealth = 30000;
         health = maxHealth;
         direction = "down";
     }
-
+    public void spawnAtCenter() {
+        this.worldX = gp.worldWidth / 2.0 - 40;  // 40 là nửa kích thước Player (80/2)
+        this.worldY = gp.worldHeight / 2.0 - 40;
+    }
     // Tải hình ảnh của Player
     public void getPlayerImage() {
         try {
@@ -142,7 +145,7 @@ public class Player extends Entity {
     }
 
     // Giới hạn vị trí nhân vật không cho phép vượt ra ngoài map
-    private void clampPlayerPosition() {
+    public void clampPlayerPosition() {
         // Player size is 80x80
         int playerSize = 80;
 

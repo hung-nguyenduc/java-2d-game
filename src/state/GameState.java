@@ -1,4 +1,7 @@
-package main;
+package state;
+
+import main.GamePanel;
+import collision.Obstacle;
 
 import java.awt.Graphics2D;
 import java.awt.event.MouseEvent;
@@ -26,4 +29,9 @@ public abstract class GameState {
 
     // Handle mouse clicks (e.g., for menu buttons)
     public abstract void handleMouseClick(MouseEvent e);
+
+    // Thêm hàm này vào file GameState.java
+    public java.util.List<Obstacle> getObstacles() {
+        return new java.util.ArrayList<>();
+    }
 }
