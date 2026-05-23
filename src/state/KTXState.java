@@ -16,12 +16,20 @@ public class KTXState extends GameState {
     private static final String MAP_IMAGE_PATH = "/maps/ktx.png";
     private static final String OBSTACLE_TXT_PATH = "/maps/ktx_obstacles.txt";
     private static final double MAP_SCALE = 1.0 / 2.5; // Tỷ lệ thu phóng map
-
+    private DialogueManager dialogueBox;
     private Image mapImage;
     private List<Obstacle> obstacles = new ArrayList<>();
 
     public KTXState(GamePanel gp) {
         super(gp);
+        dialogueBox = new DialogueManager() {
+            @Override
+            public void onDialogueComplete() {
+                // ĐÂY LÀ NƠI XỬ LÝ KHI ĐỌC HẾT THOẠI:
+                // Ví dụ: Cho phép Vũ bước ra khỏi cổng Parabol hoặc đổi sang State tiếp theo luôn!
+                // gp.setState(new StateKTX(gp));
+            }
+        };
     }
 
     @Override
@@ -65,6 +73,17 @@ public class KTXState extends GameState {
 
         // Bật nhạc nền riêng của màn này
         // gp.sound.playMusic("level3_theme");
+
+        String[] script = {
+                "Giới thiệu nhân vật:\nĐây là Vũ, tân sinh viên Bách Khoa K36.",
+                "Vũ tự tin bước vào trường với ước mơ ra trường đúng hạn\nvà trở thành một kỹ sư tài ba.",
+                "(Chuyển cảnh sang năm thứ nhất)\nBối cảnh: Kí túc xá, Vũ đang ngủ ngáy khò khò...",
+                "Độ Mimi: Alo Vũ à Vũ? Ôi em ơi, số điện thoại, địa chỉ nhà\nanh đều có ở đây hết rồi, em đừng có chối!",
+                "Vũ: Ơ anh nhầm người rồi...",
+                "Độ Mimi: Thế em có định đi học giải tích ko?",
+                "Vũ: Ôi thôi chết quên mẹ giờ học rồi, phải đi ngay thôi!"
+        };
+        dialogueBox.startDialogue(script);
     }
 
     private void spawnEnemies() {
@@ -81,6 +100,18 @@ public class KTXState extends GameState {
 
     @Override
     public void update() {
+        // Nếu đang hiện hội thoại thì đóng băng quái vật hoặc đóng băng di chuyển của Player lại
+        if (dialogueBox.isActive()) {
+            // Chỉ cập nhật hiệu ứng chữ, không cho Player chạy đi đâu hết
+            // Nếu bạn dùng KeyHandler chung, hãy check điều kiện này để chặn di chuyển của Vũ nhé!
+
+            // Xử lý lắng nghe phím Enter chuyển dòng từ KeyHandler của bạn
+            if (gp.keyH.spacePressed) {
+                dialogueBox.advanceDialogue();
+                gp.keyH.spacePressed = false; // Reset phím ngay lập tức để tránh bị trôi chữ quá nhanh
+            }
+            return;
+        }
         // Cập nhật logic nhân vật
         gp.player.update();
 
@@ -140,6 +171,8 @@ public class KTXState extends GameState {
 //        g2.setFont(new Font("Arial", Font.BOLD, 20));
 //        g2.drawString("HP: " + gp.player.health, 20, 30);
 //        g2.drawString("KILLS: " + gp.killCount, 20, 60);
+
+        dialogueBox.draw(g2, gp.screenWidth, gp.screenHeight);
     }
 
     @Override
