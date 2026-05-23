@@ -1,6 +1,7 @@
 package main;
 
 import entity.Enemy;
+
 //import java.awt.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
@@ -10,20 +11,18 @@ import javax.imageio.ImageIO;
 import java.util.List;
 import java.util.ArrayList;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 
 public class ZombieState extends GameState {
     private Image mapImage; // GPU-friendly compatible image
     private static final String MAP_PATH = "/maps/ktx.png";
     private static final Font HUD_FONT = new Font("Arial", Font.BOLD, 20);
+    private List<Obstacle> obstacles;
 
     public ZombieState(GamePanel gp) {
         super(gp);
         obstacles = new ArrayList<>();
     }
-    private List<Obstacle> obstacles;
+
     double scale;
     @Override
     public void enter() {
@@ -73,60 +72,62 @@ public class ZombieState extends GameState {
         gp.player.health = gp.player.maxHealth;
         gp.player.bullets.clear();
 
-        initObstacles();
+        this.obstacles = ObstacleManager.loadObstacles("/maps/obstacles.txt", this.scale);
         spawnEnemies();
     }
-    private void initObstacles() {
-        obstacles.clear(); // Xóa sạch danh sách cũ
+//    private void initObstacles() {
+//        obstacles.clear(); // Xóa sạch danh sách cũ
+//
+//        // Đường dẫn đến file chứa tọa độ (đặt trong thư mục resource của bạn)
+//        String filePath = "/maps/obstacles.txt";
+//
+//        try {
+//            // Đọc file dưới dạng Stream từ thư mục resource (giống cách bạn đọc ảnh ktx.png)
+//            InputStream is = getClass().getResourceAsStream(filePath);
+//            if (is == null) {
+//                System.out.println("Không tìm thấy file tọa độ vật cản: " + filePath);
+//                return;
+//            }
+//
+//            BufferedReader br = new BufferedReader(new InputStreamReader(is));
+//            String line;
+//
+//            // Đọc từng dòng cho đến khi hết file
+//            while ((line = br.readLine()) != null) {
+//                // Bỏ qua dòng trống hoặc dòng comment bắt đầu bằng dấu # (nếu có)
+//                line = line.trim();
+//                if (line.isEmpty() || line.startsWith("#")) {
+//                    continue;
+//                }
+//
+//                // Tách các con số bằng dấu phẩy
+//                String[] data = line.split(" ");
+//                if (data.length == 4) {
+//                    int x = Integer.parseInt(data[0].trim());
+//                    int y = Integer.parseInt(data[1].trim());
+//                    int width = Integer.parseInt(data[2].trim());
+//                    int height = Integer.parseInt(data[3].trim());
+//
+//                    // Thêm vật cản tàng hình (Color alpha = 0) vào danh sách
+//                    // Nhân với scale (tức là nhân với 0.4) để thu nhỏ tọa độ lại cho khớp với map trong game
+//                    int finalX = (int) (x * this.scale);
+//                    int finalY = (int) (y * this.scale);
+//                    int finalWidth = (int) (width * this.scale);
+//                    int finalHeight = (int) (height * this.scale);
+//
+//                    obstacles.add(new Obstacle(finalX, finalY, finalWidth, finalHeight, new Color(0, 0, 0, 0)));
+//                }
+//            }
+//            br.close();
+//            System.out.println("Đã nạp thành công " + obstacles.size() + " vật cản từ file!");
+//
+//        } catch (Exception e) {
+//            System.out.println("Lỗi khi đọc file tọa độ vật cản!");
+//            e.printStackTrace();
+//        }
+//    }
 
-        // Đường dẫn đến file chứa tọa độ (đặt trong thư mục resource của bạn)
-        String filePath = "/maps/obstacles.txt";
-
-        try {
-            // Đọc file dưới dạng Stream từ thư mục resource (giống cách bạn đọc ảnh ktx.png)
-            InputStream is = getClass().getResourceAsStream(filePath);
-            if (is == null) {
-                System.out.println("Không tìm thấy file tọa độ vật cản: " + filePath);
-                return;
-            }
-
-            BufferedReader br = new BufferedReader(new InputStreamReader(is));
-            String line;
-
-            // Đọc từng dòng cho đến khi hết file
-            while ((line = br.readLine()) != null) {
-                // Bỏ qua dòng trống hoặc dòng comment bắt đầu bằng dấu # (nếu có)
-                line = line.trim();
-                if (line.isEmpty() || line.startsWith("#")) {
-                    continue;
-                }
-
-                // Tách các con số bằng dấu phẩy
-                String[] data = line.split(" ");
-                if (data.length == 4) {
-                    int x = Integer.parseInt(data[0].trim());
-                    int y = Integer.parseInt(data[1].trim());
-                    int width = Integer.parseInt(data[2].trim());
-                    int height = Integer.parseInt(data[3].trim());
-
-                    // Thêm vật cản tàng hình (Color alpha = 0) vào danh sách
-                    // Nhân với scale (tức là nhân với 0.4) để thu nhỏ tọa độ lại cho khớp với map trong game
-                    int finalX = (int) (x * this.scale);
-                    int finalY = (int) (y * this.scale);
-                    int finalWidth = (int) (width * this.scale);
-                    int finalHeight = (int) (height * this.scale);
-
-                    obstacles.add(new Obstacle(finalX, finalY, finalWidth, finalHeight, new Color(0, 0, 0, 0)));
-                }
-            }
-            br.close();
-            System.out.println("Đã nạp thành công " + obstacles.size() + " vật cản từ file!");
-
-        } catch (Exception e) {
-            System.out.println("Lỗi khi đọc file tọa độ vật cản!");
-            e.printStackTrace();
-        }
-    }
+    @Override
     public List<Obstacle> getObstacles() {
         return obstacles;
     }

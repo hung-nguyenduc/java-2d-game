@@ -1,4 +1,4 @@
-package collision;
+package main;
 
 import java.awt.Color;
 import java.io.BufferedReader;
@@ -51,7 +51,7 @@ public class ObstacleManager {
                     int finalHeight = (int) (height * scale);
 
                     // Khởi tạo vật cản tàng hình (Alpha = 0)
-                    list.add(new Obstacle(finalX, finalY, finalWidth, finalHeight, new Color(0, 0, 0, 0)));
+                    list.add(new Obstacle(finalX, finalY, finalWidth, finalHeight, new Color(0, 250, 0, 0)));
                 }
             }
             br.close();

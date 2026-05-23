@@ -251,10 +251,12 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
             }
         }
         // Lấy danh sách vật cản từ State hiện tại (nếu có)
-        List<Obstacle> currentObstacles = new ArrayList<>();
-        if (currentState instanceof ZombieState) {
-            currentObstacles = ((ZombieState) currentState).getObstacles();
-        }
+//        List<Obstacle> currentObstacles = new ArrayList<>();
+//        if (currentState instanceof ZombieState) {
+//            currentObstacles = ((ZombieState) currentState).getObstacles();
+//        }
+
+        List<Obstacle> currentObstacles = currentState.getObstacles();
 
         // --- 1. XỬ LÝ VA CHẠM VỚI VẬT CẢN (OBSTACLE) ---
         for (Obstacle obs : currentObstacles) {
