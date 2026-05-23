@@ -72,6 +72,6 @@ public class DialogueManager {
         // 5. Vẽ gợi ý nhỏ ở góc phải dưới: "[Ấn ENTER để tiếp tục]"
         g2.setFont(new Font("Arial", Font.ITALIC, 12));
         g2.setColor(Color.YELLOW);
-        g2.drawString("[Ấn ENTER để tiếp tục]", x + width - 150, y + height - 15);
+        g2.drawString("[Ấn Space để tiếp tục]", x + width - 150, y + height - 15);
     }
 }
