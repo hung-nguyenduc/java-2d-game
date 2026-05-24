@@ -10,7 +10,7 @@ Vũ: Ơ anh nhầm người rồi...
 Độ Mimi: Thế em có định đi học giải tích ko?
 Vũ: Ôi thôi chết quên mẹ giờ học rồi, phải đi ngay thôi
 
-Tương tác với object: Lấy sách vở, ba lô, bánh mì, nếu không lấy đủ đồ --> không cho ra khỏi phòng.
+Tương tác với object: Lấy sách vở, ba lô, bánh mì, nếu không lấy đủ đồ --> không đủ thì không cho ra khỏi phòng.
 
 
 (Chuyển cảnh: animation Vũ chạy sml đi học, miệng ngậm bánh mì, tay xách ba lô)

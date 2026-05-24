@@ -9,7 +9,7 @@ public class Main {
 
         JFrame frame = new JFrame("Sinh ton o HUST");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setResizable(false);
+        frame.setResizable(true);
 
         // Khởi tạo GamePanel và add vào frame
         GamePanel gamePanel = new GamePanel();
