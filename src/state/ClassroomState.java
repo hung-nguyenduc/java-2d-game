@@ -13,16 +13,16 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ClassState extends GameState {
-    private static final String MAP_IMAGE_PATH = "/maps/ktx1.png";
-    private static final String OBSTACLE_TXT_PATH = "/maps/ktx_obstacles.txt";
+public class ClassroomState extends GameState {
+    private static final String MAP_IMAGE_PATH = "/maps/classroom.png";
+    private static final String OBSTACLE_TXT_PATH = "/maps/classroom_obstacles.txt";
     private static final double MAP_SCALE = 1.0 / 2.5; // Tỷ lệ thu phóng map
     private DialogueManager dialogueBox;
     private Image mapImage;
     private List<Obstacle> obstacles = new ArrayList<>();
     BufferedImage vuFace;
     BufferedImage doMimiFace;
-    public ClassState(GamePanel gp) {
+    public ClassroomState(GamePanel gp) {
         super(gp);
         dialogueBox = new DialogueManager() {
             @Override
@@ -66,12 +66,9 @@ public class ClassState extends GameState {
         gp.player.bullets.clear();
         gp.enemies.clear();
 
-        // Đặt vị trí xuất phát cho Player trong map mới này
-//        gp.player.worldX = 100; // Tọa độ X mong muốn
-//        gp.player.worldY = 100; // Tọa độ Y mong muốn
-        gp.player.spawnAtCenter();
-        // Sinh quái (Enemy) riêng cho map này
-        //spawnEnemies();
+        //gp.player.spawnAtCenter();
+        gp.player.worldX = gp.worldWidth / 2.0 - 40 -220;
+        gp.player.worldY = gp.worldHeight / 2.0 - 40 +100;
 
         // Bật nhạc nền riêng của màn này
         // gp.sound.playMusic("level3_theme");
@@ -84,32 +81,10 @@ public class ClassState extends GameState {
         }
 
         DialogueLine[] script = {
-                new DialogueLine("Giới thiệu nhân vật:\nĐây là Vũ, tân sinh viên Bách Khoa K36.", vuFace),
-                new DialogueLine("Vũ tự tin bước vào trường với ước mơ ra trường đúng hạn\nvà trở thành một kỹ sư tài ba.", vuFace),
-                new DialogueLine("Vũ đang ngủ ở kí túc xá, ngáy khò khò", vuFace),
-                new DialogueLine("Độ Mimi: Alo Vũ à Vũ?", doMimiFace),
-                new DialogueLine("Độ Mimi: Ôi em ơi, số điện thoại, địa chỉ nhà\nanh đều có ở đây hết rồi, em đừng có chối!", doMimiFace),
-                new DialogueLine("Vũ: Ơ anh nhầm người rồi...", vuFace),
-                new DialogueLine("Độ Mimi: Thế em có định đi học giải tích ko?", doMimiFace),
-                new DialogueLine("Vũ: Ôi thôi chết quên mẹ giờ học rồi, phải đi ngay thôi!", vuFace)
+                new DialogueLine("Đến giảng đường, Vũ với quyết tâm A+ giải tích nên đã \nlên thẳng bàn đầu ngồi", null),
+                new DialogueLine("Vừa ngồi vào bản, Vũ đã phải chạm trán thử thách đầu tiên: \nlàm 3 câu fami sohoa", null)
         };
         dialogueBox.startDialogue(script);
-//        String[] script = {
-//                "Giới thiệu nhân vật:\nĐây là Vũ, tân sinh viên Bách Khoa K36.",
-//                "Vũ tự tin bước vào trường với ước mơ ra trường đúng hạn\nvà trở thành một kỹ sư tài ba.",
-//                "(Chuyển cảnh sang năm thứ nhất)\nBối cảnh: Kí túc xá, Vũ đang ngủ ngáy khò khò...",
-//                "Độ Mimi: Alo Vũ à Vũ? Ôi em ơi, số điện thoại, địa chỉ nhà\nanh đều có ở đây hết rồi, em đừng có chối!",
-//                "Vũ: Ơ anh nhầm người rồi...",
-//                "Độ Mimi: Thế em có định đi học giải tích ko?",
-//                "Vũ: Ôi thôi chết quên mẹ giờ học rồi, phải đi ngay thôi!"
-//        };
-//        dialogueBox.startDialogue(script);
-    }
-
-    private void spawnEnemies() {
-        // Thêm quái vào danh sách, thay đổi tọa độ tùy ý bạn
-        // gp.enemies.add(new Enemy(gp, 500, 400));
-        // gp.enemies.add(new Enemy(gp, 1200, 800));
     }
 
     @Override
@@ -135,13 +110,10 @@ public class ClassState extends GameState {
         // Cập nhật logic nhân vật
         gp.player.update();
 
-        // Cập nhật logic quái vật
-//        for (int i = 0; i < gp.enemies.size(); i++) {
-//            gp.enemies.get(i).update();
-//        }
-
-        // Gọi bộ kiểm tra va chạm tập trung (Giữa các thực thể và vật cản)
+        // Check va chạm
         gp.checkCollisions();
+
+        // Kiểm tra điều kiện chuyển state
 
         // 8. Kiểm tra điều kiện Thua / Thắng để chuyển State
 //        if (gp.player.health <= 0) {

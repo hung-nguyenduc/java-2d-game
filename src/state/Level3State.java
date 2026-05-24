@@ -13,7 +13,7 @@ import javax.imageio.ImageIO;
 
 public class Level3State extends GameState {
     private Image mapImage;
-    private static final String MAP_PATH = "/maps/giang-duong.png";
+    private static final String MAP_PATH = "/maps/classroom.png";
     private static final Font HUD_FONT_BIG = new Font("Arial", Font.BOLD, 20);
     private static final Font HUD_FONT_SMALL = new Font("Arial", Font.BOLD, 15);
     private static final Font CUTSCENE_FONT = new Font("Arial", Font.BOLD, 22);

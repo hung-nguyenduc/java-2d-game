@@ -34,7 +34,7 @@ public class Level3CutsceneState extends GameState {
     private boolean walkingLeft = true;
 
     // Đường đi: cửa phải (giữa hành lang) → giữa phòng → bàn đầu (khu trái, hàng trước)
-    // Toạ độ tham chiếu khớp với giang-duong.png khi scale về screen 768x576
+    // Toạ độ tham chiếu khớp với classroom.png khi scale về screen 768x576
     private static final float DOOR_X = 720f, DOOR_Y = 360f;
     private static final float MID_X  = 420f, MID_Y  = 300f;
     private static final float DESK_X = 230f, DESK_Y = 215f;
@@ -76,7 +76,7 @@ public class Level3CutsceneState extends GameState {
 
     private void loadRoomImage() {
         try {
-            InputStream is = getClass().getResourceAsStream("/maps/giang-duong.png");
+            InputStream is = getClass().getResourceAsStream("/maps/classroom.png");
             if (is != null) {
                 BufferedImage src = ImageIO.read(is);
                 roomImage = new BufferedImage(gp.screenWidth, gp.screenHeight, BufferedImage.TYPE_INT_RGB);
@@ -142,7 +142,7 @@ public class Level3CutsceneState extends GameState {
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2.setRenderingHint(RenderingHints.KEY_RENDERING,    RenderingHints.VALUE_RENDER_QUALITY);
 
-        // Vẽ thẳng ảnh giang-duong.png làm background → cutscene giống y hệt file
+        // Vẽ thẳng ảnh classroom.png làm background → cutscene giống y hệt file
         if (roomImage != null) {
             g2.drawImage(roomImage, 0, 0, null);
         } else {

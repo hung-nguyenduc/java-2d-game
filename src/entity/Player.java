@@ -116,7 +116,7 @@ public class Player extends Entity {
             case "right": img = (spriteNum == 1) ? right1 : right2; break;
         }
 
-        g2.drawImage(img, screenX, screenY, 80, 80, null);
+        g2.drawImage(img, screenX, screenY, 90, 90, null);
 
 
         // 3. NẾU CÓ SÚNG THÌ MỚI VẼ SÚNG VÀ VẼ ĐẠN
