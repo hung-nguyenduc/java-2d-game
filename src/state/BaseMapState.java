@@ -123,7 +123,7 @@ public class BaseMapState extends GameState {
             System.out.println("Đã nạp thành công " + obstacles.size() + " vật cản từ file!");
 
         } catch (Exception e) {
-            System.err.println("Lỗi nghiêm trọng khi đọc file tọa độ vật cản!");
+            System.err.println("Lỗi khi đọc file tọa độ vật cản!");
             e.printStackTrace();
         }
     }
