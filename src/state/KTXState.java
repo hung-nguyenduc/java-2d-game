@@ -1,9 +1,10 @@
 package state;
 
+import Dialogue.DialogueLine;
+import Dialogue.DialogueManager;
 import main.GamePanel;
 import collision.Obstacle;
 import collision.ObstacleManager;
-import entity.Enemy;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;

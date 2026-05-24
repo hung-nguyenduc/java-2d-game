@@ -1,7 +1,6 @@
-package state;
+package Dialogue;
 
 import java.awt.*;
-import java.awt.image.BufferedImage;
 
 public class DialogueManager {
     private DialogueLine[] lines; // Mảng chứa các câu thoại đã nâng cấp
