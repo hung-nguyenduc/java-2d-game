@@ -18,7 +18,7 @@ import java.util.ArrayList;
 
 public class ZombieState extends GameState {
     private Image mapImage; // GPU-friendly compatible image
-    private static final String MAP_PATH = "/maps/ktx.png";
+    private static final String MAP_PATH = "/maps/destroyed-c1.png";
     private static final Font HUD_FONT = new Font("Arial", Font.BOLD, 20);
     private List<Obstacle> obstacles;
     private CollisionChecker collisionChecker;

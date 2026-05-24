@@ -58,7 +58,7 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
         this.setDoubleBuffered(true);
 
         // Initialize state management - start with MenuState
-        currentState = new ClassroomState(this);
+        currentState = new ZombieState(this);
         currentState.enter();
 
         // Add mouse listener for button clicks
@@ -69,7 +69,7 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
         this.addMouseListener(mouseH);
 
         this.setFocusable(true);
-        this.setFocusTraversalKeysEnabled(false); // Tắt Tab/Shift-Tab cướp focus
+        this.setFocusTraversalKeysEnabled(false);
         this.addKeyListener(keyH);
 
         // Global dispatcher: bắt key events dù focus ở bất cứ đâu trong JVM
@@ -80,7 +80,7 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
         });
 
         // Spawn checkpoint at map center
-        spawnCheckpoint();
+        //spawnCheckpoint();
     }
 
     // Khởi động luồng game
