@@ -16,7 +16,7 @@ Tương tác với object: Lấy sách vở, ba lô, bánh mì, nếu không l�
 (Chuyển cảnh: animation Vũ chạy sml đi học, miệng ngậm bánh mì, tay xách ba lô)
 
 
-![giang-duong.png](../res/maps/giang-duong.png)
+![giang-duong.png](../res/maps/classroom.png)
 Đến giảng đường, Vũ với quyết tâm A+ giải tích nên đã lên thẳng bàn đầu ngồi.
 Vừa ngồi vào bản, Vũ đã phải chạm trán thử thách đầu tiên: làm 3 câu fami sohoa
 

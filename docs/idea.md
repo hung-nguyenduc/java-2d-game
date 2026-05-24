@@ -16,7 +16,7 @@ Vào game --> Nhận nhiệm vụ phải đi học giải tích --> Meme Độ m
 Thế em có định đi học giải tích ko?>
 .. ôi thôi chết quên mẹ giờ học, phải đi ngay thôi
 
-![giang-duong.png](../res/maps/giang-duong.png)
+![giang-duong.png](../res/maps/classroom.png)
 Đến giảng đường, Vũ với quyết tâm A+ giải tích nên đã lên thẳng bàn đầu ngồi. 
 
 Ngồi vào bản --> làm 3 câu fami sohoa
