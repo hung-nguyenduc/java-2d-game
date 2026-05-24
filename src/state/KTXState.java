@@ -19,7 +19,8 @@ public class KTXState extends GameState {
     private DialogueManager dialogueBox;
     private Image mapImage;
     private List<Obstacle> obstacles = new ArrayList<>();
-
+    BufferedImage vuFace;
+    BufferedImage doMimiFace;
     public KTXState(GamePanel gp) {
         super(gp);
         dialogueBox = new DialogueManager() {
@@ -73,17 +74,35 @@ public class KTXState extends GameState {
 
         // Bật nhạc nền riêng của màn này
         // gp.sound.playMusic("level3_theme");
+        try {
+            vuFace = ImageIO.read(getClass().getResourceAsStream("/player/down1.png"));
+             doMimiFace = ImageIO.read(getClass().getResourceAsStream("/NPC/DoMiMi/DoMiMi-xoaphong.png"));
 
-        String[] script = {
-                "Giới thiệu nhân vật:\nĐây là Vũ, tân sinh viên Bách Khoa K36.",
-                "Vũ tự tin bước vào trường với ước mơ ra trường đúng hạn\nvà trở thành một kỹ sư tài ba.",
-                "(Chuyển cảnh sang năm thứ nhất)\nBối cảnh: Kí túc xá, Vũ đang ngủ ngáy khò khò...",
-                "Độ Mimi: Alo Vũ à Vũ? Ôi em ơi, số điện thoại, địa chỉ nhà\nanh đều có ở đây hết rồi, em đừng có chối!",
-                "Vũ: Ơ anh nhầm người rồi...",
-                "Độ Mimi: Thế em có định đi học giải tích ko?",
-                "Vũ: Ôi thôi chết quên mẹ giờ học rồi, phải đi ngay thôi!"
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        DialogueLine[] script = {
+                new DialogueLine("Giới thiệu nhân vật:\nĐây là Vũ, tân sinh viên Bách Khoa K36.", vuFace),
+                new DialogueLine("Vũ tự tin bước vào trường với ước mơ ra trường đúng hạn\nvà trở thành một kỹ sư tài ba.", vuFace),
+                new DialogueLine("Vũ đang ngủ ở kí túc xá, ngáy khò khò", vuFace),
+                new DialogueLine("Độ Mimi: Alo Vũ à Vũ?", doMimiFace),
+                new DialogueLine("Độ Mimi: Ôi em ơi, số điện thoại, địa chỉ nhà\nanh đều có ở đây hết rồi, em đừng có chối!", doMimiFace),
+                new DialogueLine("Vũ: Ơ anh nhầm người rồi...", vuFace),
+                new DialogueLine("Độ Mimi: Thế em có định đi học giải tích ko?", doMimiFace),
+                new DialogueLine("Vũ: Ôi thôi chết quên mẹ giờ học rồi, phải đi ngay thôi!", vuFace)
         };
         dialogueBox.startDialogue(script);
+//        String[] script = {
+//                "Giới thiệu nhân vật:\nĐây là Vũ, tân sinh viên Bách Khoa K36.",
+//                "Vũ tự tin bước vào trường với ước mơ ra trường đúng hạn\nvà trở thành một kỹ sư tài ba.",
+//                "(Chuyển cảnh sang năm thứ nhất)\nBối cảnh: Kí túc xá, Vũ đang ngủ ngáy khò khò...",
+//                "Độ Mimi: Alo Vũ à Vũ? Ôi em ơi, số điện thoại, địa chỉ nhà\nanh đều có ở đây hết rồi, em đừng có chối!",
+//                "Vũ: Ơ anh nhầm người rồi...",
+//                "Độ Mimi: Thế em có định đi học giải tích ko?",
+//                "Vũ: Ôi thôi chết quên mẹ giờ học rồi, phải đi ngay thôi!"
+//        };
+//        dialogueBox.startDialogue(script);
     }
 
     private void spawnEnemies() {
@@ -164,7 +183,9 @@ public class KTXState extends GameState {
 //        }
 
         // Tầng 4: Vẽ Nhân vật chính
-        gp.player.draw(g2, cameraX, cameraY);
+        if (!dialogueBox.isActive()) {
+            gp.player.draw(g2, cameraX, cameraY);
+        }
 
         // Tầng 5: Vẽ giao diện hiển thị (HUD) cố định trên màn hình (Máu, Số mạng đã giết...)
 //        g2.setColor(Color.WHITE);

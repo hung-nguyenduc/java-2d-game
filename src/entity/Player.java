@@ -42,7 +42,7 @@ public class Player extends Entity {
 
     public void spawnAtCenter() {
         this.worldX = gp.worldWidth / 2.0 - 40;
-        this.worldY = gp.worldHeight / 2.0 - 40;
+        this.worldY = gp.worldHeight / 2.0 - 40 +100;
     }
 
     public void getPlayerImage() {

@@ -62,7 +62,7 @@ public class CollisionChecker {
             Rectangle obsBounds = obs.getBounds();
 
             // Va chạm Player - Vật cản
-            Rectangle playerBounds = new Rectangle((int)gp.player.worldX, (int)gp.player.worldY, 80, 80);
+            Rectangle playerBounds = new Rectangle((int)gp.player.worldX + 20, (int)gp.player.worldY + 15, 50, 50);;
             if (playerBounds.intersects(obsBounds)) {
                 if (gp.keyH.upPressed)    gp.player.worldY += gp.player.speed;
                 if (gp.keyH.downPressed)  gp.player.worldY -= gp.player.speed;
