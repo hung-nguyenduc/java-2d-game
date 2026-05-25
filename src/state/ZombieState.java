@@ -179,9 +179,9 @@ public class ZombieState extends GameState {
         }
 
         gp.player.draw(g2, cameraX, cameraY);
-//        for (Enemy enemy : gp.enemies) {
-//            enemy.draw(g2, cameraX, cameraY);
-//        }
+        for (Enemy enemy : gp.enemies) {
+            enemy.draw(g2, cameraX, cameraY);
+        }
 
         g2.setColor(Color.WHITE);
         g2.setFont(HUD_FONT);

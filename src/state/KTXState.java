@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class KTXState extends GameState {
-    private static final String MAP_IMAGE_PATH = "/maps/ktx1.png";
+    private static final String MAP_IMAGE_PATH = "/maps/ktx.png";
     private static final String OBSTACLE_TXT_PATH = "/maps/ktx_obstacles.txt";
     private static final double MAP_SCALE = 1.0 / 2.5; // Tỷ lệ thu phóng map
     private DialogueManager dialogueBox;
