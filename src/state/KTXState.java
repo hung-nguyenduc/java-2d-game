@@ -2,6 +2,7 @@ package state;
 
 import Dialogue.DialogueLine;
 import Dialogue.DialogueManager;
+import entity.Enemy;
 import main.GamePanel;
 import collision.Obstacle;
 import collision.ObstacleManager;
@@ -62,7 +63,7 @@ public class KTXState extends GameState {
 
         // Reset các thông số hệ thống và dọn dẹp thực thể cũ
         gp.killCount = 0;
-        gp.player.health = 100; // Reset máu player (hoặc giữ nguyên tùy logic game)
+        gp.player.health = 100;
         gp.player.bullets.clear();
         gp.enemies.clear();
 
@@ -94,22 +95,6 @@ public class KTXState extends GameState {
                 new DialogueLine("Vũ: Ôi thôi chết quên mẹ giờ học rồi, phải đi ngay thôi!", vuFace)
         };
         dialogueBox.startDialogue(script);
-//        String[] script = {
-//                "Giới thiệu nhân vật:\nĐây là Vũ, tân sinh viên Bách Khoa K36.",
-//                "Vũ tự tin bước vào trường với ước mơ ra trường đúng hạn\nvà trở thành một kỹ sư tài ba.",
-//                "(Chuyển cảnh sang năm thứ nhất)\nBối cảnh: Kí túc xá, Vũ đang ngủ ngáy khò khò...",
-//                "Độ Mimi: Alo Vũ à Vũ? Ôi em ơi, số điện thoại, địa chỉ nhà\nanh đều có ở đây hết rồi, em đừng có chối!",
-//                "Vũ: Ơ anh nhầm người rồi...",
-//                "Độ Mimi: Thế em có định đi học giải tích ko?",
-//                "Vũ: Ôi thôi chết quên mẹ giờ học rồi, phải đi ngay thôi!"
-//        };
-//        dialogueBox.startDialogue(script);
-    }
-
-    private void spawnEnemies() {
-        // Thêm quái vào danh sách, thay đổi tọa độ tùy ý bạn
-        // gp.enemies.add(new Enemy(gp, 500, 400));
-        // gp.enemies.add(new Enemy(gp, 1200, 800));
     }
 
     @Override
@@ -117,6 +102,7 @@ public class KTXState extends GameState {
         // Trả về danh sách vật cản để CollisionChecker bốc đầu ra xử lý va chạm tường
         return this.obstacles;
     }
+    public int dialogueLineCounter = 0;
 
     @Override
     public void update() {
