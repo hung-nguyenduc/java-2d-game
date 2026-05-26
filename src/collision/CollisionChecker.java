@@ -13,7 +13,12 @@ public class CollisionChecker {
     public CollisionChecker(GamePanel gp) {
         this.gp = gp;
     }
-
+    public void restorePos() {
+        if (gp.keyH.upPressed)    gp.player.worldY += gp.player.speed + 20;
+        if (gp.keyH.downPressed)  gp.player.worldY += gp.player.speed + 20;
+        if (gp.keyH.leftPressed)  gp.player.worldX -= gp.player.speed;
+        if (gp.keyH.rightPressed) gp.player.worldX -= gp.player.speed;
+    }
     public void checkAllCollisions() {
         // 1. Kiểm tra va chạm giữa Player và Enemy, Đạn với các bên
         for (Enemy enemy : gp.enemies) {
@@ -21,15 +26,16 @@ public class CollisionChecker {
             if (gp.player.worldX + 80 > enemy.worldX && gp.player.worldX < enemy.worldX + 80 &&
                     gp.player.worldY + 80 > enemy.worldY && gp.player.worldY < enemy.worldY + 80) {
                 gp.player.health -= 1;
+                restorePos();
             }
 
             // Đạn của Player trúng Enemy
-            for (int i = 0; i < gp.player.bullets.size(); i++) {
-                Bullet bullet = gp.player.bullets.get(i);
+            for (int i = 0; i < gp.player.currentWeapon.bullets.size(); i++) {
+                Bullet bullet = gp.player.currentWeapon.bullets.get(i);
                 if (bullet.worldX + 10 > enemy.worldX && bullet.worldX < enemy.worldX + 80 &&
                         bullet.worldY + 10 > enemy.worldY && bullet.worldY < enemy.worldY + 80) {
                     enemy.health -= 35;
-                    gp.player.bullets.remove(i);
+                    gp.player.currentWeapon.bullets.remove(i);
                     i--;
                 }
             }
@@ -64,18 +70,15 @@ public class CollisionChecker {
             // Va chạm Player - Vật cản
             Rectangle playerBounds = new Rectangle((int)gp.player.worldX + 20, (int)gp.player.worldY + 15, 50, 50);;
             if (playerBounds.intersects(obsBounds)) {
-                if (gp.keyH.upPressed)    gp.player.worldY += gp.player.speed;
-                if (gp.keyH.downPressed)  gp.player.worldY -= gp.player.speed;
-                if (gp.keyH.leftPressed)  gp.player.worldX += gp.player.speed;
-                if (gp.keyH.rightPressed) gp.player.worldX -= gp.player.speed;
+                restorePos();
             }
 
             // Va chạm Đạn Player - Vật cản
-            for (int i = 0; i < gp.player.bullets.size(); i++) {
-                Bullet bullet = gp.player.bullets.get(i);
+            for (int i = 0; i < gp.player.currentWeapon.bullets.size(); i++) {
+                Bullet bullet = gp.player.currentWeapon.bullets.get(i);
                 Rectangle bulletBounds = new Rectangle((int) bullet.worldX, (int)bullet.worldY, 10, 10);
                 if (bulletBounds.intersects(obsBounds)) {
-                    gp.player.bullets.remove(i);
+                    gp.player.currentWeapon.bullets.remove(i);
                     i--;
                 }
             }
