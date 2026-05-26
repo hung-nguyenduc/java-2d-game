@@ -31,7 +31,7 @@ public class DialogueManager {
     public void draw(Graphics2D g2, int screenWidth, int screenHeight) {
         if (!isActive || lines == null || dialogueIndex >= lines.length) return;
 
-        // 1. Định vị khung thoại dưới đáy màn hình (Giữ nguyên tỉ lệ như ảnh image_0627f1.jpg của bạn)
+        // 1. Định vị khung thoại dưới đáy màn hình
         int boxX = screenWidth / 10;
         int boxY = (int) (screenHeight * 0.7);
         int boxWidth = (int) (screenWidth * 0.8);
