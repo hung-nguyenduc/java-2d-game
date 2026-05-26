@@ -1,9 +1,9 @@
 package main;
 
 import collision.CollisionChecker;
-import entity.Player; // Nhớ import package entity
-import entity.Enemy; // Import Enemy class
-import entity.Checkpoint; // Import Checkpoint class
+import entity.Player;
+import entity.Enemy;
+import entity.Checkpoint;
 import state.*;
 
 import javax.swing.*;
@@ -14,11 +14,7 @@ import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.List;
 
-// Lớp chính
-//quản lý panel game, vòng lặp game, và rendering
 public class GamePanel extends JPanel implements Runnable, MouseListener {
-
-    // -- CẤU HÌNH MÀN HÌNH (Giữ nguyên như cũ) --
     final int originalTileSize = 16;
     final int scale = 3;
     public final int tileSize = originalTileSize * scale;
@@ -37,7 +33,7 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
     public KeyHandler keyH = new KeyHandler();
     public MouseHandler mouseH = new MouseHandler();
     Thread gameThread;
-    public Player player = new Player(this, keyH, mouseH); // Truyền Panel, Bàn phím, Chuột cho Player
+    public Player player = new Player(this, keyH, mouseH);
     CollisionChecker cChecker = new CollisionChecker(this);
 
     Checkpoint checkpoint = null;
@@ -54,7 +50,7 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
 
     public GamePanel() {
         this.setPreferredSize(new Dimension(screenWidth, screenHeight));
-        this.setBackground(Color.BLUE);
+        this.setBackground(Color.BLACK);
         this.setDoubleBuffered(true);
 
         // Initialize state management - start with MenuState
@@ -62,7 +58,7 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
         currentState.enter();
 
         // Add mouse listener for button clicks
-        this.addMouseListener(this);
+        //this.addMouseListener(this);
         // Theo dõi vị trí chuột để ngắm bắn
         this.addMouseMotionListener(mouseH);
         // Xử lý sự kiện click chuột (bắn)
@@ -144,6 +140,7 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
     // Cập nhật trạng thái game mỗi frame
     public void update() {
         currentState.update();
+        checkCollisions();
     }
 
     // Vẽ tất cả các thành phần game

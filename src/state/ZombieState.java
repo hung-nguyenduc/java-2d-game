@@ -2,6 +2,9 @@ package state;
 
 import collision.CollisionChecker;
 import entity.Enemy;
+import entity.Weapon;
+import entity.Bullet;
+import main.MouseHandler;
 import main.*;
 import collision.Obstacle;
 import collision.ObstacleManager;
@@ -17,14 +20,18 @@ import java.util.ArrayList;
 
 
 public class ZombieState extends GameState {
-    private Image mapImage; // GPU-friendly compatible image
+    private BufferedImage mapImage;
     private static final String MAP_PATH = "/maps/destroyed-c1.png";
     private static final Font HUD_FONT = new Font("Arial", Font.BOLD, 20);
     private List<Obstacle> obstacles;
-    private CollisionChecker collisionChecker;
+    //private CollisionChecker collisionChecker;
+    private Weapon weapon;
+    //private Bullet bullet;
+
     public ZombieState(GamePanel gp) {
         super(gp);
         obstacles = new ArrayList<>();
+        weapon = new Weapon(gp, gp.mouseH, gp.player);
     }
 
     double scale;
@@ -32,20 +39,9 @@ public class ZombieState extends GameState {
     public void enter() {
         // Pre-scale map một lần duy nhất → mỗi frame chỉ blit vùng nhìn thấy (GPU accelerated)
         try {
-//            BufferedImage src = ImageIO.read(getClass().getResourceAsStream(MAP_PATH));
-//            GraphicsConfiguration gc = GraphicsEnvironment.getLocalGraphicsEnvironment()
-//                    .getDefaultScreenDevice().getDefaultConfiguration();
-//            BufferedImage compat = gc.createCompatibleImage(gp.worldWidth, gp.worldHeight, Transparency.OPAQUE);
-//            Graphics2D mg = compat.createGraphics();
-//            mg.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-//            mg.drawImage(src, 0, 0, gp.worldWidth, gp.worldHeight, null);
-//            mg.dispose();
-//            mapImage = compat;
-
             BufferedImage src = ImageIO.read(getClass().getResourceAsStream(MAP_PATH));
 
-            // CHỈNH Ở ĐÂY: Thu nhỏ kích thước map xuống (ví dụ chia 2.5)
-            this.scale = 1.0 / 2.5;
+            this.scale = 1.0 / 1.0;
             int mapWidth = (int) (src.getWidth() * scale);
             int mapHeight = (int) (src.getHeight() * scale);
 
@@ -74,62 +70,13 @@ public class ZombieState extends GameState {
         gp.player.setDefaultValues();
         gp.player.spawnAtCenter();
         gp.player.health = gp.player.maxHealth;
-        gp.player.bullets.clear();
 
+        this.weapon = new Weapon(gp, gp.mouseH, gp.player);
+        gp.player.equipWeapon(this.weapon);
+        weapon.clearBullets();
         this.obstacles = ObstacleManager.loadObstacles("/maps/ktx_obstacles.txt", this.scale);
         spawnEnemies();
     }
-//    private void initObstacles() {
-//        obstacles.clear(); // Xóa sạch danh sách cũ
-//
-//        // Đường dẫn đến file chứa tọa độ (đặt trong thư mục resource của bạn)
-//        String filePath = "/maps/ktx_obstacles.txt";
-//
-//        try {
-//            // Đọc file dưới dạng Stream từ thư mục resource (giống cách bạn đọc ảnh ktx.png)
-//            InputStream is = getClass().getResourceAsStream(filePath);
-//            if (is == null) {
-//                System.out.println("Không tìm thấy file tọa độ vật cản: " + filePath);
-//                return;
-//            }
-//
-//            BufferedReader br = new BufferedReader(new InputStreamReader(is));
-//            String line;
-//
-//            // Đọc từng dòng cho đến khi hết file
-//            while ((line = br.readLine()) != null) {
-//                // Bỏ qua dòng trống hoặc dòng comment bắt đầu bằng dấu # (nếu có)
-//                line = line.trim();
-//                if (line.isEmpty() || line.startsWith("#")) {
-//                    continue;
-//                }
-//
-//                // Tách các con số bằng dấu phẩy
-//                String[] data = line.split(" ");
-//                if (data.length == 4) {
-//                    int x = Integer.parseInt(data[0].trim());
-//                    int y = Integer.parseInt(data[1].trim());
-//                    int width = Integer.parseInt(data[2].trim());
-//                    int height = Integer.parseInt(data[3].trim());
-//
-//                    // Thêm vật cản tàng hình (Color alpha = 0) vào danh sách
-//                    // Nhân với scale (tức là nhân với 0.4) để thu nhỏ tọa độ lại cho khớp với map trong game
-//                    int finalX = (int) (x * this.scale);
-//                    int finalY = (int) (y * this.scale);
-//                    int finalWidth = (int) (width * this.scale);
-//                    int finalHeight = (int) (height * this.scale);
-//
-//                    obstacles.add(new Obstacle(finalX, finalY, finalWidth, finalHeight, new Color(0, 0, 0, 0)));
-//                }
-//            }
-//            br.close();
-//            System.out.println("Đã nạp thành công " + obstacles.size() + " vật cản từ file!");
-//
-//        } catch (Exception e) {
-//            System.out.println("Lỗi khi đọc file tọa độ vật cản!");
-//            e.printStackTrace();
-//        }
-//    }
 
     @Override
     public List<Obstacle> getObstacles() {
@@ -139,6 +86,7 @@ public class ZombieState extends GameState {
     public void exit() {
         gp.enemies.clear();
          obstacles.clear();
+         weapon.clearBullets();
     }
 
     @Override
@@ -147,7 +95,7 @@ public class ZombieState extends GameState {
         for (int i = 0; i < gp.enemies.size(); i++) {
             gp.enemies.get(i).update();
         }
-        //collisionChecker.checkAllCollisions();
+
         gp.checkCollisions();
         if (gp.player.health <= 0) {
             gp.setState(new GameOverState(gp));
@@ -157,6 +105,7 @@ public class ZombieState extends GameState {
         if (gp.killCount >= 3) {
             gp.setState(new LevelCompleteState(gp, 1, new Level2State(gp)));
         }
+
     }
 
     @Override
@@ -173,7 +122,7 @@ public class ZombieState extends GameState {
             cameraX, cameraY, cameraX + gp.screenWidth, cameraY + gp.screenHeight,
             null);
 
-        // 5. VẼ CÁC VẬT CẢN (Vẽ trước Player và Enemy để quái/người che lên vật cản nếu cần, hoặc ngược lại)
+        // 5. VẼ CÁC VẬT CẢN
         for (Obstacle obs : obstacles) {
             obs.draw(g2, cameraX, cameraY);
         }
@@ -182,8 +131,11 @@ public class ZombieState extends GameState {
         for (Enemy enemy : gp.enemies) {
             enemy.draw(g2, cameraX, cameraY);
         }
+        int screenX = (int) (gp.player.worldX - cameraX);
+        int screenY = (int) (gp.player.worldY - cameraY);
 
-        g2.setColor(Color.WHITE);
+        weapon.draw(g2, screenX, screenY, cameraX, cameraY);
+        g2.setColor(Color.RED);
         g2.setFont(HUD_FONT);
         g2.drawString("Man 1 - Giet quai: " + gp.killCount + " / 3", 10, 30);
     }

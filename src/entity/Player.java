@@ -30,10 +30,10 @@ public class Player extends Entity {
 
     public void setDefaultValues() {
         speed = 5;
-        maxHealth = 30000;
+        maxHealth = 3000;
         health = maxHealth;
         direction = "down";
-        currentWeapon = null; // Mặc định tay không bắt giặc, chưa có súng
+        currentWeapon = null;
     }
 
     public void equipWeapon(Weapon weapon) {
@@ -42,7 +42,7 @@ public class Player extends Entity {
 
     public void spawnAtCenter() {
         this.worldX = gp.worldWidth / 2.0 - 40;
-        this.worldY = gp.worldHeight / 2.0 - 40 +100;
+        this.worldY = gp.worldHeight / 2.0 - 40;
     }
 
     public void getPlayerImage() {
@@ -64,13 +64,11 @@ public class Player extends Entity {
         vx = 0;
         vy = 0;
 
-        // Xử lý nút bấm di chuyển
         if (keyH.upPressed) { vy -= speed; direction = "up"; }
         if (keyH.downPressed) { vy += speed; direction = "down"; }
         if (keyH.leftPressed) { vx -= speed; direction = "left"; }
         if (keyH.rightPressed) { vx += speed; direction = "right"; }
 
-        // Đổi frame chân bước đi lạch bạch
         if (keyH.upPressed || keyH.downPressed || keyH.leftPressed || keyH.rightPressed) {
             spriteCounter++;
             if (spriteCounter > 10) {
@@ -90,7 +88,6 @@ public class Player extends Entity {
 
         clampPlayerPosition();
 
-        // NẾU CÓ SÚNG THÌ MỚI UPDATE LOGIC NGẮM BẮN
         if (currentWeapon != null) {
             currentWeapon.update();
         }
@@ -118,8 +115,6 @@ public class Player extends Entity {
 
         g2.drawImage(img, screenX, screenY, 90, 90, null);
 
-
-        // 3. NẾU CÓ SÚNG THÌ MỚI VẼ SÚNG VÀ VẼ ĐẠN
         if (currentWeapon != null) {
             currentWeapon.draw(g2, screenX, screenY, cameraX, cameraY);
             drawHealthBar(g2, screenX, screenY - 16, 80, 14);

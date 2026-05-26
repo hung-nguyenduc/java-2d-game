@@ -154,6 +154,7 @@ public class BaseMapState extends GameState {
         if (!ENABLE_COMBAT) {
             gp.player.bullets.clear();
         }
+        gp.checkCollisions();
 
         // Cập nhật logic của Enemy nếu có bật tính năng Combat
         if (ENABLE_COMBAT) {
@@ -162,7 +163,7 @@ public class BaseMapState extends GameState {
             }
 
             // Chạy hàm check va chạm tổng của GamePanel
-            //gp.checkCollisions();
+            gp.checkCollisions();
 
             // Kiểm tra trạng thái Game Over
             if (gp.player.health <= 0) {

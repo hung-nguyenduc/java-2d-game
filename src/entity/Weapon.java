@@ -72,10 +72,10 @@ public class Weapon {
     private void shoot() {
         // Tạo đạn tại tâm của Player
         Bullet bullet = new Bullet(player.worldX + 40, player.worldY + 40, aimAngle);
-        bullet.color = BULLET_COLOR;
+        //bullet.color = BULLET_COLOR;
         bullets.add(bullet);
 
-        // Mẹo: Sau này thêm âm thanh bắn súng tại đây cực tiện:
+        // Thêm nhạc khi bắn (update sau)
         // gp.sound.playSE("shoot");
     }
 
@@ -85,7 +85,7 @@ public class Weapon {
             bullet.draw(g2, cameraX, cameraY);
         }
 
-        // 2. Vẽ khẩu súng shotgun xoay quanh người nhân vật
+        // 2. Vẽ súng
         int centerX = screenX + 43;
         int centerY = screenY + 45;
         int pivotX = 10;
