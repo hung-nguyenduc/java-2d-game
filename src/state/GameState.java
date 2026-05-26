@@ -30,7 +30,6 @@ public abstract class GameState {
     // Handle mouse clicks (e.g., for menu buttons)
     public abstract void handleMouseClick(MouseEvent e);
 
-    // Thêm hàm này vào file GameState.java
     public java.util.List<Obstacle> getObstacles() {
         return new java.util.ArrayList<>();
     }
