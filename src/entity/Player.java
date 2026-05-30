@@ -15,6 +15,12 @@ public class Player extends Entity {
 
     // Vũ khí có thể tháo lắp tùy màn chơi
     public Weapon currentWeapon;
+    
+    // Skills
+    public java.util.List<SwordAura> swordAuras = new java.util.ArrayList<>();
+    public java.util.List<Bomb> bombs = new java.util.ArrayList<>();
+    private int swordCooldown = 0;
+    private int bombCooldown = 0;
 
     private static final double DIAGONAL_FACTOR = 1.0 / Math.sqrt(2);
     private static final Font HEALTH_FONT = new Font("Arial", Font.BOLD, 11);
@@ -91,6 +97,38 @@ public class Player extends Entity {
         if (currentWeapon != null) {
             currentWeapon.update();
         }
+        
+        // Cập nhật Skills
+        if (swordCooldown > 0) swordCooldown--;
+        if (bombCooldown > 0) bombCooldown--;
+        
+        if (keyH.jPressed && swordCooldown <= 0) {
+            double aimAngle = 0;
+            if (currentWeapon != null) aimAngle = currentWeapon.aimAngle;
+            swordAuras.add(new SwordAura(worldX + 40, worldY + 40, aimAngle));
+            swordCooldown = 45; // cooldown
+        }
+        
+        if (keyH.kPressed && bombCooldown <= 0) {
+            bombs.add(new Bomb(worldX + 25, worldY + 25));
+            bombCooldown = 180; // cooldown
+        }
+        
+        for (int i = 0; i < swordAuras.size(); i++) {
+            swordAuras.get(i).update();
+            if (!swordAuras.get(i).active) {
+                swordAuras.remove(i);
+                i--;
+            }
+        }
+        
+        for (int i = 0; i < bombs.size(); i++) {
+            bombs.get(i).update();
+            if (!bombs.get(i).active) {
+                bombs.remove(i);
+                i--;
+            }
+        }
     }
 
     public void clampPlayerPosition() {
@@ -118,6 +156,14 @@ public class Player extends Entity {
         if (currentWeapon != null) {
             currentWeapon.draw(g2, screenX, screenY, cameraX, cameraY);
             drawHealthBar(g2, screenX, screenY - 16, 80, 14);
+        }
+        
+        // Vẽ Skills
+        for (Bomb bomb : bombs) {
+            bomb.draw(g2, cameraX, cameraY);
+        }
+        for (SwordAura aura : swordAuras) {
+            aura.draw(g2, cameraX, cameraY);
         }
     }
 

@@ -15,6 +15,16 @@ import java.util.List;
 
 public class OpenWorldState extends GameState {
     
+    public enum SubState { PLAYING, INVENTORY, MAP_APP, LOADING }
+    private SubState subState = SubState.PLAYING;
+    
+    private BufferedImage inventoryImage, phoneIcon, mapAppImage;
+    private int loadingCounter = 0;
+    private double targetX = 0, targetY = 0;
+    private boolean showPhoneMenu = false;
+    private int phoneX, phoneY, phoneW = 64, phoneH = 64; // Bounds for phone icon
+    private Rectangle menuUseRect = new Rectangle();
+    private boolean iKeyProcessed = false;
     private static class Region {
         String name;
         String imagePath;
@@ -40,18 +50,21 @@ public class OpenWorldState extends GameState {
     private List<Obstacle> allObstacles = new ArrayList<>();
     private Font HUD_FONT = new Font("Arial", Font.BOLD, 20);
 
-    // Dịch chuyển
-    private Rectangle ktxToClassroomDoor;
-    private Rectangle classroomToKtxDoor;
+    // Dịch chuyển (Portals)
+    private Rectangle hubToC1, hubToKtx, hubToClassroom;
+    private Rectangle c1ToHub, ktxToHub, classroomToHub;
 
     public OpenWorldState(GamePanel gp) {
         super(gp);
-        // Thiết lập các khu vực (Region)
-        // Kích thước các map đều được scale với tỉ lệ 1.0/2.5.
-        // Bạn có thể chỉnh lại toạ độ các toà nhà ở đây.
-        regions.add(new Region("KTX", "/maps/ktx.png", "/maps/ktx_obstacles.txt", 0, 0, 1.0 / 2.5));
-        regions.add(new Region("Level2", "/maps/test.png", null, 4000, 0, 1.0 / 2.5));
-        regions.add(new Region("Classroom", "/maps/classroom.png", "/maps/classroom_obstacles.txt", 8000, 0, 1.0 / 2.5));
+        
+        // HUB: test.png ở (0, 0)
+        regions.add(new Region("HUB", "/maps/test.png", null, 0, 0, 1.0 / 2.5));
+        // C1: destroyed-c1.png ở (4000, 0)
+        regions.add(new Region("C1", "/maps/destroyed-c1.png", null, 4000, 0, 1.0 / 2.5));
+        // KTX: ktx.png ở (8000, 0)
+        regions.add(new Region("KTX", "/maps/ktx.png", "/maps/ktx_obstacles.txt", 8000, 0, 1.0 / 2.5));
+        // Classroom: classroom.png ở (0, 4000)
+        regions.add(new Region("Classroom", "/maps/classroom.png", "/maps/classroom_obstacles.txt", 0, 4000, 1.0 / 2.5));
     }
 
     @Override
@@ -109,16 +122,36 @@ public class OpenWorldState extends GameState {
         gp.player.bullets.clear();
         gp.enemies.clear();
 
-        // Spawn người chơi ở giữa KTX
-        Region ktx = regions.get(0);
-        gp.player.worldX = ktx.offsetX + ktx.width / 2.0;
-        gp.player.worldY = ktx.offsetY + ktx.height / 2.0;
+        // Trang bị vũ khí Shotgun
+        gp.player.equipWeapon(new entity.Shotgun(gp, gp.mouseH, gp.player));
 
-        // Vùng dịch chuyển (Portal)
-        // Ví dụ: cửa của KTX dẫn tới Classroom
-        ktxToClassroomDoor = new Rectangle(ktx.offsetX + 400, ktx.offsetY + 400, 100, 100);
-        Region classroom = regions.get(2);
-        classroomToKtxDoor = new Rectangle(classroom.offsetX + 400, classroom.offsetY + 400, 100, 100);
+        // Spawn người chơi ở giữa HUB
+        Region hub = regions.get(0);
+        gp.player.worldX = hub.offsetX + hub.width / 2.0;
+        gp.player.worldY = hub.offsetY + hub.height / 2.0;
+
+        // Vùng dịch chuyển từ HUB đi các nơi
+        hubToC1 = new Rectangle(hub.offsetX + 300, hub.offsetY + 100, 80, 80);
+        hubToKtx = new Rectangle(hub.offsetX + 500, hub.offsetY + 100, 80, 80);
+        hubToClassroom = new Rectangle(hub.offsetX + 700, hub.offsetY + 100, 80, 80);
+        
+        // Vùng dịch chuyển từ các nơi về HUB
+        Region c1 = regions.get(1);
+        c1ToHub = new Rectangle(c1.offsetX + c1.width / 2, c1.offsetY + c1.height - 150, 80, 80);
+        
+        Region ktx = regions.get(2);
+        ktxToHub = new Rectangle(ktx.offsetX + ktx.width / 2, ktx.offsetY + ktx.height - 150, 80, 80);
+        
+        Region classroom = regions.get(3);
+        classroomToHub = new Rectangle(classroom.offsetX + classroom.width / 2, classroom.offsetY + classroom.height - 150, 80, 80);
+        
+        
+        try {
+            inventoryImage = ImageIO.read(getClass().getResourceAsStream("/inventory/Inventory.png"));
+            // Bỏ dùng InventoryIcon.png vì nó là cái balo, ta sẽ tự vẽ điện thoại
+            phoneIcon = null; 
+            mapAppImage = ImageIO.read(getClass().getResourceAsStream("/maps/ref/Area_selection_map.png"));
+        } catch (Exception e) { e.printStackTrace(); }
         
         checkRegionSpawn();
     }
@@ -137,16 +170,19 @@ public class OpenWorldState extends GameState {
     }
     
     private void spawnEnemiesForRegion(Region r) {
-        if (r.name.equals("KTX")) {
-            // Không có quái
+        if (r.name.equals("HUB")) {
+            gp.enemies.add(new Enemy(gp, gp.player, r.offsetX + 200, r.offsetY + 400, "enemy1"));
+            gp.enemies.add(new Enemy(gp, gp.player, r.offsetX + 800, r.offsetY + 600, "enemy2"));
+        } else if (r.name.equals("C1")) {
+            gp.enemies.add(new Enemy(gp, gp.player, r.offsetX + 300,  r.offsetY + 400, "gt1"));
+            gp.enemies.add(new Enemy(gp, gp.player, r.offsetX + 700,  r.offsetY + 300, "gt3"));
+            gp.enemies.add(new Enemy(gp, gp.player, r.offsetX + 1100, r.offsetY + 600, "gt1"));
+        } else if (r.name.equals("KTX")) {
+            gp.enemies.add(new Enemy(gp, gp.player, r.offsetX + 200,  r.offsetY + 800, "enemy1"));
+            gp.enemies.add(new Enemy(gp, gp.player, r.offsetX + 600,  r.offsetY + 200, "enemy2"));
         } else if (r.name.equals("Classroom")) {
-            gp.enemies.add(new Enemy(gp, gp.player, r.offsetX + 300,  r.offsetY + 400, 0));
-            gp.enemies.add(new Enemy(gp, gp.player, r.offsetX + 700,  r.offsetY + 300, 1));
-            gp.enemies.add(new Enemy(gp, gp.player, r.offsetX + 1100, r.offsetY + 600, 2));
-        } else if (r.name.equals("Level2")) {
-            gp.enemies.add(new Enemy(gp, gp.player, r.offsetX + 200,  r.offsetY + 800, 0));
-            gp.enemies.add(new Enemy(gp, gp.player, r.offsetX + 600,  r.offsetY + 200, 1));
-            gp.enemies.add(new Enemy(gp, gp.player, r.offsetX + 1400, r.offsetY + 400, 2));
+            gp.enemies.add(new Enemy(gp, gp.player, r.offsetX + 500,  r.offsetY + 500, "ds"));
+            gp.enemies.add(new Enemy(gp, gp.player, r.offsetX + 900,  r.offsetY + 400, "ds"));
         }
     }
 
@@ -157,6 +193,34 @@ public class OpenWorldState extends GameState {
 
     @Override
     public void update() {
+        // Toggle Inventory
+        if (gp.keyH.iPressed && !iKeyProcessed) {
+            iKeyProcessed = true;
+            if (subState == SubState.PLAYING) subState = SubState.INVENTORY;
+            else if (subState == SubState.INVENTORY) {
+                subState = SubState.PLAYING;
+                showPhoneMenu = false;
+            }
+        }
+        if (!gp.keyH.iPressed) iKeyProcessed = false;
+
+        // Xử lý Loading
+        if (subState == SubState.LOADING) {
+            loadingCounter++;
+            if (loadingCounter > 60) {
+                gp.player.worldX = targetX;
+                gp.player.worldY = targetY;
+                subState = SubState.PLAYING;
+                loadingCounter = 0;
+            }
+            return;
+        }
+
+        // Freeze game nếu không phải PLAYING
+        if (subState != SubState.PLAYING) {
+            return;
+        }
+
         gp.player.update();
         
         checkRegionSpawn();
@@ -174,15 +238,21 @@ public class OpenWorldState extends GameState {
 
         // Logic dịch chuyển giữa các toà nhà (Teleport)
         Rectangle playerRect = new Rectangle((int)gp.player.worldX, (int)gp.player.worldY, gp.tileSize, gp.tileSize);
-        if (playerRect.intersects(ktxToClassroomDoor)) {
-            Region classroom = regions.get(2);
-            gp.player.worldX = classroom.offsetX + classroom.width / 2.0;
-            gp.player.worldY = classroom.offsetY + classroom.height / 2.0;
-        } else if (playerRect.intersects(classroomToKtxDoor)) {
-            Region ktx = regions.get(0);
-            gp.player.worldX = ktx.offsetX + ktx.width / 2.0;
-            gp.player.worldY = ktx.offsetY + ktx.height / 2.0;
+        
+        if (playerRect.intersects(hubToC1)) {
+            teleportPlayerToRegion(regions.get(1));
+        } else if (playerRect.intersects(hubToKtx)) {
+            teleportPlayerToRegion(regions.get(2));
+        } else if (playerRect.intersects(hubToClassroom)) {
+            teleportPlayerToRegion(regions.get(3));
+        } else if (playerRect.intersects(c1ToHub) || playerRect.intersects(ktxToHub) || playerRect.intersects(classroomToHub)) {
+            teleportPlayerToRegion(regions.get(0));
         }
+    }
+    
+    private void teleportPlayerToRegion(Region r) {
+        gp.player.worldX = r.offsetX + r.width / 2.0;
+        gp.player.worldY = r.offsetY + r.height / 2.0 + 100;
     }
 
     @Override
@@ -213,9 +283,24 @@ public class OpenWorldState extends GameState {
         }
 
         // Vẽ cổng dịch chuyển
-        g2.setColor(new Color(255, 255, 0, 100));
-        g2.fillRect(ktxToClassroomDoor.x - cameraX, ktxToClassroomDoor.y - cameraY, ktxToClassroomDoor.width, ktxToClassroomDoor.height);
-        g2.fillRect(classroomToKtxDoor.x - cameraX, classroomToKtxDoor.y - cameraY, classroomToKtxDoor.width, classroomToKtxDoor.height);
+        g2.setColor(new Color(255, 255, 0, 100)); // Màu vàng cho cổng đi
+        g2.fillRect(hubToC1.x - cameraX, hubToC1.y - cameraY, hubToC1.width, hubToC1.height);
+        g2.fillRect(hubToKtx.x - cameraX, hubToKtx.y - cameraY, hubToKtx.width, hubToKtx.height);
+        g2.fillRect(hubToClassroom.x - cameraX, hubToClassroom.y - cameraY, hubToClassroom.width, hubToClassroom.height);
+        
+        g2.setColor(new Color(0, 255, 255, 100)); // Màu cyan cho cổng về
+        g2.fillRect(c1ToHub.x - cameraX, c1ToHub.y - cameraY, c1ToHub.width, c1ToHub.height);
+        g2.fillRect(ktxToHub.x - cameraX, ktxToHub.y - cameraY, ktxToHub.width, ktxToHub.height);
+        g2.fillRect(classroomToHub.x - cameraX, classroomToHub.y - cameraY, classroomToHub.width, classroomToHub.height);
+        
+        g2.setColor(Color.WHITE);
+        g2.drawString("To C1", hubToC1.x - cameraX, hubToC1.y - cameraY - 10);
+        g2.drawString("To KTX", hubToKtx.x - cameraX, hubToKtx.y - cameraY - 10);
+        g2.drawString("To Class", hubToClassroom.x - cameraX, hubToClassroom.y - cameraY - 10);
+        
+        g2.drawString("Back HUB", c1ToHub.x - cameraX, c1ToHub.y - cameraY - 10);
+        g2.drawString("Back HUB", ktxToHub.x - cameraX, ktxToHub.y - cameraY - 10);
+        g2.drawString("Back HUB", classroomToHub.x - cameraX, classroomToHub.y - cameraY - 10);
 
         // Vẽ Enemy
         for (Enemy enemy : gp.enemies) {
@@ -230,6 +315,72 @@ public class OpenWorldState extends GameState {
         g2.setFont(HUD_FONT);
         g2.drawString("OPEN WORLD MODE", 10, 30);
         g2.drawString("KILLS: " + gp.killCount, 10, 60);
+        
+        // Vẽ UI đè lên trên cùng
+        if (subState == SubState.INVENTORY) {
+            drawInventory(g2);
+        } else if (subState == SubState.MAP_APP) {
+            drawMapApp(g2);
+        } else if (subState == SubState.LOADING) {
+            drawLoadingScreen(g2);
+        }
+    }
+    
+    private void drawInventory(Graphics2D g2) {
+        if (inventoryImage == null) return;
+        
+        // Draw inventory centered on screen
+        int invW = 350;
+        int invH = 350;
+        int invX = gp.screenWidth / 2 - invW / 2;
+        int invY = gp.screenHeight / 2 - invH / 2;
+        g2.drawImage(inventoryImage, invX, invY, invW, invH, null);
+        
+        // Based on the actual Inventory.png layout:
+        // The 3x3 grid starts at ~22% from left, ~18% from top of the image
+        // Each cell is ~23% of image width/height
+        int gridStartX = invX + (int)(invW * 0.22);
+        int gridStartY = invY + (int)(invH * 0.18);
+        int cellW = (int)(invW * 0.23);
+        int cellH = (int)(invH * 0.23);
+        
+        // Phone icon centered in the first cell (row 0, col 0)
+        phoneW = 30;
+        phoneH = 30;
+        phoneX = gridStartX + (cellW - phoneW) / 2;
+        phoneY = gridStartY + (cellH - phoneH) / 2;
+        
+        // Draw a small smartphone icon
+        g2.setColor(new Color(40, 40, 40)); // phone body
+        g2.fillRoundRect(phoneX, phoneY, phoneW, phoneH, 6, 6);
+        g2.setColor(new Color(100, 200, 255)); // screen (light blue)
+        g2.fillRect(phoneX + 3, phoneY + 3, phoneW - 6, phoneH - 10);
+        g2.setColor(Color.WHITE); // home button
+        g2.fillOval(phoneX + phoneW / 2 - 3, phoneY + phoneH - 7, 6, 6);
+    }
+    
+    private void drawMapApp(Graphics2D g2) {
+        if (mapAppImage == null) return;
+        g2.drawImage(mapAppImage, 0, 0, gp.screenWidth, gp.screenHeight, null);
+    }
+    
+    private void drawLoadingScreen(Graphics2D g2) {
+        g2.setColor(Color.BLACK);
+        g2.fillRect(0, 0, gp.screenWidth, gp.screenHeight);
+        
+        // Vẽ text
+        g2.setColor(Color.WHITE);
+        g2.setFont(new Font("Arial", Font.BOLD, 40));
+        String text = "LOADING...";
+        FontMetrics fm = g2.getFontMetrics();
+        int textX = (gp.screenWidth - fm.stringWidth(text)) / 2;
+        int textY = gp.screenHeight / 2 + 100;
+        g2.drawString(text, textX, textY);
+        
+        // Vẽ nhân vật đứng giữa
+        Image loadingImg = gp.player.down1;
+        if (loadingCounter % 20 < 10) loadingImg = gp.player.down2; // Chớp chân
+        g2.drawImage(loadingImg, gp.screenWidth / 2 - 45, gp.screenHeight / 2 - 45, 90, 90, null);
     }
 
     @Override
@@ -245,5 +396,53 @@ public class OpenWorldState extends GameState {
 
     @Override
     public void handleMouseClick(MouseEvent e) {
+        int mx = e.getX();
+        int my = e.getY();
+        
+        if (subState == SubState.INVENTORY) {
+            // Click outside phone menu -> hide menu
+            // Click on phone menu Use -> trigger map
+            // Click on phone -> show menu
+            
+            // Click on the phone directly opens the map app
+            if (mx >= phoneX && mx <= phoneX + phoneW && my >= phoneY && my <= phoneY + phoneH) {
+                subState = SubState.MAP_APP;
+                showPhoneMenu = false;
+                return;
+            }
+        } else if (subState == SubState.MAP_APP) {
+            // BACK and HOME buttons
+            if (my < 100) {
+                if (mx < 150) {
+                    subState = SubState.INVENTORY;
+                } else if (mx > gp.screenWidth - 150) {
+                    subState = SubState.PLAYING;
+                }
+            }
+            
+            // Hitboxes (ước lượng dựa trên ảnh Area_selection_map.png vẽ full màn 768x576)
+            // Section 1: C1 (Góc trên trái)
+            Rectangle sec1 = new Rectangle(100, 100, 300, 200);
+            // Section 2: KTX (Góc trên phải/giữa phải)
+            Rectangle sec2 = new Rectangle(450, 150, 250, 200);
+            // Section 3: Classroom (Góc dưới trái)
+            Rectangle sec3 = new Rectangle(100, 350, 300, 200);
+            
+            if (sec1.contains(mx, my)) {
+                triggerLoadingForRegion(1); // C1
+            } else if (sec2.contains(mx, my)) {
+                triggerLoadingForRegion(2); // KTX
+            } else if (sec3.contains(mx, my)) {
+                triggerLoadingForRegion(3); // Classroom
+            }
+        }
+    }
+
+    private void triggerLoadingForRegion(int regionIndex) {
+        Region r = regions.get(regionIndex);
+        targetX = r.offsetX + r.width / 2.0;
+        targetY = r.offsetY + r.height / 2.0 + 100;
+        subState = SubState.LOADING;
+        loadingCounter = 0;
     }
 }

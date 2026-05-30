@@ -57,8 +57,8 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
         currentState = new OpenWorldState(this);
         currentState.enter();
 
-        // Add mouse listener for button clicks
-        //this.addMouseListener(this);
+        // Add mouse listener for UI button clicks (inventory, map app, etc.)
+        this.addMouseListener(this);
         // Theo dõi vị trí chuột để ngắm bắn
         this.addMouseMotionListener(mouseH);
         // Xử lý sự kiện click chuột (bắn)

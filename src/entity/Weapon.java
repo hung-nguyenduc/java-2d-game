@@ -12,15 +12,15 @@ import java.util.List;
 
 public class Weapon {
     private GamePanel gp;
-    private MouseHandler mouseH;
-    private Player player;
+    protected MouseHandler mouseH;
+    protected Player player;
 
     private BufferedImage weaponImage;
     public List<Bullet> bullets = new ArrayList<>(); // Đạn chuyển về cho vũ khí quản lý
 
     private int shootCooldown = 0;
     private final int shootInterval = 30;
-    private double aimAngle = 0;
+    protected double aimAngle = 0;
 
     private static final Color BULLET_COLOR = new Color(0, 80, 200);
 
@@ -69,7 +69,7 @@ public class Weapon {
         }
     }
 
-    private void shoot() {
+    protected void shoot() {
         // Tạo đạn tại tâm của Player
         Bullet bullet = new Bullet(player.worldX + 40, player.worldY + 40, aimAngle);
         //bullet.color = BULLET_COLOR;

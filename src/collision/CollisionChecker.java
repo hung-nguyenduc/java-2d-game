@@ -41,6 +41,26 @@ public class CollisionChecker {
                     }
                 }
             }
+            
+            // Kiếm Khí (SwordAura) trúng Enemy
+            for (int i = 0; i < gp.player.swordAuras.size(); i++) {
+                entity.SwordAura aura = gp.player.swordAuras.get(i);
+                Rectangle auraBounds = aura.getBounds();
+                Rectangle enemyBounds = new Rectangle((int)enemy.worldX, (int)enemy.worldY, 80, 80);
+                if (auraBounds.intersects(enemyBounds)) {
+                    enemy.health -= 5; // Sát thương mỗi frame khi xuyên qua
+                }
+            }
+            
+            // Bom nổ trúng Enemy
+            for (entity.Bomb bomb : gp.player.bombs) {
+                if (bomb.exploded) {
+                    double dist = Math.hypot(bomb.worldX + 15 - (enemy.worldX + 40), bomb.worldY + 15 - (enemy.worldY + 40));
+                    if (dist < bomb.explosionRadius / 2.0 + 40) {
+                        enemy.health -= 15; // Sát thương mỗi frame trong vùng nổ
+                    }
+                }
+            }
 
             // Đạn của Enemy trúng Player
             for (int i = 0; i < enemy.bullets.size(); i++) {
@@ -84,6 +104,15 @@ public class CollisionChecker {
                         gp.player.currentWeapon.bullets.remove(i);
                         i--;
                     }
+                }
+            }
+            
+            // Va chạm Kiếm Khí - Vật cản (xóa nếu đụng tường)
+            for (int i = 0; i < gp.player.swordAuras.size(); i++) {
+                entity.SwordAura aura = gp.player.swordAuras.get(i);
+                if (aura.getBounds().intersects(obsBounds)) {
+                    gp.player.swordAuras.remove(i);
+                    i--;
                 }
             }
 

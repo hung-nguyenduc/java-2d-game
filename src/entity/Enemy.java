@@ -14,13 +14,13 @@ public class Enemy extends Entity {
     private int shootCooldown = 0;
     private final int shootInterval = 60; // Shoot every 60 frames (1 second at 60 FPS)
     private final double minDistance = 50; // Minimum distance from player
-    private int enemyType; // 0, 1, 2 for 3 different enemy types
-
+    private String enemyName; // e.g. "gt1", "enemy1"
+    
     // Constructor: Khởi tạo Enemy với vị trí ban đầu
-    public Enemy(GamePanel gp, Player player, int startX, int startY, int enemyType) {
+    public Enemy(GamePanel gp, Player player, int startX, int startY, String enemyName) {
         this.gp = gp;
         this.player = player;
-        this.enemyType = enemyType;
+        this.enemyName = enemyName;
         worldX = startX;
         worldY = startY;
         speed = 1; // Slower than player
@@ -29,11 +29,15 @@ public class Enemy extends Entity {
 
         getEnemyImage();
     }
+    
+    // Constructor cũ để tương thích với các Map khác
+    public Enemy(GamePanel gp, Player player, int startX, int startY, int enemyType) {
+        this(gp, player, startX, startY, new String[]{"gt1", "gt3", "ds"}[enemyType % 3]);
+    }
     public String enemyDirection;
-    public String[] enemyNames = {"gt1", "gt3", "ds"};
-    //public String enemySource = "/enemy/" + enemyNames[enemyType] + "_" + enemyDirection + ".png";
+
     public String getEnemySource() {
-        return "/enemy/" + enemyNames[enemyType] + "_" + enemyDirection + ".png";
+        return "/enemy/" + enemyName + "_" + enemyDirection + ".png";
     }
     public void getEnemyDirection(double dx) {
         if (dx >= 0) {
@@ -43,38 +47,38 @@ public class Enemy extends Entity {
             enemyDirection = "left";
         }
     }
-    // Tải hình ảnh của Enemy dựa trên loại enemy
     public void getEnemyImage() {
-//        try {
-//            // Load 3 different enemy images from enemy folder
-////            switch(enemyType) {
-////                case 0:
-////                    enemyImage = ImageIO.read(getClass().getResourceAsStream(enemySource));
-////                    break;
-////                case 1:
-////                    enemyImage = ImageIO.read(getClass().getResourceAsStream(enemySource));
-////                    break;
-////                case 2:
-////                    enemyImage = ImageIO.read(getClass().getResourceAsStream(enemySource));
-////                    break;
-////                default:
-////                    enemyImage = ImageIO.read(getClass().getResourceAsStream(enemySource));
-//            enemyImage = ImageIO.read(getClass().getResourceAsStream(getEnemySource()));
-////            }
-//        } catch (IOException e) {
-//            System.out.println("LỖI: Không tìm thấy ảnh quái vật!");
-//            e.printStackTrace();
-//        }
-
         try {
-            String base = "/enemy/" + enemyNames[enemyType];
-            imageLeft = ImageIO.read(getClass().getResourceAsStream(base + "_left.png"));
-            imageRight = ImageIO.read(getClass().getResourceAsStream(base + "_right.png"));
+            // Thử load ảnh có đuôi _left và _right
+            String base = "/enemy/" + enemyName;
+            java.net.URL leftUrl = getClass().getResource(base + "_left.png");
+            java.net.URL rightUrl = getClass().getResource(base + "_right.png");
+            
+            if (leftUrl != null && rightUrl != null) {
+                imageLeft = ImageIO.read(leftUrl);
+                imageRight = ImageIO.read(rightUrl);
+            } else {
+                // Fallback nếu không có _left/_right (VD: enemy1.png)
+                java.net.URL singleUrl = getClass().getResource(base + ".png");
+                if (singleUrl != null) {
+                    BufferedImage singleImg = ImageIO.read(singleUrl);
+                    imageLeft = singleImg;
+                    imageRight = singleImg;
+                } else {
+                    // Fallback ds1, ds2 -> ds
+                    if (enemyName.startsWith("ds")) {
+                        imageLeft = ImageIO.read(getClass().getResource("/enemy/ds_left.png"));
+                        imageRight = ImageIO.read(getClass().getResource("/enemy/ds_right.png"));
+                    } else {
+                        System.out.println("LỖI: Không tìm thấy ảnh cho " + enemyName);
+                    }
+                }
+            }
 
             // Set a default starting image
             currentImage = imageLeft;
-        } catch (IOException | IllegalArgumentException e) {
-            System.out.println("LỖI: Không tìm thấy ảnh cho " + enemyNames[enemyType]);
+        } catch (Exception e) {
+            System.out.println("LỖI: Ngoại lệ khi tải ảnh cho " + enemyName);
             e.printStackTrace();
         }
     }
