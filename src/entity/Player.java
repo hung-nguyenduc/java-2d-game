@@ -7,6 +7,8 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import javax.imageio.ImageIO;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Player extends Entity {
     GamePanel gp;
@@ -24,6 +26,23 @@ public class Player extends Entity {
 
     private static final double DIAGONAL_FACTOR = 1.0 / Math.sqrt(2);
     private static final Font HEALTH_FONT = new Font("Arial", Font.BOLD, 11);
+
+    // Inventory system
+    public static class InventoryItem {
+        public String name;
+        public String description;
+        public BufferedImage icon;
+        public InventoryItem(String name, String desc, BufferedImage icon) {
+            this.name = name;
+            this.description = desc;
+            this.icon = icon;
+        }
+    }
+    public List<InventoryItem> inventory = new ArrayList<>();
+
+    public void addInventoryItem(String name, String description, BufferedImage icon) {
+        inventory.add(new InventoryItem(name, description, icon));
+    }
 
     public Player(GamePanel gp, KeyHandler keyH, MouseHandler mouseH) {
         this.gp = gp;

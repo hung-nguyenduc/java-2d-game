@@ -53,6 +53,7 @@ public class OpenWorldState extends GameState {
     // Dịch chuyển (Portals)
     private Rectangle hubToC1, hubToKtx, hubToClassroom;
     private Rectangle c1ToHub, ktxToHub, classroomToHub;
+    private Rectangle ktxToMyRoom;
 
     public OpenWorldState(GamePanel gp) {
         super(gp);
@@ -141,6 +142,7 @@ public class OpenWorldState extends GameState {
         
         Region ktx = regions.get(2);
         ktxToHub = new Rectangle(ktx.offsetX + ktx.width / 2, ktx.offsetY + ktx.height - 150, 80, 80);
+        ktxToMyRoom = new Rectangle(ktx.offsetX + ktx.width / 2 + 150, ktx.offsetY + ktx.height - 150, 80, 80);
         
         Region classroom = regions.get(3);
         classroomToHub = new Rectangle(classroom.offsetX + classroom.width / 2, classroom.offsetY + classroom.height - 150, 80, 80);
@@ -247,6 +249,9 @@ public class OpenWorldState extends GameState {
             teleportPlayerToRegion(regions.get(3));
         } else if (playerRect.intersects(c1ToHub) || playerRect.intersects(ktxToHub) || playerRect.intersects(classroomToHub)) {
             teleportPlayerToRegion(regions.get(0));
+        } else if (playerRect.intersects(ktxToMyRoom)) {
+            gp.setState(new MyRoomState(gp));
+            return;
         }
     }
     
@@ -293,6 +298,10 @@ public class OpenWorldState extends GameState {
         g2.fillRect(ktxToHub.x - cameraX, ktxToHub.y - cameraY, ktxToHub.width, ktxToHub.height);
         g2.fillRect(classroomToHub.x - cameraX, classroomToHub.y - cameraY, classroomToHub.width, classroomToHub.height);
         
+        // Cổng vào Phòng KTX (màu hồng)
+        g2.setColor(new Color(255, 100, 200, 100));
+        g2.fillRect(ktxToMyRoom.x - cameraX, ktxToMyRoom.y - cameraY, ktxToMyRoom.width, ktxToMyRoom.height);
+        
         g2.setColor(Color.WHITE);
         g2.drawString("To C1", hubToC1.x - cameraX, hubToC1.y - cameraY - 10);
         g2.drawString("To KTX", hubToKtx.x - cameraX, hubToKtx.y - cameraY - 10);
@@ -301,6 +310,7 @@ public class OpenWorldState extends GameState {
         g2.drawString("Back HUB", c1ToHub.x - cameraX, c1ToHub.y - cameraY - 10);
         g2.drawString("Back HUB", ktxToHub.x - cameraX, ktxToHub.y - cameraY - 10);
         g2.drawString("Back HUB", classroomToHub.x - cameraX, classroomToHub.y - cameraY - 10);
+        g2.drawString("Phòng KTX", ktxToMyRoom.x - cameraX, ktxToMyRoom.y - cameraY - 10);
 
         // Vẽ Enemy
         for (Enemy enemy : gp.enemies) {
@@ -344,7 +354,7 @@ public class OpenWorldState extends GameState {
         int cellW = (int)(invW * 0.23);
         int cellH = (int)(invH * 0.23);
         
-        // Phone icon centered in the first cell (row 0, col 0)
+        // Phone icon (map) in the first cell (row 0, col 0) - always present
         phoneW = 30;
         phoneH = 30;
         phoneX = gridStartX + (cellW - phoneW) / 2;
@@ -357,6 +367,24 @@ public class OpenWorldState extends GameState {
         g2.fillRect(phoneX + 3, phoneY + 3, phoneW - 6, phoneH - 10);
         g2.setColor(Color.WHITE); // home button
         g2.fillOval(phoneX + phoneW / 2 - 3, phoneY + phoneH - 7, 6, 6);
+        
+        // Draw collected inventory items in remaining cells (slot 1-8)
+        int itemSize = 28;
+        for (int i = 0; i < gp.player.inventory.size() && i < 8; i++) {
+            int slotIndex = i + 1; // slot 0 is the phone
+            int row = slotIndex / 3;
+            int col = slotIndex % 3;
+            int ix = gridStartX + col * cellW + (cellW - itemSize) / 2;
+            int iy = gridStartY + row * cellH + (cellH - itemSize) / 2;
+            
+            entity.Player.InventoryItem item = gp.player.inventory.get(i);
+            if (item.icon != null) {
+                g2.drawImage(item.icon, ix, iy, itemSize, itemSize, null);
+            } else {
+                g2.setColor(Color.ORANGE);
+                g2.fillRect(ix, iy, itemSize, itemSize);
+            }
+        }
     }
     
     private void drawMapApp(Graphics2D g2) {
