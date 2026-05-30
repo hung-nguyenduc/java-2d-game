@@ -30,13 +30,15 @@ public class CollisionChecker {
             }
 
             // Đạn của Player trúng Enemy
-            for (int i = 0; i < gp.player.currentWeapon.bullets.size(); i++) {
-                Bullet bullet = gp.player.currentWeapon.bullets.get(i);
-                if (bullet.worldX + 10 > enemy.worldX && bullet.worldX < enemy.worldX + 80 &&
-                        bullet.worldY + 10 > enemy.worldY && bullet.worldY < enemy.worldY + 80) {
-                    enemy.health -= 35;
-                    gp.player.currentWeapon.bullets.remove(i);
-                    i--;
+            if (gp.player.currentWeapon != null) {
+                for (int i = 0; i < gp.player.currentWeapon.bullets.size(); i++) {
+                    Bullet bullet = gp.player.currentWeapon.bullets.get(i);
+                    if (bullet.worldX + 10 > enemy.worldX && bullet.worldX < enemy.worldX + 80 &&
+                            bullet.worldY + 10 > enemy.worldY && bullet.worldY < enemy.worldY + 80) {
+                        enemy.health -= 35;
+                        gp.player.currentWeapon.bullets.remove(i);
+                        i--;
+                    }
                 }
             }
 
@@ -74,12 +76,14 @@ public class CollisionChecker {
             }
 
             // Va chạm Đạn Player - Vật cản
-            for (int i = 0; i < gp.player.currentWeapon.bullets.size(); i++) {
-                Bullet bullet = gp.player.currentWeapon.bullets.get(i);
-                Rectangle bulletBounds = new Rectangle((int) bullet.worldX, (int)bullet.worldY, 10, 10);
-                if (bulletBounds.intersects(obsBounds)) {
-                    gp.player.currentWeapon.bullets.remove(i);
-                    i--;
+            if (gp.player.currentWeapon != null) {
+                for (int i = 0; i < gp.player.currentWeapon.bullets.size(); i++) {
+                    Bullet bullet = gp.player.currentWeapon.bullets.get(i);
+                    Rectangle bulletBounds = new Rectangle((int) bullet.worldX, (int)bullet.worldY, 10, 10);
+                    if (bulletBounds.intersects(obsBounds)) {
+                        gp.player.currentWeapon.bullets.remove(i);
+                        i--;
+                    }
                 }
             }
 
