@@ -51,9 +51,18 @@ public class OpenWorldState extends GameState {
     private Font HUD_FONT = new Font("Arial", Font.BOLD, 20);
 
     // Dịch chuyển (Portals)
-    private Rectangle hubToC1, hubToKtx, hubToClassroom;
-    private Rectangle c1ToHub, ktxToHub, classroomToHub;
+    private Rectangle hubToC1, hubToKtx, hubToClassroom, hubToStadium, hubToLibrary, hubToD7;
+    private Rectangle c1ToHub, ktxToHub, classroomToHub, stadiumToHub, libraryToHub, d7ToHub;
     private Rectangle ktxToMyRoom;
+
+    private Rectangle[] portals;
+    private Rectangle[] returnPortals;
+    
+    // Hệ thống Nhiệm vụ / Event sinh quái
+    private List<Rectangle> eventTriggers = new ArrayList<>();
+    private List<Boolean> eventTriggered = new ArrayList<>();
+    private String currentAlert = "";
+    private int alertTimer = 0;
 
     public OpenWorldState(GamePanel gp) {
         super(gp);
@@ -66,6 +75,12 @@ public class OpenWorldState extends GameState {
         regions.add(new Region("KTX", "/maps/ktx.png", "/maps/ktx_obstacles.txt", 8000, 0, 1.0 / 2.5));
         // Classroom: classroom.png ở (0, 4000)
         regions.add(new Region("Classroom", "/maps/classroom.png", "/maps/classroom_obstacles.txt", 0, 4000, 1.0 / 2.5));
+        // Stadium (SVD) ở (4000, 4000)
+        regions.add(new Region("Stadium", "/maps/stadium.png", null, 4000, 4000, 1.0 / 2.5));
+        // Library ở (8000, 4000)
+        regions.add(new Region("Library", "/maps/library.png", null, 8000, 4000, 1.0 / 2.5));
+        // D7 ở (0, 8000)
+        regions.add(new Region("D7", "/maps/d7.png", null, 0, 8000, 1.0 / 2.5));
     }
 
     @Override
@@ -135,6 +150,9 @@ public class OpenWorldState extends GameState {
         hubToC1 = new Rectangle(hub.offsetX + 300, hub.offsetY + 100, 80, 80);
         hubToKtx = new Rectangle(hub.offsetX + 500, hub.offsetY + 100, 80, 80);
         hubToClassroom = new Rectangle(hub.offsetX + 700, hub.offsetY + 100, 80, 80);
+        hubToStadium = new Rectangle(hub.offsetX + 900, hub.offsetY + 100, 80, 80);
+        hubToLibrary = new Rectangle(hub.offsetX + 300, hub.offsetY + 300, 80, 80);
+        hubToD7 = new Rectangle(hub.offsetX + 500, hub.offsetY + 300, 80, 80);
         
         // Vùng dịch chuyển từ các nơi về HUB
         Region c1 = regions.get(1);
@@ -146,6 +164,29 @@ public class OpenWorldState extends GameState {
         
         Region classroom = regions.get(3);
         classroomToHub = new Rectangle(classroom.offsetX + classroom.width / 2, classroom.offsetY + classroom.height - 150, 80, 80);
+        
+        Region stadium = regions.get(4);
+        stadiumToHub = new Rectangle(stadium.offsetX + stadium.width / 2, stadium.offsetY + stadium.height - 150, 80, 80);
+        
+        Region library = regions.get(5);
+        libraryToHub = new Rectangle(library.offsetX + library.width / 2, library.offsetY + library.height - 150, 80, 80);
+        
+        Region d7 = regions.get(6);
+        d7ToHub = new Rectangle(d7.offsetX + d7.width / 2, d7.offsetY + d7.height - 150, 80, 80);
+        
+        // Cập nhật mảng portal tạm để logic update xử lý
+        portals = new Rectangle[] { hubToC1, hubToKtx, hubToClassroom, hubToStadium, hubToLibrary, hubToD7 };
+        returnPortals = new Rectangle[] { c1ToHub, ktxToHub, classroomToHub, stadiumToHub, libraryToHub, d7ToHub };
+        
+        // Thiết lập Vùng kích hoạt sự kiện sinh quái
+        eventTriggers.clear();
+        eventTriggered.clear();
+        // Giữa sân vận động
+        eventTriggers.add(new Rectangle(stadium.offsetX + stadium.width / 2 - 100, stadium.offsetY + stadium.height / 2 - 100, 200, 200));
+        eventTriggered.add(false);
+        // Trông thư viện
+        eventTriggers.add(new Rectangle(library.offsetX + library.width / 2 - 100, library.offsetY + library.height / 2 - 100, 200, 200));
+        eventTriggered.add(false);
         
         
         try {
@@ -227,6 +268,17 @@ public class OpenWorldState extends GameState {
         
         checkRegionSpawn();
 
+        // Lấy tọa độ Player hiện tại
+        Rectangle playerRect = new Rectangle((int)gp.player.worldX, (int)gp.player.worldY, gp.tileSize, gp.tileSize);
+
+        // Kiểm tra Event Triggers (Sinh quái khi làm nhiệm vụ)
+        for (int i = 0; i < eventTriggers.size(); i++) {
+            if (!eventTriggered.get(i) && playerRect.intersects(eventTriggers.get(i))) {
+                eventTriggered.set(i, true);
+                triggerMonsterWave(i);
+            }
+        }
+
         for (int i = 0; i < gp.enemies.size(); i++) {
             gp.enemies.get(i).update();
         }
@@ -238,18 +290,21 @@ public class OpenWorldState extends GameState {
             return;
         }
 
-        // Logic dịch chuyển giữa các toà nhà (Teleport)
-        Rectangle playerRect = new Rectangle((int)gp.player.worldX, (int)gp.player.worldY, gp.tileSize, gp.tileSize);
+        // Logic dịch chuyển
+        for (int i = 0; i < portals.length; i++) {
+            if (playerRect.intersects(portals[i])) {
+                teleportPlayerToRegion(regions.get(i + 1));
+                break;
+            }
+        }
+        for (Rectangle retPortal : returnPortals) {
+            if (playerRect.intersects(retPortal)) {
+                teleportPlayerToRegion(regions.get(0));
+                break;
+            }
+        }
         
-        if (playerRect.intersects(hubToC1)) {
-            teleportPlayerToRegion(regions.get(1));
-        } else if (playerRect.intersects(hubToKtx)) {
-            teleportPlayerToRegion(regions.get(2));
-        } else if (playerRect.intersects(hubToClassroom)) {
-            teleportPlayerToRegion(regions.get(3));
-        } else if (playerRect.intersects(c1ToHub) || playerRect.intersects(ktxToHub) || playerRect.intersects(classroomToHub)) {
-            teleportPlayerToRegion(regions.get(0));
-        } else if (playerRect.intersects(ktxToMyRoom)) {
+        if (playerRect.intersects(ktxToMyRoom)) {
             gp.setState(new MyRoomState(gp));
             return;
         }
@@ -258,6 +313,22 @@ public class OpenWorldState extends GameState {
     private void teleportPlayerToRegion(Region r) {
         gp.player.worldX = r.offsetX + r.width / 2.0;
         gp.player.worldY = r.offsetY + r.height / 2.0 + 100;
+    }
+    
+    private void triggerMonsterWave(int eventIndex) {
+        currentAlert = "AMBUSH! MONSTERS APPEARED!";
+        alertTimer = 180; // 3 giây (60fps)
+        
+        Rectangle trigger = eventTriggers.get(eventIndex);
+        int spawnX = trigger.x + trigger.width / 2;
+        int spawnY = trigger.y + trigger.height / 2;
+        
+        // Sinh 10 con quái xung quanh
+        for (int i = 0; i < 10; i++) {
+            int ox = spawnX + (int)(Math.random() * 600 - 300);
+            int oy = spawnY + (int)(Math.random() * 600 - 300);
+            gp.enemies.add(new Enemy(gp, gp.player, ox, oy, "gt3"));
+        }
     }
 
     @Override
@@ -292,11 +363,17 @@ public class OpenWorldState extends GameState {
         g2.fillRect(hubToC1.x - cameraX, hubToC1.y - cameraY, hubToC1.width, hubToC1.height);
         g2.fillRect(hubToKtx.x - cameraX, hubToKtx.y - cameraY, hubToKtx.width, hubToKtx.height);
         g2.fillRect(hubToClassroom.x - cameraX, hubToClassroom.y - cameraY, hubToClassroom.width, hubToClassroom.height);
+        g2.fillRect(hubToStadium.x - cameraX, hubToStadium.y - cameraY, hubToStadium.width, hubToStadium.height);
+        g2.fillRect(hubToLibrary.x - cameraX, hubToLibrary.y - cameraY, hubToLibrary.width, hubToLibrary.height);
+        g2.fillRect(hubToD7.x - cameraX, hubToD7.y - cameraY, hubToD7.width, hubToD7.height);
         
         g2.setColor(new Color(0, 255, 255, 100)); // Màu cyan cho cổng về
         g2.fillRect(c1ToHub.x - cameraX, c1ToHub.y - cameraY, c1ToHub.width, c1ToHub.height);
         g2.fillRect(ktxToHub.x - cameraX, ktxToHub.y - cameraY, ktxToHub.width, ktxToHub.height);
         g2.fillRect(classroomToHub.x - cameraX, classroomToHub.y - cameraY, classroomToHub.width, classroomToHub.height);
+        g2.fillRect(stadiumToHub.x - cameraX, stadiumToHub.y - cameraY, stadiumToHub.width, stadiumToHub.height);
+        g2.fillRect(libraryToHub.x - cameraX, libraryToHub.y - cameraY, libraryToHub.width, libraryToHub.height);
+        g2.fillRect(d7ToHub.x - cameraX, d7ToHub.y - cameraY, d7ToHub.width, d7ToHub.height);
         
         // Cổng vào Phòng KTX (màu hồng)
         g2.setColor(new Color(255, 100, 200, 100));
@@ -306,10 +383,16 @@ public class OpenWorldState extends GameState {
         g2.drawString("To C1", hubToC1.x - cameraX, hubToC1.y - cameraY - 10);
         g2.drawString("To KTX", hubToKtx.x - cameraX, hubToKtx.y - cameraY - 10);
         g2.drawString("To Class", hubToClassroom.x - cameraX, hubToClassroom.y - cameraY - 10);
+        g2.drawString("To Stadium", hubToStadium.x - cameraX, hubToStadium.y - cameraY - 10);
+        g2.drawString("To Library", hubToLibrary.x - cameraX, hubToLibrary.y - cameraY - 10);
+        g2.drawString("To D7", hubToD7.x - cameraX, hubToD7.y - cameraY - 10);
         
         g2.drawString("Back HUB", c1ToHub.x - cameraX, c1ToHub.y - cameraY - 10);
         g2.drawString("Back HUB", ktxToHub.x - cameraX, ktxToHub.y - cameraY - 10);
         g2.drawString("Back HUB", classroomToHub.x - cameraX, classroomToHub.y - cameraY - 10);
+        g2.drawString("Back HUB", stadiumToHub.x - cameraX, stadiumToHub.y - cameraY - 10);
+        g2.drawString("Back HUB", libraryToHub.x - cameraX, libraryToHub.y - cameraY - 10);
+        g2.drawString("Back HUB", d7ToHub.x - cameraX, d7ToHub.y - cameraY - 10);
         g2.drawString("Phòng KTX", ktxToMyRoom.x - cameraX, ktxToMyRoom.y - cameraY - 10);
 
         // Vẽ Enemy
@@ -325,6 +408,14 @@ public class OpenWorldState extends GameState {
         g2.setFont(HUD_FONT);
         g2.drawString("OPEN WORLD MODE", 10, 30);
         g2.drawString("KILLS: " + gp.killCount, 10, 60);
+        
+        if (alertTimer > 0) {
+            g2.setFont(new Font("Arial", Font.BOLD, 30));
+            g2.setColor(Color.RED);
+            int txtW = g2.getFontMetrics().stringWidth(currentAlert);
+            g2.drawString(currentAlert, gp.screenWidth/2 - txtW/2, 100);
+            alertTimer--;
+        }
         
         // Vẽ UI đè lên trên cùng
         if (subState == SubState.INVENTORY) {
