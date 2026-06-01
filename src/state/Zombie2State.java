@@ -6,7 +6,6 @@ import entity.Enemy;
 import main.GamePanel;
 import collision.Obstacle;
 import collision.ObstacleManager;
-import entity.Item;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -15,28 +14,16 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 
-public class KTXState extends GameState {
-    private static final String MAP_IMAGE_PATH = "/maps/ktx.png";
+public class Zombie2State extends GameState {
+    private static final String MAP_IMAGE_PATH = "/maps/normal-c1.png";
     private static final String OBSTACLE_TXT_PATH = "/maps/ktx_obstacles.txt";
-    private static final double MAP_SCALE = 1.0 / 2.5; // Tỷ lệ thu phóng map
+    private static final double MAP_SCALE = 1.0 / 2.0; // Tỷ lệ thu phóng map
     private DialogueManager dialogueBox;
     private Image mapImage;
     private List<Obstacle> obstacles = new ArrayList<>();
     BufferedImage vuFace;
     BufferedImage doMimiFace;
-
-    private boolean isQuestCompleted = false;
-    private boolean isPhase2DialoguePlayed = false;
-    private DialogueLine[] introScript;
-    private DialogueLine[] afterQuestScript;
-
-    private List<Item> questItems = new ArrayList<>();
-    private int itemsCollected = 0;
-    private final int TOTAL_QUEST_ITEMS = 3;
-    private Item nearbyItem = null; // Lưu vật phẩm đang đứng gần để hiển thị UI
-    private Rectangle doorRect = new Rectangle(500, 500, 154, 154);
-    private boolean isNearDoor = false;
-    public KTXState(GamePanel gp) {
+    public Zombie2State(GamePanel gp) {
         super(gp);
         dialogueBox = new DialogueManager() {
             @Override
@@ -91,13 +78,13 @@ public class KTXState extends GameState {
         // gp.sound.playMusic("level3_theme");
         try {
             vuFace = ImageIO.read(getClass().getResourceAsStream("/player/down1.png"));
-             doMimiFace = ImageIO.read(getClass().getResourceAsStream("/NPC/DoMiMi/DoMiMi-xoaphong.png"));
+            doMimiFace = ImageIO.read(getClass().getResourceAsStream("/NPC/DoMiMi/DoMiMi-xoaphong.png"));
 
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        introScript = new DialogueLine[] {
+        DialogueLine[] script = {
                 new DialogueLine("Giới thiệu nhân vật:\nĐây là Vũ, tân sinh viên Bách Khoa K36.", vuFace),
                 new DialogueLine("Vũ tự tin bước vào trường với ước mơ ra trường đúng hạn\nvà trở thành một kỹ sư tài ba.", vuFace),
                 new DialogueLine("Vũ đang ngủ ở kí túc xá, ngáy khò khò", vuFace),
@@ -108,20 +95,7 @@ public class KTXState extends GameState {
                 new DialogueLine("Vũ: Ôi thôi chết quên mẹ giờ học rồi, phải đi ngay thôi!", vuFace),
                 new DialogueLine("Nhiệm vụ: thu thập cặp sách, sách giải tích, hộp bút để đi học", null)
         };
-
-        afterQuestScript = new DialogueLine[] {
-                new DialogueLine("Vũ: Phù, đủ đồ rồi, lượn ra Parabol thôi!", vuFace),
-
-        };
-
-        questItems.clear();
-        questItems.add(new Item("Cặp sách", "/items/backpack.png", 200, 300));
-        questItems.add(new Item("Sách giải tích", "/items/calculus.png", 400, 350));
-        questItems.add(new Item("Hộp bút", "/items/pencilcase.png", 600, 250));
-        itemsCollected = 0;
-
-        // Bắt đầu luôn thoại phần 1
-        dialogueBox.startDialogue(introScript);
+        dialogueBox.startDialogue(script);
     }
 
     @Override
@@ -131,79 +105,21 @@ public class KTXState extends GameState {
     }
     public int dialogueLineCounter = 0;
 
-    // XÓA DÒNG NÀY ĐI: public int dialogueLineCounter = 0;
-
     @Override
     public void update() {
-        // Khóa toàn bộ game (hoặc chỉ Player) khi hội thoại đang chạy
-        if (dialogueBox.isActive()) {
+        // Nếu đang hiện hội thoại thì đóng băng quái vật hoặc đóng băng di chuyển của Player lại
+        if (dialogueBox.isActive() && dialogueLineCounter < 8) {
+            // Chỉ cập nhật hiệu ứng chữ, không cho Player chạy đi đâu hết
+            // Nếu bạn dùng KeyHandler chung, hãy check điều kiện này để chặn di chuyển của Vũ nhé!
+
+            // Xử lý lắng nghe phím Enter chuyển dòng từ KeyHandler của bạn
             if (gp.keyH.spacePressed) {
                 dialogueBox.advanceDialogue();
+                ++dialogueLineCounter;
                 gp.keyH.spacePressed = false; // Reset phím ngay lập tức để tránh bị trôi chữ quá nhanh
             }
-            return; // Đang nói chuyện thì không làm gì khác
-        }
-        // Reset biến nearbyItem mỗi frame trước khi check lại
-        nearbyItem = null;
-        isNearDoor = false;
-        Rectangle playerRect = new Rectangle((int)gp.player.worldX, (int)gp.player.worldY, 32, 32);
-        // ---------------------------------------------------------
-        // LOGIC NHIỆM VỤ Ở ĐÂY:
-        // Nếu chưa làm xong nhiệm vụ thì check xem nhặt đủ đồ chưa
-        if (!isQuestCompleted) {
-            // Lặp qua danh sách đồ vật đang rớt trên map
-            for (int i = 0; i < questItems.size(); i++) {
-                Item item = questItems.get(i);
-
-                // Tạo hộp va chạm ảo cho Player và Item để check xem có đụng nhau không
-                Rectangle itemRect = new Rectangle(item.worldX, item.worldY, item.solidArea.width, item.solidArea.height);
-
-                // Trùng Hitbox -> Đang đứng trên vật phẩm
-                if (playerRect.intersects(itemRect)) {
-                    nearbyItem = item; // Đánh dấu là đang đứng gần món này
-
-                    // NẾU ĐỨNG GẦN VÀ BẤM PHÍM F
-                    if (gp.keyH.fPressed) {
-                        System.out.println("Vũ đã nhặt được: " + item.name);
-                        questItems.remove(i);
-                        itemsCollected++;
-                        gp.keyH.fPressed = false; // Bấm xong phải reset phím ngay tránh lỗi nhặt đúp
-                        nearbyItem = null; // Nhặt rồi thì không còn đứng gần nữa
-                        break; // Nhặt xong 1 món thì thoát vòng lặp frame này luôn
-                    }
-                }
-            }
-
-            // Nếu đã nhặt đủ số lượng đồ
-            if (itemsCollected >= TOTAL_QUEST_ITEMS) {
-                isQuestCompleted = true;
-            }
-        }
-
-        // LOGIC KIỂM TRA CỬA RA VÀO:
-        if (playerRect.intersects(doorRect)) {
-            isNearDoor = true;
-
-            if (gp.keyH.fPressed) {
-                if (isQuestCompleted) {
-                    System.out.println("Qua màn!");
-                    // CHUYỂN SANG MAP TIẾP THEO Ở ĐÂY. Thay Level2State bằng state mày muốn.
-                    gp.setState(new ClassroomState(gp));
-                } else {
-                    System.out.println("Chưa thu thập đủ đồ!");
-                }
-                gp.keyH.fPressed = false; // Reset phím F
-            }
-        }
-
-        // Kích hoạt hội thoại phần 2 ngay khi nhiệm vụ xong (chỉ gọi 1 lần)
-        if (isQuestCompleted && !isPhase2DialoguePlayed) {
-            dialogueBox.startDialogue(afterQuestScript);
-            isPhase2DialoguePlayed = true;
             return;
         }
-        // ---------------------------------------------------------
-
         // Cập nhật logic nhân vật
         gp.player.update();
 
@@ -254,57 +170,17 @@ public class KTXState extends GameState {
 //        for (Enemy enemy : gp.enemies) {
 //            enemy.draw(g2, cameraX, cameraY);
 //        }
-        // TẦNG MỚI: Vẽ Item trước khi vẽ Player để Player có thể đè lên item
-        for (Item item : questItems) {
-            item.draw(g2, cameraX, cameraY);
-        }
 
         // Tầng 4: Vẽ Nhân vật chính
-
-        gp.player.draw(g2, cameraX, cameraY);
-
+        if (!dialogueBox.isActive() && dialogueLineCounter >= 8) {
+            gp.player.draw(g2, cameraX, cameraY);
+        }
 
         // Tầng 5: Vẽ giao diện hiển thị (HUD) cố định trên màn hình (Máu, Số mạng đã giết...)
 //        g2.setColor(Color.WHITE);
 //        g2.setFont(new Font("Arial", Font.BOLD, 20));
 //        g2.drawString("HP: " + gp.player.health, 20, 30);
 //        g2.drawString("KILLS: " + gp.killCount, 20, 60);
-
-        // HIỂN THỊ HƯỚNG DẪN NHẶT ĐỒ NẾU ĐANG ĐỨNG GẦN:
-        if (nearbyItem != null && !isQuestCompleted) {
-            g2.setColor(Color.WHITE);
-            g2.setFont(new Font("Arial", Font.BOLD, 14));
-            String text = "Nhấn F để nhặt " + nearbyItem.name;
-
-            // Căn tọa độ để chữ hiện ngay trên đầu Vũ
-            int textX = (int)gp.player.worldX - cameraX - 20;
-            int textY = (int)gp.player.worldY - cameraY - 10;
-
-            // Vẽ thêm cái viền đen mỏng cho chữ dễ đọc trên nền sáng
-            g2.setColor(Color.BLACK);
-            g2.drawString(text, textX + 1, textY + 1);
-            g2.setColor(Color.WHITE);
-            g2.drawString(text, textX, textY);
-        }
-
-        // 2. Hiển thị chữ ở cửa (nếu đang đứng gần cửa)
-        if (isNearDoor) {
-            String text = isQuestCompleted ? "Nhấn F để ra ngoài" : "Cần thu thập đủ đồ trước!";
-            // Hiển thị màu xanh nếu đủ đồ, màu đỏ nếu thiếu đồ
-            Color textColor = isQuestCompleted ? Color.GREEN : Color.RED;
-
-            int textX = (int)gp.player.worldX - cameraX - 30;
-            int textY = (int)gp.player.worldY - cameraY - 10;
-
-            g2.setColor(Color.BLACK);
-            g2.drawString(text, textX + 1, textY + 1);
-            g2.setColor(textColor);
-            g2.drawString(text, textX, textY);
-        }
-
-        // Tùy chọn: Vẽ khung chữ nhật tàng hình của cửa để debug xem tọa độ đúng chưa (Sau khi khớp rồi thì xóa hoặc comment dòng này đi)
-        // g2.setColor(new Color(255, 0, 0, 100)); // Màu đỏ trong suốt
-        // g2.fillRect(doorRect.x - cameraX, doorRect.y - cameraY, doorRect.width, doorRect.height);
 
         dialogueBox.draw(g2, gp.screenWidth, gp.screenHeight);
     }
