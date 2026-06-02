@@ -188,7 +188,7 @@ public class KTXState extends GameState {
                 if (isQuestCompleted) {
                     System.out.println("Qua màn!");
                     // CHUYỂN SANG MAP TIẾP THEO Ở ĐÂY. Thay Level2State bằng state mày muốn.
-                    gp.setState(new ClassroomState(gp));
+                    gp.setState(new LoadingState(gp, new ClassroomState(gp)));
                 } else {
                     System.out.println("Chưa thu thập đủ đồ!");
                 }
