@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class KTXState extends GameState {
+    private boolean debugMode = false;
     private static final String MAP_IMAGE_PATH = "/maps/ktx.png";
     private static final String OBSTACLE_TXT_PATH = "/maps/ktx_obstacles.txt";
     private static final double MAP_SCALE = 1.0 / 2.5; // Tỷ lệ thu phóng map
@@ -116,8 +117,8 @@ public class KTXState extends GameState {
 
         questItems.clear();
         questItems.add(new Item("Cặp sách", "/items/backpack.png",
-                1326, 1456));
-        questItems.add(new Item("Sách giải tích", "/items/calculus.png", 1139, 1242));
+                132, 145));
+        questItems.add(new Item("Sách giải tích", "/items/calculus.png", 119, 124));
         questItems.add(new Item("Hộp bút", "/items/pencilcase.png", 380,  461));
         itemsCollected = 0;
 
@@ -147,7 +148,7 @@ public class KTXState extends GameState {
         // Reset biến nearbyItem mỗi frame trước khi check lại
         nearbyItem = null;
         isNearDoor = false;
-        Rectangle playerRect = new Rectangle((int)gp.player.worldX, (int)gp.player.worldY, 32, 32);
+        Rectangle playerRect = new Rectangle((int)gp.player.worldX + 10, (int)gp.player.worldY + 10, 20, 20);
         // ---------------------------------------------------------
         // LOGIC NHIỆM VỤ Ở ĐÂY:
         // Nếu chưa làm xong nhiệm vụ thì check xem nhặt đủ đồ chưa
@@ -308,6 +309,10 @@ public class KTXState extends GameState {
         // g2.fillRect(doorRect.x - cameraX, doorRect.y - cameraY, doorRect.width, doorRect.height);
 
         dialogueBox.draw(g2, gp.screenWidth, gp.screenHeight);
+
+        if (debugMode) {
+            g2.drawRect((int)gp.player.worldX - cameraX, (int)gp.player.worldY - cameraY, 40, 40); // Hitbox Player
+        }
     }
 
     @Override
