@@ -186,20 +186,34 @@ public class ZombieState extends GameState {
 
         // 1. Vẽ Map nền
         if (mapImage != null) {
-            g2.drawImage(mapImage,
-                    0, 0, gp.screenWidth, gp.screenHeight,
-                    cameraX, cameraY, cameraX + gp.screenWidth, cameraY + gp.screenHeight,
-                    null);
+            g2.drawImage(mapImage, 0, 0, gp.screenWidth, gp.screenHeight, cameraX, cameraY, cameraX + gp.screenWidth, cameraY + gp.screenHeight, null);
         }
 
-        // 2. Vẽ Vật cản
+        // 2. VẼ CÁC VẬT CẢN & XỬ LÝ ĐIỀU KIỆN DEBUG MODE
         for (Obstacle obs : obstacles) {
+            // Đầu tiên vẫn vẽ hình ảnh vật cản bình thường để chơi game
             obs.draw(g2, cameraX, cameraY);
+
+            // Cải tiến: Nếu bật debugMode lên đầu class (= true), vẽ thêm khung viền màu đỏ đè lên
+            if (debugMode) {
+                g2.setColor(Color.RED);
+                g2.setStroke(new BasicStroke(2)); // Độ dày viền khung debug
+                // Tính tọa độ hiển thị trên màn hình dựa vào Camera
+                int screenObsX = obs.worldX - cameraX;
+                int screenObsY = obs.worldY - cameraY;
+                g2.drawRect(screenObsX, screenObsY, obs.width, obs.height);
+            }
         }
 
         // 3. Vẽ Lũ quái vật Zombie
         for (Enemy enemy : gp.enemies) {
             enemy.draw(g2, cameraX, cameraY);
+
+            // Vẽ thêm khung đỏ cho cả quái vật luôn nếu muốn soi vị trí va chạm
+            if (debugMode) {
+                g2.setColor(Color.RED);
+                g2.drawRect((int)enemy.worldX - cameraX, (int)enemy.worldY - cameraY, 48, 48);
+            }
         }
 
         // 4. Vẽ Nhân vật Vũ
@@ -212,12 +226,12 @@ public class ZombieState extends GameState {
             weapon.draw(g2, screenX, screenY, cameraX, cameraY);
         }
 
-        // 6. Vẽ Giao diện HUD hiển thị số lượng mục tiêu cần diệt
+        // 6. Vẽ Giao diện HUD
         g2.setColor(Color.RED);
         g2.setFont(HUD_FONT);
         g2.drawString("Man 1 - Giet quai: " + gp.killCount + " / 3", 10, 30);
 
-        // 7. Vẽ Hộp thoại lên trên cùng màn hình nếu đang hoạt động
+        // 7. Vẽ Hộp thoại
         dialogueBox.draw(g2, gp.screenWidth, gp.screenHeight);
     }
 
