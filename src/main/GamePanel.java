@@ -54,7 +54,7 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
         this.setDoubleBuffered(true);
 
         // Initialize state management - start with MenuState
-        currentState = new OpenWorldState(this);
+        currentState = new MenuState(this);
         currentState.enter();
 
         // Add mouse listener for UI button clicks (inventory, map app, etc.)
@@ -65,6 +65,7 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
         this.addMouseListener(mouseH);
 
         this.setFocusable(true);
+        this.requestFocusInWindow();
         this.setFocusTraversalKeysEnabled(false);
         this.addKeyListener(keyH);
 

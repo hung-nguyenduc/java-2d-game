@@ -95,7 +95,7 @@ public class MenuState extends GameState {
     public void handleMouseClick(MouseEvent e) {
         Point p = e.getPoint();
         if (playButton.contains(p)) {
-            gp.setState(new ZombieState(gp));
+            gp.setState(new KTXState(gp));
         } else if (instructionsButton.contains(p)) {
             gp.setState(new InstructionsState(gp));
         } else if (infoButton.contains(p)) {

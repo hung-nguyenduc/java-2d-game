@@ -24,22 +24,21 @@ Vừa ngồi vào bản, Vũ đã phải chạm trán thử thách đầu tiên:
 - Nếu đỗ --> qua năm 2
 
 - Nếu trượt --> chưa tày --> đuổi học. Chuyển cảnh: Vũ bị bảo vệ trường bế ra khỏi cổng Parabol. Vũ quyết định về quê nuôi cá và trồng thêm rau.
- 
 - ![img.png](img.png)
 
--------Map3: Đánh quái P1------
+------Map3: ----------
+
+
+-------Map 4: Đánh quái P1------
 (Chuyển cảnh UFO xâm chiếm trái đất)
 Người ngoài hành tinh đổ bộ xâm lược trái đất, Vũ phải gác lại ước mơ học hành để cầm súng lên đường chiến đấu với quái vật.
 - Nếu sống --> năm 3   
 - Nếu chết --> sayonara (chuyển cảnh ending đài tưởng niệm bk: 10 năm sau, ở đài tưởng niệm bk, có một tấm bia ghi tên những sinh viên đã hy sinh trong cuộc chiến chống lại người ngoài hành tinh, Vũ là một trong số đó)
 
 
---------Map4: Đánh quái P2------
+--------Map 5: Đánh quái P2------
 Tăng độ khó: di chuyển né đạn
 
---------Map5: Đánh quái P3------
+--------Map 6: Đánh quái P3------
 Tăng độ khó: quái tàng hình, di chuyển nhanh
 
-Năm 4: ...
-- Nếu qua --> tốt nghiệp xs, lương triệu đô
-- Không qua --> bằng khá, đi chạy grab
