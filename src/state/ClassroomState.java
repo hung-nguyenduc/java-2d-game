@@ -176,7 +176,7 @@ public class ClassroomState extends GameState {
                 if (score >= 3) {
                     System.out.println("Qua môn! Chuyển map...");
                     // CHUYỂN MAP Ở ĐÂY:
-                    gp.setState(new ZombieState(gp));
+                    gp.setState(new LoadingState(gp, new CongQuanSu(gp)));
                 } else {
                     System.out.println("Trượt rồi, chơi lại!");
                     // Reset lại điểm và câu hỏi để thi lại
