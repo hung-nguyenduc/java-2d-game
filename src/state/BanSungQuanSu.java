@@ -38,10 +38,10 @@ public class BanSungQuanSu extends GameState {
     // Quản lý bia đỡ đạn
     private List<Item> targetBia = new ArrayList<>();
     private int targetsDestroyed = 0;
-    private final int TOTAL_TARGETS = 10;
+    private final int TOTAL_TARGETS = 5;
 
     // CÁC BIẾN ĐIỀU KHIỂN BIA DI ĐỘNG "LỪA"
-    private int targetSpeedY = 3;
+    private int targetSpeedY = 2;
     private int targetMinY;
     private int targetMaxY;
     private Random random = new Random();
@@ -62,6 +62,7 @@ public class BanSungQuanSu extends GameState {
                     gp.setState(new BanSungQuanSu(gp));
                 } else if (isQuestCompleted) {
                     // Nếu thắng, qua màn tiếp theo
+                    gp.setState(new LoadingState(gp, new NemLuuDanQuanSu(gp)));
                 }
             }
         };
@@ -95,7 +96,7 @@ public class BanSungQuanSu extends GameState {
         gp.killCount = 0;
         gp.player.health = 100;
         gp.enemies.clear();
-        bulletsLeft = 5;
+        bulletsLeft = 10;
         targetsDestroyed = 0;
         isGameOver = false;
         isQuestCompleted = false;
