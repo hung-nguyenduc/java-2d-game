@@ -115,9 +115,10 @@ public class KTXState extends GameState {
         };
 
         questItems.clear();
-        questItems.add(new Item("Cặp sách", "/items/backpack.png", 200, 300));
-        questItems.add(new Item("Sách giải tích", "/items/calculus.png", 400, 350));
-        questItems.add(new Item("Hộp bút", "/items/pencilcase.png", 600, 250));
+        questItems.add(new Item("Cặp sách", "/items/backpack.png",
+                1326, 1456));
+        questItems.add(new Item("Sách giải tích", "/items/calculus.png", 1139, 1242));
+        questItems.add(new Item("Hộp bút", "/items/pencilcase.png", 380,  461));
         itemsCollected = 0;
 
         // Bắt đầu luôn thoại phần 1
