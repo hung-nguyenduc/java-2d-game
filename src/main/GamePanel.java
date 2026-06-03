@@ -47,11 +47,20 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
     // Game state management
     private GameState currentState;
 
+    // Global inventory UI
+    public boolean showInventory = false;
+    private boolean iKeyProcessed = false;
+    private java.awt.image.BufferedImage inventoryImage;
+    public int phoneX, phoneY, phoneW, phoneH;
 
     public GamePanel() {
         this.setPreferredSize(new Dimension(screenWidth, screenHeight));
         this.setBackground(Color.BLACK);
         this.setDoubleBuffered(true);
+
+        try {
+            inventoryImage = javax.imageio.ImageIO.read(getClass().getResourceAsStream("/inventory/Inventory.png"));
+        } catch (Exception e) {}
 
         // Initialize state management - start with MenuState
         currentState = new MenuState(this);
@@ -140,6 +149,14 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
 
     // Cập nhật trạng thái game mỗi frame
     public void update() {
+        if (keyH.iPressed && !iKeyProcessed) {
+            iKeyProcessed = true;
+            showInventory = !showInventory;
+        }
+        if (!keyH.iPressed) iKeyProcessed = false;
+        
+        if (showInventory) return;
+        
         currentState.update();
         checkCollisions();
     }
@@ -153,7 +170,55 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
         g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
                 RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         currentState.draw(g2);
+        
+        if (showInventory) {
+            drawInventory(g2);
+        }
         // KHÔNG dispose Graphics do Swing cấp — đó là lỗi, dispose sẽ làm hỏng các vẽ tiếp theo
+    }
+    
+    private void drawInventory(Graphics2D g2) {
+        if (inventoryImage == null) return;
+        
+        int invW = 350;
+        int invH = 350;
+        int invX = screenWidth / 2 - invW / 2;
+        int invY = screenHeight / 2 - invH / 2;
+        g2.drawImage(inventoryImage, invX, invY, invW, invH, null);
+        
+        int gridStartX = invX + (int)(invW * 0.22);
+        int gridStartY = invY + (int)(invH * 0.18);
+        int cellW = (int)(invW * 0.23);
+        int cellH = (int)(invH * 0.23);
+        
+        phoneW = 30;
+        phoneH = 30;
+        phoneX = gridStartX + (cellW - phoneW) / 2;
+        phoneY = gridStartY + (cellH - phoneH) / 2;
+        
+        g2.setColor(new Color(40, 40, 40));
+        g2.fillRoundRect(phoneX, phoneY, phoneW, phoneH, 6, 6);
+        g2.setColor(new Color(100, 200, 255));
+        g2.fillRect(phoneX + 3, phoneY + 3, phoneW - 6, phoneH - 10);
+        g2.setColor(Color.WHITE);
+        g2.fillOval(phoneX + phoneW / 2 - 3, phoneY + phoneH - 7, 6, 6);
+        
+        int itemSize = 28;
+        for (int i = 0; i < player.inventory.size() && i < 8; i++) {
+            int slotIndex = i + 1;
+            int row = slotIndex / 3;
+            int col = slotIndex % 3;
+            int ix = gridStartX + col * cellW + (cellW - itemSize) / 2;
+            int iy = gridStartY + row * cellH + (cellH - itemSize) / 2;
+            
+            entity.Player.InventoryItem item = player.inventory.get(i);
+            if (item.icon != null) {
+                g2.drawImage(item.icon, ix, iy, itemSize, itemSize, null);
+            } else {
+                g2.setColor(Color.ORANGE);
+                g2.fillRect(ix, iy, itemSize, itemSize);
+            }
+        }
     }
 
     // Giới hạn camera không được nhìn thấy ngoài phạm vi map
@@ -188,6 +253,17 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
     // MouseListener methods
     @Override
     public void mouseClicked(MouseEvent e) {
+        if (showInventory) {
+            int mx = e.getX();
+            int my = e.getY();
+            if (mx >= phoneX && mx <= phoneX + phoneW && my >= phoneY && my <= phoneY + phoneH) {
+                showInventory = false;
+                if (currentState instanceof OpenWorldState) {
+                    ((OpenWorldState) currentState).openMapApp();
+                }
+            }
+            return;
+        }
         currentState.handleMouseClick(e);
     }
 

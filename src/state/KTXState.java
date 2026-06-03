@@ -165,6 +165,7 @@ public class KTXState extends GameState {
                     // NẾU ĐỨNG GẦN VÀ BẤM PHÍM F
                     if (gp.keyH.fPressed) {
                         System.out.println("Vũ đã nhặt được: " + item.name);
+                        gp.player.addInventoryItem(item.name, "Vật phẩm thu thập", item.image);
                         questItems.remove(i);
                         itemsCollected++;
                         gp.keyH.fPressed = false; // Bấm xong phải reset phím ngay tránh lỗi nhặt đúp

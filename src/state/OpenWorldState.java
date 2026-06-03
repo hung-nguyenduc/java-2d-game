@@ -15,16 +15,12 @@ import java.util.List;
 
 public class OpenWorldState extends GameState {
     
-    public enum SubState { PLAYING, INVENTORY, MAP_APP, LOADING }
+    public enum SubState { PLAYING, MAP_APP, LOADING }
     private SubState subState = SubState.PLAYING;
     
-    private BufferedImage inventoryImage, phoneIcon, mapAppImage;
+    private BufferedImage mapAppImage;
     private int loadingCounter = 0;
     private double targetX = 0, targetY = 0;
-    private boolean showPhoneMenu = false;
-    private int phoneX, phoneY, phoneW = 64, phoneH = 64; // Bounds for phone icon
-    private Rectangle menuUseRect = new Rectangle();
-    private boolean iKeyProcessed = false;
     private static class Region {
         String name;
         String imagePath;
@@ -190,9 +186,6 @@ public class OpenWorldState extends GameState {
         
         
         try {
-            inventoryImage = ImageIO.read(getClass().getResourceAsStream("/inventory/Inventory.png"));
-            // Bỏ dùng InventoryIcon.png vì nó là cái balo, ta sẽ tự vẽ điện thoại
-            phoneIcon = null; 
             mapAppImage = ImageIO.read(getClass().getResourceAsStream("/maps/ref/Area_selection_map.png"));
         } catch (Exception e) { e.printStackTrace(); }
         
@@ -236,16 +229,7 @@ public class OpenWorldState extends GameState {
 
     @Override
     public void update() {
-        // Toggle Inventory
-        if (gp.keyH.iPressed && !iKeyProcessed) {
-            iKeyProcessed = true;
-            if (subState == SubState.PLAYING) subState = SubState.INVENTORY;
-            else if (subState == SubState.INVENTORY) {
-                subState = SubState.PLAYING;
-                showPhoneMenu = false;
-            }
-        }
-        if (!gp.keyH.iPressed) iKeyProcessed = false;
+
 
         // Xử lý Loading
         if (subState == SubState.LOADING) {
@@ -418,65 +402,14 @@ public class OpenWorldState extends GameState {
         }
         
         // Vẽ UI đè lên trên cùng
-        if (subState == SubState.INVENTORY) {
-            drawInventory(g2);
-        } else if (subState == SubState.MAP_APP) {
+        if (subState == SubState.MAP_APP) {
             drawMapApp(g2);
         } else if (subState == SubState.LOADING) {
             drawLoadingScreen(g2);
         }
     }
     
-    private void drawInventory(Graphics2D g2) {
-        if (inventoryImage == null) return;
-        
-        // Draw inventory centered on screen
-        int invW = 350;
-        int invH = 350;
-        int invX = gp.screenWidth / 2 - invW / 2;
-        int invY = gp.screenHeight / 2 - invH / 2;
-        g2.drawImage(inventoryImage, invX, invY, invW, invH, null);
-        
-        // Based on the actual Inventory.png layout:
-        // The 3x3 grid starts at ~22% from left, ~18% from top of the image
-        // Each cell is ~23% of image width/height
-        int gridStartX = invX + (int)(invW * 0.22);
-        int gridStartY = invY + (int)(invH * 0.18);
-        int cellW = (int)(invW * 0.23);
-        int cellH = (int)(invH * 0.23);
-        
-        // Phone icon (map) in the first cell (row 0, col 0) - always present
-        phoneW = 30;
-        phoneH = 30;
-        phoneX = gridStartX + (cellW - phoneW) / 2;
-        phoneY = gridStartY + (cellH - phoneH) / 2;
-        
-        // Draw a small smartphone icon
-        g2.setColor(new Color(40, 40, 40)); // phone body
-        g2.fillRoundRect(phoneX, phoneY, phoneW, phoneH, 6, 6);
-        g2.setColor(new Color(100, 200, 255)); // screen (light blue)
-        g2.fillRect(phoneX + 3, phoneY + 3, phoneW - 6, phoneH - 10);
-        g2.setColor(Color.WHITE); // home button
-        g2.fillOval(phoneX + phoneW / 2 - 3, phoneY + phoneH - 7, 6, 6);
-        
-        // Draw collected inventory items in remaining cells (slot 1-8)
-        int itemSize = 28;
-        for (int i = 0; i < gp.player.inventory.size() && i < 8; i++) {
-            int slotIndex = i + 1; // slot 0 is the phone
-            int row = slotIndex / 3;
-            int col = slotIndex % 3;
-            int ix = gridStartX + col * cellW + (cellW - itemSize) / 2;
-            int iy = gridStartY + row * cellH + (cellH - itemSize) / 2;
-            
-            entity.Player.InventoryItem item = gp.player.inventory.get(i);
-            if (item.icon != null) {
-                g2.drawImage(item.icon, ix, iy, itemSize, itemSize, null);
-            } else {
-                g2.setColor(Color.ORANGE);
-                g2.fillRect(ix, iy, itemSize, itemSize);
-            }
-        }
-    }
+
     
     private void drawMapApp(Graphics2D g2) {
         if (mapAppImage == null) return;
@@ -513,27 +446,21 @@ public class OpenWorldState extends GameState {
         }
     }
 
+    public void openMapApp() {
+        subState = SubState.MAP_APP;
+    }
+
     @Override
     public void handleMouseClick(MouseEvent e) {
         int mx = e.getX();
         int my = e.getY();
         
-        if (subState == SubState.INVENTORY) {
-            // Click outside phone menu -> hide menu
-            // Click on phone menu Use -> trigger map
-            // Click on phone -> show menu
-            
-            // Click on the phone directly opens the map app
-            if (mx >= phoneX && mx <= phoneX + phoneW && my >= phoneY && my <= phoneY + phoneH) {
-                subState = SubState.MAP_APP;
-                showPhoneMenu = false;
-                return;
-            }
-        } else if (subState == SubState.MAP_APP) {
+        if (subState == SubState.MAP_APP) {
             // BACK and HOME buttons
             if (my < 100) {
                 if (mx < 150) {
-                    subState = SubState.INVENTORY;
+                    subState = SubState.PLAYING;
+                    gp.showInventory = true;
                 } else if (mx > gp.screenWidth - 150) {
                     subState = SubState.PLAYING;
                 }

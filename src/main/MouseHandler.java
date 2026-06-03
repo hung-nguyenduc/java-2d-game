@@ -10,6 +10,7 @@ public class MouseHandler implements MouseMotionListener, MouseListener {
     // volatile: đảm bảo game thread luôn thấy giá trị mới nhất từ EDT
     public volatile int mouseX, mouseY;
     public volatile boolean leftMousePressed = false;
+    public volatile boolean rightMousePressed = false;
 
     @Override
     public void mouseMoved(MouseEvent e) {
@@ -27,6 +28,8 @@ public class MouseHandler implements MouseMotionListener, MouseListener {
     public void mousePressed(MouseEvent e) {
         if (e.getButton() == MouseEvent.BUTTON1) {
             leftMousePressed = true;
+        } else if (e.getButton() == MouseEvent.BUTTON3) {
+            rightMousePressed = true;
         }
     }
 
@@ -34,6 +37,8 @@ public class MouseHandler implements MouseMotionListener, MouseListener {
     public void mouseReleased(MouseEvent e) {
         if (e.getButton() == MouseEvent.BUTTON1) {
             leftMousePressed = false;
+        } else if (e.getButton() == MouseEvent.BUTTON3) {
+            rightMousePressed = false;
         }
     }
 

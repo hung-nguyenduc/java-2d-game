@@ -9,6 +9,7 @@ import collision.ObstacleManager;
 import entity.Item;
 import entity.Weapon;
 import entity.Bullet;
+import entity.Grenade;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -39,6 +40,11 @@ public class BanSungQuanSu extends GameState {
     private List<Item> targetBia = new ArrayList<>();
     private int targetsDestroyed = 0;
     private final int TOTAL_TARGETS = 10;
+    
+    // GIAO ĐOẠN 2 (LỰU ĐẠN)
+    private boolean isPhase2 = false;
+    private List<Grenade> grenades = new ArrayList<>();
+    private int targetsPhase2Destroyed = 0;
 
     // CÁC BIẾN ĐIỀU KHIỂN BIA DI ĐỘNG "LỪA"
     private int targetSpeedY = 3;
@@ -60,8 +66,23 @@ public class BanSungQuanSu extends GameState {
                 if (isGameOver) {
                     // Nếu thua (hết đạn), reset lại chính map này để Vũ thi lại
                     gp.setState(new BanSungQuanSu(gp));
-                } else if (isQuestCompleted) {
-                    // Nếu thắng, qua màn tiếp theo
+                } else if (isQuestCompleted && !isPhase2) {
+                    // Nếu thắng Phase 1, chuyển sang Phase 2
+                    isPhase2 = true;
+                    isQuestCompleted = false; // Reset to wait for phase 2 win
+                    isPhase2DialoguePlayed = false;
+                    
+                    dialogueBox.startDialogue(new DialogueLine[]{
+                        new DialogueLine("Giảng viên: Khá lắm! Nhưng giờ mới là bài kiểm tra thực sự.", null),
+                        new DialogueLine("Vũ: Gì cơ? Còn bài thi ném lựu đạn nữa sao?", null),
+                        new DialogueLine("Giảng viên: Dùng CHUỘT PHẢI để ném lựu đạn. Chỉ ném tối đa 4 quả cùng lúc. \nHãy phá hủy 4 bia di động kia đi!", null)
+                    });
+                    spawnPhase2Targets();
+                } else if (isPhase2 && isQuestCompleted) {
+                    // Thắng Phase 2
+                    System.out.println("QUA MON QUAN SU!");
+                    // Chuyển sang màn tiếp theo hoặc OpenWorld ở đây
+                    gp.setState(new OpenWorldState(gp));
                 }
             }
         };
@@ -95,7 +116,7 @@ public class BanSungQuanSu extends GameState {
         gp.killCount = 0;
         gp.player.health = 100;
         gp.enemies.clear();
-        bulletsLeft = 5;
+        bulletsLeft = 10;
         targetsDestroyed = 0;
         isGameOver = false;
         isQuestCompleted = false;
@@ -125,7 +146,7 @@ public class BanSungQuanSu extends GameState {
         };
 
         afterQuestScript = new DialogueLine[] {
-                new DialogueLine("Vũ: Xuất sắc! 5/5 phát trúng đích. \nThiên tài bắn súng B7 chính là mình!", null),
+                new DialogueLine("Vũ: Xuất sắc! 10/10 phát trúng đích. \nThiên tài bắn súng B7 chính là mình!", null),
         };
 
         failScript = new DialogueLine[] {
@@ -143,6 +164,17 @@ public class BanSungQuanSu extends GameState {
         Item bia = new Item("Bia Ma Quai", "/items/calculus.png", targetX, startY);
         bia.solidArea = new Rectangle(0, 0, 48, 48);
         targetBia.add(bia);
+    }
+    
+    private void spawnPhase2Targets() {
+        targetBia.clear();
+        for (int i = 0; i < 4; i++) {
+            int targetX = gp.worldWidth - 350 + random.nextInt(250);
+            int startY = gp.worldHeight / 4 + random.nextInt(gp.worldHeight / 2);
+            Item bia = new Item("Bia Ma Quai", "/items/calculus.png", targetX, startY);
+            bia.solidArea = new Rectangle(0, 0, 48, 48);
+            targetBia.add(bia);
+        }
     }
 
     @Override
@@ -165,40 +197,73 @@ public class BanSungQuanSu extends GameState {
         // 1. Cập nhật Player
         gp.player.update();
 
-        // 2. Chặn không cho bắn nếu đã hết đạn dự trữ
-        if (bulletsLeft <= 0 && ak47.bullets.isEmpty() && !isQuestCompleted) {
+        // 2. Chặn không cho bắn nếu đã hết đạn dự trữ (Chỉ ở Phase 1)
+        if (!isPhase2 && bulletsLeft <= 0 && ak47.bullets.isEmpty() && !isQuestCompleted) {
             isGameOver = true;
             dialogueBox.startDialogue(failScript);
             return;
         }
 
         // Cập nhật Vũ khí & Đạn bay
-        // Đồng thời kiểm tra nếu người chơi click bắn súng thành công thì trừ đạn dự trữ đi
-        int prevBulletCount = ak47.bullets.size();
-        ak47.update();
-        if (ak47.bullets.size() > prevBulletCount) {
-            bulletsLeft--; // Đạn vừa được bắn ra khỏi nòng súng -> trừ đi 1 viên
+        if (!isPhase2) {
+            int prevBulletCount = ak47.bullets.size();
+            ak47.update();
+            if (ak47.bullets.size() > prevBulletCount) {
+                bulletsLeft--; 
+            }
+        }
+        
+        // Cập nhật lựu đạn (Phase 2)
+        if (isPhase2) {
+            if (gp.mouseH.rightMousePressed && grenades.size() < 4) {
+                double targetX = gp.mouseH.mouseX + (gp.player.worldX - gp.screenWidth / 2.0);
+                double targetY = gp.mouseH.mouseY + (gp.player.worldY - gp.screenHeight / 2.0);
+                grenades.add(new Grenade(gp, gp.player.worldX, gp.player.worldY, targetX, targetY));
+                gp.mouseH.rightMousePressed = false; // reset
+            }
+            
+            Iterator<Grenade> it = grenades.iterator();
+            while (it.hasNext()) {
+                Grenade g = it.next();
+                g.update();
+                
+                if (g.isExploding && !g.damageDealt) {
+                    // Check collision with targets
+                    Iterator<Item> targetIt = targetBia.iterator();
+                    while(targetIt.hasNext()) {
+                        Item bia = targetIt.next();
+                        double dx = bia.worldX + bia.solidArea.width/2 - g.worldX;
+                        double dy = bia.worldY + bia.solidArea.height/2 - g.worldY;
+                        double dist = Math.sqrt(dx*dx + dy*dy);
+                        if (dist <= g.explosionRadius) {
+                            targetIt.remove();
+                            targetsPhase2Destroyed++;
+                        }
+                    }
+                    g.damageDealt = true;
+                }
+                
+                if (!g.isActive) {
+                    it.remove();
+                }
+            }
         }
 
         // 3. THUẬT TOÁN DI CHUYỂN "LỪA" CỦA BIA ĐẠN
-        if (!targetBia.isEmpty()) {
-            Item bia = targetBia.get(0);
+        for (Item bia : targetBia) {
             bia.worldY += targetSpeedY;
 
-            // Kiểm tra đụng biên cứng -> Ép buộc phải quay đầu
             if (bia.worldY <= targetMinY) {
                 bia.worldY = targetMinY;
-                targetSpeedY = Math.abs(targetSpeedY); // Đi xuống
+                targetSpeedY = Math.abs(targetSpeedY);
             } else if (bia.worldY >= targetMaxY) {
                 bia.worldY = targetMaxY;
-                targetSpeedY = -Math.abs(targetSpeedY); // Đi lên
+                targetSpeedY = -Math.abs(targetSpeedY);
             } else {
-                // LOGIC LỪA: Khi bia đi vào khu vực giữa map (khoảng cách biên trên và biên dưới)
                 int centerY = (targetMinY + targetMaxY) / 2;
-                int zoneSize = (targetMaxY - targetMinY) / 4; // Vùng nguy hiểm ở giữa map
+                int zoneSize = (targetMaxY - targetMinY) / 4; 
 
                 if (Math.abs(bia.worldY - centerY) < zoneSize) {
-                    // Cứ mỗi frame trôi qua trong khu vực giữa, có tỉ lệ 3% tự động bẻ lái quay đầu ngược lại
                     if (random.nextInt(100) < 3) {
                         targetSpeedY = -targetSpeedY;
                     }
@@ -206,8 +271,8 @@ public class BanSungQuanSu extends GameState {
             }
         }
 
-        // 4. XỬ LÝ ĐẠN BAY VÀ CHECK TRƯỢT/TRÚNG
-        if (ak47 != null) {
+        // 4. XỬ LÝ ĐẠN BAY VÀ CHECK TRƯỢT/TRÚNG (Chỉ Phase 1)
+        if (!isPhase2 && ak47 != null) {
             Iterator<Bullet> bulletIterator = ak47.bullets.iterator();
             while (bulletIterator.hasNext()) {
                 Bullet bullet = bulletIterator.next();
@@ -215,43 +280,48 @@ public class BanSungQuanSu extends GameState {
 
                 boolean bulletHit = false;
 
-                // Check va chạm trúng bia
                 if (!targetBia.isEmpty()) {
                     Item bia = targetBia.get(0);
                     Rectangle biaRect = new Rectangle(bia.worldX, bia.worldY, bia.solidArea.width, bia.solidArea.height);
 
                     if (bulletRect.intersects(biaRect)) {
                         System.out.println("TRÚNG ĐÍCH!");
-                        bulletIterator.remove(); // Xóa viên đạn vừa trúng
+                        bulletIterator.remove(); 
                         targetsDestroyed++;
                         gp.killCount = targetsDestroyed;
                         bulletHit = true;
                     }
                 }
 
-                // NẾU KHÔNG TRÚNG: Check viên đạn này xem nó có bị trượt ngoài phạm vi (Out Of Range) không
                 if (!bulletHit && bullet.isOutOfRange()) {
                     System.out.println("Mất 1 viên đạn trượt!");
-                    // Viên đạn đã tự biến mất trong hàm update() của Weapon,
-                    // Ở đây do ta đã cấu hình trừ đạn ngay từ khi click bắn, nên không cần xử lý trừ thêm, tránh hụt đúp.
                 }
             }
         }
 
-        // Kiểm tra điều kiện Thắng môn
-        if (targetsDestroyed >= TOTAL_TARGETS && !isQuestCompleted) {
+        // Kiểm tra điều kiện Thắng môn (Phase 1)
+        if (!isPhase2 && targetsDestroyed >= TOTAL_TARGETS && !isQuestCompleted) {
             isQuestCompleted = true;
             targetBia.clear();
         }
 
-        if (isQuestCompleted && !isPhase2DialoguePlayed) {
+        if (!isPhase2 && isQuestCompleted && !isPhase2DialoguePlayed) {
             dialogueBox.startDialogue(afterQuestScript);
             isPhase2DialoguePlayed = true;
             return;
         }
+        
+        // Kiểm tra điều kiện Thắng môn (Phase 2)
+        if (isPhase2 && targetBia.isEmpty() && !isQuestCompleted && !dialogueBox.isActive()) {
+            isQuestCompleted = true; // Mark phase 2 win
+            isPhase2DialoguePlayed = false; // re-use flag to show win dialog
+            dialogueBox.startDialogue(new DialogueLine[]{
+                new DialogueLine("Vũ: Tuyệt vời! 4 bia đã bị phá hủy.", null),
+                new DialogueLine("Giảng viên: Quá xuất sắc! Vũ đã chính thức qua môn Quân Sự!", null)
+            });
+        }
 
-        // Kiểm tra nếu người chơi bắn hết sạch cả 5 viên đạn mà điểm vẫn chưa đạt 5 -> Thua cuộc
-        if (bulletsLeft <= 0 && ak47.bullets.isEmpty() && targetsDestroyed < TOTAL_TARGETS && !isQuestCompleted && !dialogueBox.isActive()) {
+        if (!isPhase2 && bulletsLeft <= 0 && ak47.bullets.isEmpty() && targetsDestroyed < TOTAL_TARGETS && !isQuestCompleted && !dialogueBox.isActive()) {
             isGameOver = true;
             dialogueBox.startDialogue(failScript);
         }
@@ -282,8 +352,12 @@ public class BanSungQuanSu extends GameState {
         // Tầng 3: Vẽ Nhân vật Vũ
         gp.player.draw(g2, cameraX, cameraY);
 
-        // Tầng 4: Vẽ Súng AK47 và các viên đạn đang bay
-        if (ak47 != null) {
+        // Tầng 4: Vẽ Lựu đạn (Phase 2) hoặc Súng AK47 (Phase 1)
+        if (isPhase2) {
+            for (Grenade g : grenades) {
+                g.draw(g2, cameraX, cameraY);
+            }
+        } else if (ak47 != null) {
             int screenX = (int) (gp.player.worldX - cameraX);
             int screenY = (int) (gp.player.worldY - cameraY);
             ak47.draw(g2, screenX, screenY, cameraX, cameraY);
@@ -298,8 +372,13 @@ public class BanSungQuanSu extends GameState {
 
         g2.setColor(Color.WHITE);
         g2.setFont(new Font("Consolas", Font.BOLD, 14));
-        g2.drawString("SỐ ĐẠN CÒN LẠI: " + bulletsLeft, 25, 38);
-        g2.drawString("ĐIỂM TRÚNG BIA: " + targetsDestroyed + " / " + TOTAL_TARGETS, 25, 60);
+        if (!isPhase2) {
+            g2.drawString("SỐ ĐẠN CÒN LẠI: " + bulletsLeft, 25, 38);
+            g2.drawString("ĐIỂM TRÚNG BIA: " + targetsDestroyed + " / " + TOTAL_TARGETS, 25, 60);
+        } else {
+            g2.drawString("SỐ LỰU ĐẠN KHẢ DỤNG: " + (4 - grenades.size()) + " / 4", 25, 38);
+            g2.drawString("SỐ BIA ĐÃ PHÁ HỦY: " + targetsPhase2Destroyed + " / 4", 25, 60);
+        }
 
         if (debugMode) {
             for (Obstacle obs : obstacles) {
