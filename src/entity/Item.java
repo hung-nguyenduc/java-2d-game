@@ -4,34 +4,52 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
+import java.awt.Color;
 
 public class Item {
     public int worldX, worldY;
     public String name;
     public BufferedImage image;
-    // Khung va chạm mặc định (ví dụ 32x32 pixel).
-    // Nếu sprite của mày to/nhỏ hơn thì chỉnh lại cho khớp.
-    public Rectangle solidArea = new Rectangle(0, 0, 32, 32);
+    public Rectangle solidArea;
+    public double radius; // Bán kính vùng nhặt
+
+    private static final int ITEM_SIZE = 48;
+    private static final double DEFAULT_PICKUP_RADIUS = 60;
 
     public Item(String name, String imagePath, int worldX, int worldY) {
         this.name = name;
         this.worldX = worldX;
         this.worldY = worldY;
+
+        this.solidArea = new Rectangle(worldX, worldY, ITEM_SIZE, ITEM_SIZE);
+        this.radius = DEFAULT_PICKUP_RADIUS;
+
+        // Load ảnh
         try {
-            this.image = ImageIO.read(getClass().getResourceAsStream(imagePath));
+            BufferedImage original = ImageIO.read(getClass().getResourceAsStream(imagePath));
+            if (original != null) {
+                this.image = new BufferedImage(ITEM_SIZE, ITEM_SIZE, BufferedImage.TYPE_INT_ARGB);
+                Graphics2D g2d = this.image.createGraphics();
+                g2d.drawImage(original, 0, 0, ITEM_SIZE, ITEM_SIZE, null);
+                g2d.dispose();
+            }
         } catch (Exception e) {
-            System.err.println("Không tìm thấy ảnh item: " + imagePath);
+            System.err.println("Lỗi load ảnh: " + imagePath);
             e.printStackTrace();
         }
     }
 
-    public void draw(Graphics2D g2, int cameraX, int cameraY) {
-        // Tính toán tọa độ vẽ trên màn hình dựa vào camera
-        int screenX = worldX - cameraX;
-        int screenY = worldY - cameraY;
+    // Constructor tùy chỉnh bán kính
+    public Item(String name, String imagePath, int worldX, int worldY, double radius) {
+        this(name, imagePath, worldX, worldY);
+        this.radius = radius;
+    }
 
+    public void draw(Graphics2D g2, int cameraX, int cameraY) {
         if (image != null) {
-            g2.drawImage(image, screenX, screenY, solidArea.width, solidArea.height, null);
+            int screenX = worldX - cameraX;
+            int screenY = worldY - cameraY;
+            g2.drawImage(image, screenX, screenY, ITEM_SIZE, ITEM_SIZE, null);
         }
     }
 }
