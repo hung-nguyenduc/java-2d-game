@@ -60,8 +60,8 @@ public class NemLuuDanQuanSu extends GameState {
                 if (isGameOver) {
                     gp.setState(new NemLuuDanQuanSu(gp));
                 }
-                else {
-                    gp.setState(new ZombieState(gp));
+                else if (isQuestCompleted) {
+                    gp.setState(new LoadingState2(gp, new ZombieState(gp)));
                 }
             }
         };
