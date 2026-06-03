@@ -36,7 +36,7 @@ public class TachMonState extends GameState {
             gp.keyH.enterPressed = false;
 
             // Ví dụ ấn Space thì văng về lại màn hình Menu chính
-            // gp.setState(new MenuState(gp));
+             gp.setState(new MenuState(gp));
         }
     }
 

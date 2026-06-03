@@ -54,17 +54,18 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
         this.setDoubleBuffered(true);
 
         // Initialize state management - start with MenuState
-        currentState = new ClassroomState(this);
+        currentState = new MenuState(this);
         currentState.enter();
 
         // Add mouse listener for button clicks
-        //this.addMouseListener(this);
+        this.addMouseListener(this);
         // Theo dõi vị trí chuột để ngắm bắn
         this.addMouseMotionListener(mouseH);
         // Xử lý sự kiện click chuột (bắn)
-        this.addMouseListener(mouseH);
+        //this.addMouseListener(mouseH);
 
         this.setFocusable(true);
+        this.requestFocusInWindow();
         this.setFocusTraversalKeysEnabled(false);
         this.addKeyListener(keyH);
 
