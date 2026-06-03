@@ -168,7 +168,7 @@ public class CongQuanSu extends GameState {
             if (gp.keyH.fPressed) {
                     System.out.println("Qua màn!");
                     // CHUYỂN SANG MAP TIẾP THEO Ở ĐÂY. Thay Level2State bằng state mày muốn.
-                    gp.setState(new LoadingState(gp, new ZombieState(gp)));
+                    gp.setState(new LoadingState(gp, new BanSungQuanSu(gp)));
                 gp.keyH.fPressed = false; // Reset phím F
             }
         }
