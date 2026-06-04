@@ -21,6 +21,8 @@ public class Weapon {
     private int shootCooldown = 0;
     private final int shootInterval = 30;
     private double aimAngle = 0;
+    
+    public boolean shotgunMode = true;
 
     private static final Color BULLET_COLOR = new Color(0, 80, 200);
 
@@ -70,14 +72,16 @@ public class Weapon {
     }
 
     private void shoot() {
-        // Kỹ năng Shotgun: Bắn 3 viên đạn tỏa ra 3 hướng cùng lúc
         Bullet bullet1 = new Bullet(player.worldX + 40, player.worldY + 40, aimAngle);
-        Bullet bullet2 = new Bullet(player.worldX + 40, player.worldY + 40, aimAngle - 15); // Lệch lên 15 độ
-        Bullet bullet3 = new Bullet(player.worldX + 40, player.worldY + 40, aimAngle + 15); // Lệch xuống 15 độ
-        
         bullets.add(bullet1);
-        bullets.add(bullet2);
-        bullets.add(bullet3);
+        
+        if (shotgunMode) {
+            // Kỹ năng Shotgun: Bắn thêm 2 viên đạn tỏa ra 2 hướng
+            Bullet bullet2 = new Bullet(player.worldX + 40, player.worldY + 40, aimAngle - 15); // Lệch lên 15 độ
+            Bullet bullet3 = new Bullet(player.worldX + 40, player.worldY + 40, aimAngle + 15); // Lệch xuống 15 độ
+            bullets.add(bullet2);
+            bullets.add(bullet3);
+        }
 
         // Thêm nhạc khi bắn (update sau)
         // gp.sound.playSE("shoot");

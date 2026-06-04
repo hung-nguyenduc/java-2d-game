@@ -103,6 +103,7 @@ public class BanSungQuanSu extends GameState {
         isPhase2DialoguePlayed = false;
 
         ak47 = new Weapon(gp, gp.mouseH, gp.player);
+        ak47.shotgunMode = false;
         ak47.clearBullets();
 
         gp.player.worldX = 150;

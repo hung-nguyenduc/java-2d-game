@@ -46,8 +46,9 @@ public class InstructionsState extends GameState {
         g2.drawString("↓: Xuống", 200, 280);
         g2.drawString("←: Trái", 200, 310);
         g2.drawString("→: Phải", 200, 340);
-        g2.drawString("Di chuột để ngắm, đạn bắn tự động liên tục.", 150, 400);
-        g2.drawString("Tiêu diệt tất cả kẻ thù để đạt checkpoint!", 150, 430);
+        g2.drawString("Di chuột để ngắm, đạn bắn tự động liên tục.", 150, 390);
+        g2.drawString("K: Đá lùi quái | G: Ném lựu đạn (Có thời gian hồi)", 150, 420);
+        g2.drawString("Tiêu diệt tất cả kẻ thù để đạt checkpoint!", 150, 450);
 
         // Draw back button
         drawButton(g2, backButton, "Quay lại");
