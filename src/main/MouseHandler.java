@@ -7,20 +7,41 @@ import java.awt.event.MouseListener;
 // Lớp xử lý sự kiện chuột (theo dõi vị trí và click chuột trái)
 public class MouseHandler implements MouseMotionListener, MouseListener {
 
-    // volatile: đảm bảo game thread luôn thấy giá trị mới nhất từ EDT
     public volatile int mouseX, mouseY;
     public volatile boolean leftMousePressed = false;
+    private GamePanel gp;
+
+    public void setGamePanel(GamePanel gp) {
+        this.gp = gp;
+    }
 
     @Override
     public void mouseMoved(MouseEvent e) {
-        mouseX = e.getX();
-        mouseY = e.getY();
+        updateMousePos(e.getX(), e.getY());
     }
 
     @Override
     public void mouseDragged(MouseEvent e) {
-        mouseX = e.getX();
-        mouseY = e.getY();
+        updateMousePos(e.getX(), e.getY());
+    }
+
+    private void updateMousePos(int rawX, int rawY) {
+        if (gp != null) {
+            double scaleX = (double) gp.getWidth() / gp.screenWidth;
+            double scaleY = (double) gp.getHeight() / gp.screenHeight;
+            double scale = Math.min(scaleX, scaleY);
+
+            int scaledWidth = (int) (gp.screenWidth * scale);
+            int scaledHeight = (int) (gp.screenHeight * scale);
+            int xOffset = (gp.getWidth() - scaledWidth) / 2;
+            int yOffset = (gp.getHeight() - scaledHeight) / 2;
+
+            mouseX = (int) ((rawX - xOffset) / scale);
+            mouseY = (int) ((rawY - yOffset) / scale);
+        } else {
+            mouseX = rawX;
+            mouseY = rawY;
+        }
     }
 
     @Override

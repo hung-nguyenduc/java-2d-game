@@ -14,15 +14,13 @@ public class CollisionChecker {
         this.gp = gp;
     }
 
-    /**
-     * Đẩy lùi Player lại vị trí cũ khi xảy ra va chạm
-     */
     public void restorePos() {
-        // Lưu ý: Đảm bảo logic cộng/trừ hướng khớp hoàn toàn với nút bấm di chuyển của Player
-        if (gp.keyH.upPressed)    gp.player.worldY += gp.player.speed;
-        if (gp.keyH.downPressed)  gp.player.worldY -= gp.player.speed;
-        if (gp.keyH.leftPressed)  gp.player.worldX += gp.player.speed;
-        if (gp.keyH.rightPressed) gp.player.worldX -= gp.player.speed;
+        // Hoàn trả lại chính xác quãng đường đã di chuyển trong frame này
+        // và reset vận tốc để không bị đẩy lùi gấp bội nếu chạm nhiều vật cản/quái cùng lúc
+        gp.player.worldX -= gp.player.vx;
+        gp.player.worldY -= gp.player.vy;
+        gp.player.vx = 0;
+        gp.player.vy = 0;
     }
 
     public void checkAllCollisions() {
@@ -40,7 +38,7 @@ public class CollisionChecker {
             // Player chạm Enemy (Hitbox kích thước 80x80)
             if (gp.player.worldX + 80 > enemy.worldX && gp.player.worldX < enemy.worldX + 80 &&
                     gp.player.worldY + 80 > enemy.worldY && gp.player.worldY < enemy.worldY + 80) {
-                gp.player.health -= 1;
+                gp.player.health -= enemy.damage;
                 restorePos();
             }
 
