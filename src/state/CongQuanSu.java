@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CongQuanSu extends GameState {
-    private boolean debugMode = true;
+    private boolean debugMode = false;
     private static final String MAP_IMAGE_PATH = "/maps/cong-quansu-closed2.png";
     private static final String OBSTACLE_TXT_PATH = "/maps/cong-quansu.txt";
     private static final double MAP_SCALE = 1.0 / 2.5; // Tỷ lệ thu phóng map
