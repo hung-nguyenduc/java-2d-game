@@ -70,10 +70,14 @@ public class Weapon {
     }
 
     private void shoot() {
-        // Tạo đạn tại tâm của Player
-        Bullet bullet = new Bullet(player.worldX + 40, player.worldY + 40, aimAngle);
-        //bullet.color = BULLET_COLOR;
-        bullets.add(bullet);
+        // Kỹ năng Shotgun: Bắn 3 viên đạn tỏa ra 3 hướng cùng lúc
+        Bullet bullet1 = new Bullet(player.worldX + 40, player.worldY + 40, aimAngle);
+        Bullet bullet2 = new Bullet(player.worldX + 40, player.worldY + 40, aimAngle - 15); // Lệch lên 15 độ
+        Bullet bullet3 = new Bullet(player.worldX + 40, player.worldY + 40, aimAngle + 15); // Lệch xuống 15 độ
+        
+        bullets.add(bullet1);
+        bullets.add(bullet2);
+        bullets.add(bullet3);
 
         // Thêm nhạc khi bắn (update sau)
         // gp.sound.playSE("shoot");
