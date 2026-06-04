@@ -18,7 +18,6 @@ public class Main {
         frame.setLocationRelativeTo(null); // Hiển thị ở giữa màn hình
         frame.setVisible(true);
 
-
         // Khởi động vòng lặp game
         gamePanel.startGameThread();
     }

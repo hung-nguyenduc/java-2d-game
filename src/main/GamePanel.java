@@ -47,14 +47,13 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
     // Game state management
     private GameState currentState;
 
-
     public GamePanel() {
         this.setPreferredSize(new Dimension(screenWidth, screenHeight));
         this.setBackground(Color.BLACK);
         this.setDoubleBuffered(true);
 
         // Initialize state management - start with MenuState
-        currentState = new ClassroomState(this);
+        currentState = new ZombieState(this);
         currentState.enter();
 
         // Add mouse listener for button clicks
@@ -71,21 +70,27 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
 
         // Global dispatcher: bắt key events dù focus ở bất cứ đâu trong JVM
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(e -> {
-            if (e.getID() == KeyEvent.KEY_PRESSED)  keyH.keyPressed(e);
-            else if (e.getID() == KeyEvent.KEY_RELEASED) keyH.keyReleased(e);
+            if (e.getID() == KeyEvent.KEY_PRESSED)
+                keyH.keyPressed(e);
+            else if (e.getID() == KeyEvent.KEY_RELEASED)
+                keyH.keyReleased(e);
             return false;
         });
 
         // Spawn checkpoint at map center
-        //spawnCheckpoint();
+        // spawnCheckpoint();
     }
 
     // Khởi động luồng game
     public void startGameThread() {
         // Trick Windows: 1 daemon thread sleep mãi → buộc OS giữ timer resolution ở 1ms
-        // (mặc định Windows ~15.6ms khiến Thread.sleep ms-level cực kỳ kém chính xác → giật frame)
+        // (mặc định Windows ~15.6ms khiến Thread.sleep ms-level cực kỳ kém chính xác →
+        // giật frame)
         Thread timerHack = new Thread(() -> {
-            try { Thread.sleep(Long.MAX_VALUE); } catch (InterruptedException ignored) {}
+            try {
+                Thread.sleep(Long.MAX_VALUE);
+            } catch (InterruptedException ignored) {
+            }
         }, "WindowsTimerHack");
         timerHack.setDaemon(true);
         timerHack.start();
@@ -105,11 +110,13 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
             update();
 
             // Vẽ ĐỒNG BỘ trên EDT: chặn game thread tới khi paint xong → không có race
-            // condition giữa update() và paintComponent() (state đọc giữa chừng), và biết chính
+            // condition giữa update() và paintComponent() (state đọc giữa chừng), và biết
+            // chính
             // xác lúc nào sync() flush sẽ có hiệu lực
             try {
                 SwingUtilities.invokeAndWait(() -> {
-                    if (isShowing()) paintImmediately(0, 0, getWidth(), getHeight());
+                    if (isShowing())
+                        paintImmediately(0, 0, getWidth(), getHeight());
                 });
             } catch (InterruptedException e) {
                 break;
@@ -119,7 +126,8 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
             // Sau khi EDT đã vẽ xong, flush GDI/back-buffer xuống màn hình → giảm tearing
             Toolkit.getDefaultToolkit().sync();
 
-            // Sleep đúng phần thời gian còn lại đến frame kế tiếp (không busy-wait, không drift)
+            // Sleep đúng phần thời gian còn lại đến frame kế tiếp (không busy-wait, không
+            // drift)
             long remainingNs = (long) (nextDrawTime - System.nanoTime());
             if (remainingNs > 0) {
                 try {
@@ -153,17 +161,23 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
         g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
                 RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         currentState.draw(g2);
-        // KHÔNG dispose Graphics do Swing cấp — đó là lỗi, dispose sẽ làm hỏng các vẽ tiếp theo
+        // KHÔNG dispose Graphics do Swing cấp — đó là lỗi, dispose sẽ làm hỏng các vẽ
+        // tiếp theo
     }
 
     // Giới hạn camera không được nhìn thấy ngoài phạm vi map
-    // Clamp thẳng — không có dead zone, tránh camera "nhảy" hàng chục pixel khi tới rìa map
+    // Clamp thẳng — không có dead zone, tránh camera "nhảy" hàng chục pixel khi tới
+    // rìa map
     public int[] clampCameraPosition(int cameraX, int cameraY) {
-        if (cameraX < 0) cameraX = 0;
-        if (cameraX > worldWidth - screenWidth) cameraX = worldWidth - screenWidth;
-        if (cameraY < 0) cameraY = 0;
-        if (cameraY > worldHeight - screenHeight) cameraY = worldHeight - screenHeight;
-        return new int[]{cameraX, cameraY};
+        if (cameraX < 0)
+            cameraX = 0;
+        if (cameraX > worldWidth - screenWidth)
+            cameraX = worldWidth - screenWidth;
+        if (cameraY < 0)
+            cameraY = 0;
+        if (cameraY > worldHeight - screenHeight)
+            cameraY = worldHeight - screenHeight;
+        return new int[] { cameraX, cameraY };
     }
 
     // Sinh checkpoint tại vị trí giữa map
@@ -181,10 +195,12 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
         // Lấy lại focus bàn phím sau mỗi lần chuyển state
         requestFocusInWindow();
     }
+
     // Trong GamePanel.java
     public void checkCollisions() {
         cChecker.checkAllCollisions();
     }
+
     // MouseListener methods
     @Override
     public void mouseClicked(MouseEvent e) {
@@ -192,16 +208,20 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
     }
 
     @Override
-    public void mousePressed(MouseEvent e) {}
+    public void mousePressed(MouseEvent e) {
+    }
 
     @Override
-    public void mouseReleased(MouseEvent e) {}
+    public void mouseReleased(MouseEvent e) {
+    }
 
     @Override
-    public void mouseEntered(MouseEvent e) {}
+    public void mouseEntered(MouseEvent e) {
+    }
 
     @Override
-    public void mouseExited(MouseEvent e) {}
+    public void mouseExited(MouseEvent e) {
+    }
 
     public GameState getCurrentState() {
         return currentState;

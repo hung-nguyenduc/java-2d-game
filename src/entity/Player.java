@@ -30,7 +30,7 @@ public class Player extends Entity {
 
     public void setDefaultValues() {
         speed = 5;
-        maxHealth = 3000;
+        maxHealth = 300000;
         health = maxHealth;
         direction = "down";
         currentWeapon = null;
@@ -64,10 +64,22 @@ public class Player extends Entity {
         vx = 0;
         vy = 0;
 
-        if (keyH.upPressed) { vy -= speed; direction = "up"; }
-        if (keyH.downPressed) { vy += speed; direction = "down"; }
-        if (keyH.leftPressed) { vx -= speed; direction = "left"; }
-        if (keyH.rightPressed) { vx += speed; direction = "right"; }
+        if (keyH.upPressed) {
+            vy -= speed;
+            direction = "up";
+        }
+        if (keyH.downPressed) {
+            vy += speed;
+            direction = "down";
+        }
+        if (keyH.leftPressed) {
+            vx -= speed;
+            direction = "left";
+        }
+        if (keyH.rightPressed) {
+            vx += speed;
+            direction = "right";
+        }
 
         if (keyH.upPressed || keyH.downPressed || keyH.leftPressed || keyH.rightPressed) {
             spriteCounter++;
@@ -95,10 +107,14 @@ public class Player extends Entity {
 
     public void clampPlayerPosition() {
         int playerSize = 80;
-        if (worldX < 0) worldX = 0;
-        if (worldX + playerSize > gp.worldWidth) worldX = gp.worldWidth - playerSize;
-        if (worldY < 0) worldY = 0;
-        if (worldY + playerSize > gp.worldHeight) worldY = gp.worldHeight - playerSize;
+        if (worldX < 0)
+            worldX = 0;
+        if (worldX + playerSize > gp.worldWidth)
+            worldX = gp.worldWidth - playerSize;
+        if (worldY < 0)
+            worldY = 0;
+        if (worldY + playerSize > gp.worldHeight)
+            worldY = gp.worldHeight - playerSize;
     }
 
     public void draw(Graphics2D g2, int cameraX, int cameraY) {
@@ -107,10 +123,18 @@ public class Player extends Entity {
 
         BufferedImage img = down1;
         switch (direction) {
-            case "up": img = (spriteNum == 1) ? up1 : up2; break;
-            case "down": img = (spriteNum == 1) ? down1 : down2; break;
-            case "left": img = (spriteNum == 1) ? left1 : left2; break;
-            case "right": img = (spriteNum == 1) ? right1 : right2; break;
+            case "up":
+                img = (spriteNum == 1) ? up1 : up2;
+                break;
+            case "down":
+                img = (spriteNum == 1) ? down1 : down2;
+                break;
+            case "left":
+                img = (spriteNum == 1) ? left1 : left2;
+                break;
+            case "right":
+                img = (spriteNum == 1) ? right1 : right2;
+                break;
         }
 
         g2.drawImage(img, screenX, screenY, 90, 90, null);
@@ -137,8 +161,10 @@ public class Player extends Entity {
         int ty = y + (height + fm.getAscent()) / 2 - 2;
 
         g2.setColor(Color.BLACK);
-        g2.drawString(text, tx - 1, ty); g2.drawString(text, tx + 1, ty);
-        g2.drawString(text, tx, ty - 1); g2.drawString(text, tx, ty + 1);
+        g2.drawString(text, tx - 1, ty);
+        g2.drawString(text, tx + 1, ty);
+        g2.drawString(text, tx, ty - 1);
+        g2.drawString(text, tx, ty + 1);
         g2.setColor(Color.WHITE);
         g2.drawString(text, tx, ty);
     }
