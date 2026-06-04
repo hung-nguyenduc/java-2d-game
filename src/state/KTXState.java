@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class KTXState extends GameState {
+    private boolean debugMode =  true;
     private static final String MAP_IMAGE_PATH = "/maps/ktx-xoa-balo.png";
     private static final String OBSTACLE_TXT_PATH = "/maps/ktx_obstacles.txt";
     private static final double MAP_SCALE = 1.0 / 2.5;
@@ -247,10 +248,13 @@ public class KTXState extends GameState {
                     cameraX, cameraY, cameraX + gp.screenWidth, cameraY + gp.screenHeight, null);
         }
 
-        // Tầng 2: Vẽ vật cản (debug)
-        for (Obstacle obs : obstacles) {
-            obs.draw(g2, cameraX, cameraY);
+        if (debugMode) {
+            // Tầng 2: Vẽ vật cản (debug)
+            for (Obstacle obs : obstacles) {
+                obs.draw(g2, cameraX, cameraY);
+            }
         }
+
 
         // Tầng 3: Vẽ Item
         for (Item item : questItems) {
