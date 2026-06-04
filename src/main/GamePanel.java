@@ -14,7 +14,7 @@ import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GamePanel extends JPanel implements Runnable, MouseListener {
+public class GamePanel extends JPanel implements Runnable, MouseListener, java.awt.event.MouseMotionListener {
     final int originalTileSize = 16;
     final int scale = 3;
     public final int tileSize = originalTileSize * scale;
@@ -56,12 +56,9 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
         currentState = new MenuState(this);
         currentState.enter();
 
-        // Add mouse listener for button clicks
+        // Thêm listener cho chuột qua GamePanel để có thể xử lý tọa độ khi scale
         this.addMouseListener(this);
-        // Theo dõi vị trí chuột để ngắm bắn
-        this.addMouseMotionListener(mouseH);
-        // Xử lý sự kiện click chuột (bắn)
-        this.addMouseListener(mouseH);
+        this.addMouseMotionListener(this);
 
         this.setFocusable(true);
         this.requestFocusInWindow();
@@ -152,11 +149,42 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
         checkCollisions();
     }
 
+    public double getScaleRatio() {
+        return Math.min((double) getWidth() / screenWidth, (double) getHeight() / screenHeight);
+    }
+    
+    public int getXOffset() {
+        return (int) ((getWidth() - screenWidth * getScaleRatio()) / 2);
+    }
+    
+    public int getYOffset() {
+        return (int) ((getHeight() - screenHeight * getScaleRatio()) / 2);
+    }
+
+    public MouseEvent translateMouseEvent(MouseEvent e) {
+        double scaleRatio = getScaleRatio();
+        int newX = (int) ((e.getX() - getXOffset()) / scaleRatio);
+        int newY = (int) ((e.getY() - getYOffset()) / scaleRatio);
+        return new MouseEvent(e.getComponent(), e.getID(), e.getWhen(), e.getModifiersEx(), newX, newY, e.getClickCount(), e.isPopupTrigger(), e.getButton());
+    }
+
     // Vẽ tất cả các thành phần game
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
+        
+        // Scale màn hình
+        double scaleRatio = getScaleRatio();
+        int xOffset = getXOffset();
+        int yOffset = getYOffset();
+        
+        g2.translate(xOffset, yOffset);
+        g2.scale(scaleRatio, scaleRatio);
+        
+        // Cắt bớt phần bên ngoài để tránh rác (nếu có)
+        g2.setClip(0, 0, screenWidth, screenHeight);
+
         // Render hint cho text mượt, không cần đặt mỗi state
         g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
                 RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
@@ -204,23 +232,46 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
     // MouseListener methods
     @Override
     public void mouseClicked(MouseEvent e) {
-        currentState.handleMouseClick(e);
+        MouseEvent translated = translateMouseEvent(e);
+        currentState.handleMouseClick(translated);
+        mouseH.mouseClicked(translated);
     }
 
     @Override
     public void mousePressed(MouseEvent e) {
+        MouseEvent translated = translateMouseEvent(e);
+        mouseH.mousePressed(translated);
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
+        MouseEvent translated = translateMouseEvent(e);
+        mouseH.mouseReleased(translated);
     }
 
     @Override
     public void mouseEntered(MouseEvent e) {
+        MouseEvent translated = translateMouseEvent(e);
+        mouseH.mouseEntered(translated);
     }
 
     @Override
     public void mouseExited(MouseEvent e) {
+        MouseEvent translated = translateMouseEvent(e);
+        mouseH.mouseExited(translated);
+    }
+    
+    // MouseMotionListener methods
+    @Override
+    public void mouseDragged(MouseEvent e) {
+        MouseEvent translated = translateMouseEvent(e);
+        mouseH.mouseDragged(translated);
+    }
+
+    @Override
+    public void mouseMoved(MouseEvent e) {
+        MouseEvent translated = translateMouseEvent(e);
+        mouseH.mouseMoved(translated);
     }
 
     public GameState getCurrentState() {
