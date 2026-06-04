@@ -14,9 +14,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ClassroomState extends GameState {
-    private static final String MAP_IMAGE_PATH = "/maps/classroom.png";
+    private static final String MAP_IMAGE_PATH = "/maps/classroom4.png";
     private static final String OBSTACLE_TXT_PATH = "/maps/classroom_obstacles.txt";
-    private static final double MAP_SCALE = 1.0 / 2.5; // Tỷ lệ thu phóng map
+    private static final double MAP_SCALE = 1.0 / 2.7; // Tỷ lệ thu phóng map
     private DialogueManager dialogueBox;
     private Image mapImage;
     private List<Obstacle> obstacles = new ArrayList<>();
@@ -91,7 +91,7 @@ public class ClassroomState extends GameState {
             g2d.dispose();
 
             mapImage = compatibleMap;
-            mathBook = new Item("Sách bài tập", "/items/calculus.png", gp.worldWidth / 2 - 100, gp.worldHeight / 2 - 50);
+            mathBook = new Item("Sách bài tập", "/items/calculus.png", 300, 400);
             for (int i = 0; i <= 5; i++) {
                 // Thay đổi đường dẫn "/ui/" cho đúng với thư mục chứa ảnh của mày
                 resultImages[i] = ImageIO.read(getClass().getResourceAsStream("/congratulations/" + i + ".png"));
@@ -111,8 +111,8 @@ public class ClassroomState extends GameState {
         gp.enemies.clear();
 
         //gp.player.spawnAtCenter();
-        gp.player.worldX = gp.worldWidth / 2.0 - 40 -220;
-        gp.player.worldY = gp.worldHeight / 2.0 - 40 +100;
+        gp.player.worldX = 130;
+        gp.player.worldY = 250;
 
         // Bật nhạc nền riêng của màn này
         // gp.sound.playMusic("level3_theme");
@@ -125,7 +125,9 @@ public class ClassroomState extends GameState {
         }
 
         DialogueLine[] script = {
-                new DialogueLine("Đến giảng đường, Vũ với quyết tâm A+ giải tích nên đã \nlên thẳng bàn đầu ngồi", null),
+                new DialogueLine("Vũ: Em xin lỗi thầy em đến muộn ạ, xin phép thầy cho em vào lớp\n", vuFace),
+                new DialogueLine("Thầy: Mới hôm đầu đi học mà đã muộn, lần sau muộn nữa\n tôi cho cậu trượt môn", null),
+                new DialogueLine("Vũ với quyết tâm A+ giải tích nên đã \nlên thẳng bàn đầu ngồi", null),
                 new DialogueLine("Vừa ngồi vào bản, Vũ đã phải chạm trán thử thách đầu tiên: \nlàm 5 câu fami sohoa", null)
         };
         dialogueBox.startDialogue(script);
@@ -265,9 +267,9 @@ public class ClassroomState extends GameState {
             mathBook.draw(g2, cameraX, cameraY);
         }
         // Tầng 4: Vẽ Nhân vật chính
-        if (!dialogueBox.isActive()) {
+
             gp.player.draw(g2, cameraX, cameraY);
-        }
+
         // HIỂN THỊ CHỮ NHẤN F KHI ĐỨNG GẦN SÁCH
         if (isNearBook && !isQuizActive && !isQuizFinished) {
             g2.setFont(new Font("Arial", Font.BOLD, 14));
