@@ -53,7 +53,7 @@ public class GamePanel extends JPanel implements Runnable, MouseListener {
         this.setDoubleBuffered(true);
 
         // Initialize state management - start with MenuState
-        currentState = new ZombieState(this);
+        currentState = new MenuState(this);
         currentState.enter();
 
         // Add mouse listener for button clicks
