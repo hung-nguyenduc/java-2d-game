@@ -53,7 +53,7 @@ public class GamePanel extends JPanel implements Runnable, MouseListener, java.a
         this.setDoubleBuffered(true);
 
         // Initialize state management - start with MenuState
-        currentState = new BanSungQuanSu(this);
+        currentState = new MenuState(this);
         currentState.enter();
 
         // Thêm listener cho chuột qua GamePanel để có thể xử lý tọa độ khi scale
