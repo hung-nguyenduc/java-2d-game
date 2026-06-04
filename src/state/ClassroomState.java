@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ClassroomState extends GameState {
+    private boolean debugMode = true;
     private static final String MAP_IMAGE_PATH = "/maps/classroom4.png";
     private static final String OBSTACLE_TXT_PATH = "/maps/classroom_obstacles.txt";
     private static final double MAP_SCALE = 1.0 / 2.7; // Tỷ lệ thu phóng map
@@ -33,6 +34,9 @@ public class ClassroomState extends GameState {
     // THÊM CÁC BIẾN NÀY DƯỚI CHỖ KHAI BÁO CỦA TRẮC NGHIỆM:
     private Image[] resultImages = new Image[6];
     private boolean showResultImage = false;
+
+    // --- BIẾN ĐƯỢC THÊM MỚI ĐỂ XỬ LÝ TÁCH DIALOGUE ---
+    private boolean isFinalDialogueTriggered = false;
 
     private String[] questions = {
             "Câu 1: Đạo hàm của sin(x) là gì?",
@@ -91,9 +95,8 @@ public class ClassroomState extends GameState {
             g2d.dispose();
 
             mapImage = compatibleMap;
-            mathBook = new Item("Sách bài tập", "/items/calculus.png", 300, 400);
+            mathBook = new Item("Sách bài tập", "/items/calculus.png", 300, 380);
             for (int i = 0; i <= 5; i++) {
-                // Thay đổi đường dẫn "/ui/" cho đúng với thư mục chứa ảnh của mày
                 resultImages[i] = ImageIO.read(getClass().getResourceAsStream("/congratulations/" + i + ".png"));
             }
         } catch (Exception e) {
@@ -106,31 +109,30 @@ public class ClassroomState extends GameState {
 
         // Reset các thông số hệ thống và dọn dẹp thực thể cũ
         gp.killCount = 0;
-        gp.player.health = 100; // Reset máu player (hoặc giữ nguyên tùy logic game)
+        gp.player.health = 100;
         gp.player.bullets.clear();
         gp.enemies.clear();
 
-        //gp.player.spawnAtCenter();
         gp.player.worldX = 130;
         gp.player.worldY = 250;
 
-        // Bật nhạc nền riêng của màn này
-        // gp.sound.playMusic("level3_theme");
+        // Reset cờ kích hoạt hội thoại cuối khi vào lại map
+        isFinalDialogueTriggered = false;
+
         try {
             vuFace = ImageIO.read(getClass().getResourceAsStream("/player/down1.png"));
             doMimiFace = ImageIO.read(getClass().getResourceAsStream("/NPC/DoMiMi/DoMiMi-xoaphong.png"));
-
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        DialogueLine[] script = {
+        // ĐÃ SỬA: Chỉ nạp và chạy 3 câu đầu tiên ở đây
+        DialogueLine[] script1 = {
                 new DialogueLine("Vũ: Em xin lỗi thầy em đến muộn ạ, xin phép thầy cho em vào lớp\n", vuFace),
                 new DialogueLine("Thầy: Mới hôm đầu đi học mà đã muộn, lần sau muộn nữa\n tôi cho cậu trượt môn", null),
-                new DialogueLine("Vũ với quyết tâm A+ giải tích nên đã \nlên thẳng bàn đầu ngồi", null),
-                new DialogueLine("Vừa ngồi vào bản, Vũ đã phải chạm trán thử thách đầu tiên: \nlàm 5 câu fami sohoa", null)
+                new DialogueLine("Vũ với quyết tâm A+ giải tích nên đã \nlên thẳng bàn đầu ngồi", null)
         };
-        dialogueBox.startDialogue(script);
+        dialogueBox.startDialogue(script1);
     }
 
     private void submitAnswer(int selectedOptionIndex) {
@@ -145,60 +147,71 @@ public class ClassroomState extends GameState {
         gp.keyH.key3Pressed = false;
         gp.keyH.key4Pressed = false;
 
-        // Nếu đã làm hết 5 câu
         if (currentQuestionIndex >= 5) {
             isQuizActive = false;
-            showResultImage = true; // BẬT CỜ HIỂN THỊ ẢNH KẾT QUẢ
+            showResultImage = true;
         }
     }
 
     @Override
     public List<Obstacle> getObstacles() {
-        // Trả về danh sách vật cản để CollisionChecker bốc đầu ra xử lý va chạm tường
         return this.obstacles;
     }
 
     @Override
     public void update() {
-        // Nếu đang hiện hội thoại thì đóng băng quái vật hoặc đóng băng di chuyển của Player lại
+        // Nếu đang hiện hội thoại (bất kể script 1 hay script 2) thì đóng băng logic di chuyển
         if (dialogueBox.isActive()) {
-            // Chỉ cập nhật hiệu ứng chữ, không cho Player chạy đi đâu hết
-            // Nếu bạn dùng KeyHandler chung, hãy check điều kiện này để chặn di chuyển của Vũ nhé!
-
-            // Xử lý lắng nghe phím Enter chuyển dòng từ KeyHandler của bạn
             if (gp.keyH.spacePressed) {
                 dialogueBox.advanceDialogue();
-                gp.keyH.spacePressed = false; // Reset phím ngay lập tức để tránh bị trôi chữ quá nhanh
+                gp.keyH.spacePressed = false;
             }
             return;
         }
+
+        // ĐÃ THÊM: Check vị trí của Vũ xem đã đến gần bàn số 1 (100, 100) chưa
+        // Sử dụng khoảng cách (Ví dụ trong bán kính 40px quanh điểm 100,100) để dễ kích hoạt
+        if (!isFinalDialogueTriggered) {
+            double distanceToDesk = Math.hypot(gp.player.worldX - 310, gp.player.worldY - 390);
+            if (distanceToDesk <= 40) {
+                isFinalDialogueTriggered = true; // Chặn không cho trigger lại lần 2
+
+                // Gọi câu thoại cuối cùng
+                DialogueLine[] script2 = {
+                        new DialogueLine("Vừa ngồi vào bàn, Vũ đã phải chạm trán thử thách đầu tiên: \nlàm 5 câu fami sohoa", null)
+                };
+                dialogueBox.startDialogue(script2);
+                return; // Ngắt update để ưu tiên hiển thị hộp thoại vừa bật
+            }
+        }
+
         // LOGIC KHI ĐANG HIỆN ẢNH KẾT QUẢ:
         if (showResultImage) {
             if (gp.keyH.spacePressed) {
                 if (score >= 3) {
                     System.out.println("Qua môn! Chuyển map...");
-                    // CHUYỂN MAP Ở ĐÂY:
                     gp.setState(new LoadingState(gp, new CongQuanSu(gp)));
                 } else {
                     System.out.println("Trượt rồi, chơi lại!");
-                    // Reset lại điểm và câu hỏi để thi lại
                     showResultImage = false;
                     score = 0;
                     currentQuestionIndex = 0;
                     gp.setState(new TachMonState(gp));
                 }
-                gp.keyH.spacePressed = false; // Xóa phím để tránh dính đúp
+                gp.keyH.spacePressed = false;
             }
-            return; // Khóa game, không cho chạy vòng vòng khi đang xem điểm
+            return;
         }
+
         // Nếu bảng câu hỏi đang mở -> Khóa di chuyển, chỉ check phím bấm trả lời
         if (isQuizActive) {
             if (gp.keyH.key1Pressed) submitAnswer(0);
             else if (gp.keyH.key2Pressed) submitAnswer(1);
             else if (gp.keyH.key3Pressed) submitAnswer(2);
             else if (gp.keyH.key4Pressed) submitAnswer(3);
-            return; // Khóa di chuyển
+            return;
         }
+
         isNearBook = false;
         Rectangle playerRect = new Rectangle((int)gp.player.worldX, (int)gp.player.worldY, 32, 32);
 
@@ -221,32 +234,16 @@ public class ClassroomState extends GameState {
 
         // Check va chạm
         gp.checkCollisions();
-
-        // Kiểm tra điều kiện chuyển state
-
-        // 8. Kiểm tra điều kiện Thua / Thắng để chuyển State
-//        if (gp.player.health <= 0) {
-//            gp.setState(new GameOverState(gp));
-//            return;
-//        }
-
-//        if (gp.killCount >= 10) { // Ví dụ diệt đủ 10 quái thì qua màn tiếp
-//            // gp.setState(new LevelCompleteState(gp, 3, new Level4State(gp)));
-//        }
     }
 
     @Override
     public void draw(Graphics2D g2) {
-        // Tự động tính toán vị trí Camera dựa theo Player
         int cameraX = (int) (gp.player.worldX - gp.screenWidth / 2.0);
         int cameraY = (int) (gp.player.worldY - gp.screenHeight / 2.0);
 
-        // Giới hạn camera không bị lọt ra ngoài rìa bản đồ
         int[] clamped = gp.clampCameraPosition(cameraX, cameraY);
         cameraX = clamped[0];
         cameraY = clamped[1];
-
-        // --- TIẾN HÀNH VẼ THEO THỨ TỰ TẦNG (LAYER) ---
 
         // Tầng 1: Vẽ ảnh nền Map
         if (mapImage != null) {
@@ -254,21 +251,20 @@ public class ClassroomState extends GameState {
                     cameraX, cameraY, cameraX + gp.screenWidth, cameraY + gp.screenHeight, null);
         }
 
-        // Tầng 2: Vẽ các khối vật cản (Để debug, nếu map chạy mượt rồi có thể ẩn đi)
-        for (Obstacle obs : obstacles) {
-            obs.draw(g2, cameraX, cameraY);
+        if (debugMode) {
+            // Tầng 2: Vẽ các khối vật cản
+            for (Obstacle obs : obstacles) {
+                obs.draw(g2, cameraX, cameraY);
+            }
         }
 
-        // Tầng 3: Vẽ các thực thể (Quái vật, Đạn, Checkpoint...)
-//        for (Enemy enemy : gp.enemies) {
-//            enemy.draw(g2, cameraX, cameraY);
-//        }
+
         if (!isQuizFinished && mathBook != null) {
             mathBook.draw(g2, cameraX, cameraY);
         }
-        // Tầng 4: Vẽ Nhân vật chính
 
-            gp.player.draw(g2, cameraX, cameraY);
+        // Tầng 4: Vẽ Nhân vật chính
+        gp.player.draw(g2, cameraX, cameraY);
 
         // HIỂN THỊ CHỮ NHẤN F KHI ĐỨNG GẦN SÁCH
         if (isNearBook && !isQuizActive && !isQuizFinished) {
@@ -281,28 +277,22 @@ public class ClassroomState extends GameState {
             g2.setColor(Color.YELLOW);
             g2.drawString(text, textX, textY);
         }
+
         // VẼ GIAO DIỆN TRẮC NGHIỆM
         if (isQuizActive) {
             drawQuizUI(g2);
         }
 
-
-        // Tầng 5: Vẽ giao diện hiển thị (HUD) cố định trên màn hình (Máu, Số mạng đã giết...)
-//        g2.setColor(Color.WHITE);
-//        g2.setFont(new Font("Arial", Font.BOLD, 20));
-//        g2.drawString("HP: " + gp.player.health, 20, 30);
-//        g2.drawString("KILLS: " + gp.killCount, 20, 60);
-
+        // Vẽ Dialogue Box lên trên cùng
         dialogueBox.draw(g2, gp.screenWidth, gp.screenHeight);
+
         // VẼ ẢNH KẾT QUẢ ĐÈ LÊN MÀN HÌNH CHÍNH
         if (showResultImage) {
-            // Làm mờ nền đi một chút cho nó giống popup
             g2.setColor(new Color(0, 0, 0, 180));
             g2.fillRect(0, 0, gp.screenWidth, gp.screenHeight);
 
-            Image resultImg = resultImages[score]; // Lấy đúng ảnh theo số điểm
+            Image resultImg = resultImages[score];
             if (resultImg != null) {
-                // Kích thước cái bảng kết quả (tùy chỉnh cho vừa mắt)
                 int imgWidth = 400;
                 int imgHeight = 300;
                 int imgX = (gp.screenWidth - imgWidth) / 2;
@@ -310,12 +300,10 @@ public class ClassroomState extends GameState {
 
                 g2.drawImage(resultImg, imgX, imgY, imgWidth, imgHeight, null);
 
-                // Dòng chữ nhấp nháy hướng dẫn ấn Space
                 g2.setFont(new Font("Arial", Font.BOLD, 18));
                 g2.setColor(Color.WHITE);
                 String guideText = (score >= 3) ? "Nhấn SPACE để qua map" : "Nhấn SPACE để thi lại";
 
-                // Căn giữa dòng chữ
                 FontMetrics fm = g2.getFontMetrics();
                 int textX = (gp.screenWidth - fm.stringWidth(guideText)) / 2;
                 int textY = imgY + imgHeight + 40;
@@ -324,30 +312,25 @@ public class ClassroomState extends GameState {
             }
         }
     }
+
     private void drawQuizUI(Graphics2D g2) {
         int windowWidth = 600;
         int windowHeight = 350;
         int x = (gp.screenWidth - windowWidth) / 2;
         int y = (gp.screenHeight - windowHeight) / 2;
 
-        // Vẽ khung đen mờ
         g2.setColor(new Color(0, 0, 0, 220));
         g2.fillRoundRect(x, y, windowWidth, windowHeight, 20, 20);
         g2.setColor(Color.WHITE);
         g2.setStroke(new BasicStroke(3));
         g2.drawRoundRect(x, y, windowWidth, windowHeight, 20, 20);
 
-        // Vẽ câu hỏi
         g2.setFont(new Font("Arial", Font.BOLD, 22));
         g2.drawString(questions[currentQuestionIndex], x + 30, y + 50);
 
-        // Vẽ các đáp án
         g2.setFont(new Font("Arial", Font.PLAIN, 20));
         for (int i = 0; i < 4; i++) {
-            // Tọa độ y của từng đáp án giãn cách nhau 50px
             int optY = y + 120 + (i * 50);
-
-            // Vẽ hộp bao quanh đáp án để có cảm giác click được
             g2.setColor(new Color(255, 255, 255, 50));
             g2.fillRoundRect(x + 30, optY - 25, windowWidth - 60, 40, 10, 10);
 
@@ -355,22 +338,19 @@ public class ClassroomState extends GameState {
             g2.drawString(options[currentQuestionIndex][i], x + 40, optY);
         }
 
-        // Hướng dẫn nhỏ
         g2.setFont(new Font("Arial", Font.ITALIC, 14));
         g2.setColor(Color.GRAY);
         g2.drawString("Sử dụng chuột click hoặc ấn phím 1, 2, 3, 4 để chọn", 30, 40);
     }
+
     @Override
     public void exit() {
-        // Dọn dẹp tài nguyên khi rời màn chơi để tránh tràn bộ nhớ (RAM)
         gp.enemies.clear();
         obstacles.clear();
-        // gp.sound.stopMusic();
     }
 
     @Override
     public void handleMouseClick(MouseEvent e) {
-        // Chỉ xử lý click chuột khi Quiz đang bật
         if (isQuizActive) {
             int mx = e.getX();
             int my = e.getY();
@@ -382,10 +362,8 @@ public class ClassroomState extends GameState {
 
             for (int i = 0; i < 4; i++) {
                 int optY = y + 120 + (i * 50);
-                // Tạo một cái khung chữ nhật ảo khớp với giao diện đáp án tao vẽ ở trên
                 Rectangle optionBox = new Rectangle(x + 30, optY - 25, windowWidth - 60, 40);
 
-                // Nếu chuột click trúng vào khung chữ nhật đó
                 if (optionBox.contains(mx, my)) {
                     submitAnswer(i);
                     break;
