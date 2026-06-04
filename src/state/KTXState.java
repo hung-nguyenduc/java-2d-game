@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class KTXState extends GameState {
-    private static final String MAP_IMAGE_PATH = "/maps/ktx.png";
+    private static final String MAP_IMAGE_PATH = "/maps/ktx-xoa-balo.png";
     private static final String OBSTACLE_TXT_PATH = "/maps/ktx_obstacles.txt";
     private static final double MAP_SCALE = 1.0 / 2.5;
 
@@ -108,8 +108,8 @@ public class KTXState extends GameState {
 
         // Khởi tạo vật phẩm
         questItems.clear();
-        questItems.add(new Item("Cặp sách", "/items/backpack.png", 540, 640, 85));
-        questItems.add(new Item("Sách giải tích", "/items/calculus.png", 460, 347, 80));
+        questItems.add(new Item("Cặp sách", "/items/backpack.png", 560, 670, 85));
+        questItems.add(new Item("Sách giải tích", "/items/calculus.png", 480, 360, 80));
         questItems.add(new Item("Hộp bút", "/items/pencilcase.png", 150, 242, 40));
 
         itemsCollected = 0;
