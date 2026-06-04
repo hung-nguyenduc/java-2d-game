@@ -209,15 +209,14 @@ public class Zombie2State extends GameState {
     private void spawnEnemies() {
         // Sinh ra nhiều quái
         for (int i = 0; i < 20; i++) {
-            int type = (int)(Math.random() * 4); // Random từ 0 đến 3
+            int type = 4; // Toàn bộ quái ở màn này là loại bắn tỉa bỏ chạy (type = 4)
             int startX = (int)(Math.random() * gp.worldWidth);
             int startY = (int)(Math.random() * gp.worldHeight);
             Enemy e = new Enemy(gp, gp.player, startX, startY, type);
-            e.speed = 4.0;
-            if (type == 3) e.speed = 5.0; // Quái chạy trốn nên cho chạy nhanh hơn
+            e.speed = 1.7; // Giảm tốc độ chậm hơn nữa nhưng vẫn nhanh hơn màn 1 (1.5)
             e.canDodge = true;
             e.damage = 5;
-            e.minDistance = 150; // Đứng xa người chơi hơn, tạo không gian xoay xở
+            e.minDistance = 150; // Khoảng cách tối thiểu để lùi lại
             gp.enemies.add(e);
         }
     }

@@ -42,7 +42,7 @@ public class Enemy extends Entity {
         getEnemyImage();
     }
     public String enemyDirection;
-    public String[] enemyNames = {"gt1", "gt3", "ds", "ds"}; // Thêm phần tử thứ 4 cho loại 3
+    public String[] enemyNames = {"gt1", "gt3", "ds", "ds", "gt3"}; // Thêm phần tử cho loại 4
     //public String enemySource = "/enemy/" + enemyNames[enemyType] + "_" + enemyDirection + ".png";
     public String getEnemySource() {
         return "/enemy/" + enemyNames[enemyType] + "_" + enemyDirection + ".png";
@@ -251,6 +251,24 @@ public class Enemy extends Entity {
                             vx = fleeX * speed;
                             vy = fleeY * speed;
                         }
+                    }
+                    break;
+                }
+                
+                case 4: { // Bắn tỉa nhút nhát (Chạy ngẫu nhiên, giữ khoảng cách xa và bắn)
+                    tick++;
+                    // Luôn có một lực ngẫu nhiên để lượn lờ (Perlin noise đơn giản)
+                    double randomX = Math.cos(tick * 0.05 + this.hashCode()) * 1.5;
+                    double randomY = Math.sin(tick * 0.05 + this.hashCode()) * 1.5;
+                    
+                    if (distance < 400) { // Nếu người chơi đến gần (< 400px), cắm đầu chạy ra xa
+                        double fleeX = -(dx / distance);
+                        double fleeY = -(dy / distance);
+                        vx = (fleeX + randomX * 0.3) * speed;
+                        vy = (fleeY + randomY * 0.3) * speed;
+                    } else { // Nếu an toàn, đi lang thang ngẫu nhiên
+                        vx = randomX * (speed * 0.5);
+                        vy = randomY * (speed * 0.5);
                     }
                     break;
                 }
