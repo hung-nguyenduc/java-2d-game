@@ -28,6 +28,7 @@ public class BanSungQuanSu extends GameState {
     private Image mapImage;
     private List<Obstacle> obstacles = new ArrayList<>();
     BufferedImage vuFace;
+    BufferedImage playerBanSung;
 
     private boolean isQuestCompleted = false;
     private boolean isPhase2DialoguePlayed = false;
@@ -83,7 +84,7 @@ public class BanSungQuanSu extends GameState {
             g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
             g2d.drawImage(src, 0, 0, gp.worldWidth, gp.worldHeight, null);
             g2d.dispose();
-
+            playerBanSung = ImageIO.read(getClass().getResourceAsStream("/player/ban-sung.png"));
             mapImage = compatibleMap;
         } catch (Exception e) {
             System.err.println("Lỗi nạp ảnh bản đồ tại: " + MAP_IMAGE_PATH);
@@ -109,7 +110,7 @@ public class BanSungQuanSu extends GameState {
         gp.player.worldY = gp.worldHeight / 2 - 16;
 
         // Thiết lập biên di chuyển dọc
-        targetMinY = gp.worldHeight / 5;
+        targetMinY = gp.worldHeight / 5 + 100;
         targetMaxY = (gp.worldHeight * 4) / 5;
 
         spawnSingleBiaMucTieu();
@@ -141,7 +142,7 @@ public class BanSungQuanSu extends GameState {
         int targetX = gp.worldWidth - 250;
         int startY = gp.worldHeight / 2;
 
-        Item bia = new Item("Bia Ma Quai", "/items/calculus.png", targetX, startY);
+        Item bia = new Item("Bia Ma Quai", "/items/bia.png", targetX, startY);
         bia.solidArea = new Rectangle(0, 0, 48, 48);
         targetBia.add(bia);
     }
@@ -164,7 +165,7 @@ public class BanSungQuanSu extends GameState {
         if (isGameOver || isQuestCompleted) return;
 
         // 1. Cập nhật Player
-        gp.player.update();
+        //gp.player.update();
 
         // 2. Chặn không cho bắn nếu đã hết đạn dự trữ
         if (bulletsLeft <= 0 && ak47.bullets.isEmpty() && !isQuestCompleted) {
@@ -281,7 +282,10 @@ public class BanSungQuanSu extends GameState {
         }
 
         // Tầng 3: Vẽ Nhân vật Vũ
-        gp.player.draw(g2, cameraX, cameraY);
+        //gp.player.draw(g2, cameraX, cameraY);
+
+            g2.drawImage(playerBanSung, 100, 290, 100, 60, null);
+
 
         // Tầng 4: Vẽ Súng AK47 và các viên đạn đang bay
         if (ak47 != null) {
