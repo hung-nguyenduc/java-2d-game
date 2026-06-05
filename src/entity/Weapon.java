@@ -129,15 +129,26 @@ public class Weapon {
     }
 
     private void shoot() {
-        Bullet bullet1 = new Bullet(player.worldX + 40, player.worldY + 40, aimAngle);
+        // Vị trí pivot (tay cầm súng) trên thế giới
+        double pivotWorldX = player.worldX + 43;
+        double pivotWorldY = player.worldY + 45;
+        
+        // Khoảng cách từ pivot đến đầu súng
+        double gunLength = weaponImage.getWidth() - (weaponImage.getWidth() / 6.0);
+        
+        // Tọa độ mũi súng dựa trên góc ngắm
+        double tipX = pivotWorldX + Math.cos(Math.toRadians(aimAngle)) * gunLength;
+        double tipY = pivotWorldY + Math.sin(Math.toRadians(aimAngle)) * gunLength;
+
+        Bullet bullet1 = new Bullet(tipX, tipY, aimAngle);
         bullets.add(bullet1);
         
         flashTimer = 5; // Hiển thị chớp lửa trong 5 frames
         
         if (shotgunMode) {
             // Kỹ năng Shotgun: Bắn thêm 2 viên đạn tỏa ra 2 hướng
-            Bullet bullet2 = new Bullet(player.worldX + 40, player.worldY + 40, aimAngle - 15); // Lệch lên 15 độ
-            Bullet bullet3 = new Bullet(player.worldX + 40, player.worldY + 40, aimAngle + 15); // Lệch xuống 15 độ
+            Bullet bullet2 = new Bullet(tipX, tipY, aimAngle - 15); // Lệch lên 15 độ
+            Bullet bullet3 = new Bullet(tipX, tipY, aimAngle + 15); // Lệch xuống 15 độ
             bullets.add(bullet2);
             bullets.add(bullet3);
         }
@@ -164,14 +175,14 @@ public class Weapon {
 
         if (aimAngle > 90 || aimAngle < -90) {
             g2.scale(1, -1);
-            g2.drawImage(weaponImage, -pivotX, -(weaponImage.getHeight() - pivotY), null);
+            g2.drawImage(weaponImage, -pivotX, -pivotY, null);
             if (flashTimer > 0 && outgunImage != null) {
-                g2.drawImage(outgunImage, weaponImage.getWidth() - pivotX, -(weaponImage.getHeight() - pivotY) - 10, 30, 30, null);
+                g2.drawImage(outgunImage, weaponImage.getWidth() - pivotX, -15, 30, 30, null);
             }
         } else {
             g2.drawImage(weaponImage, -pivotX, -pivotY, null);
             if (flashTimer > 0 && outgunImage != null) {
-                g2.drawImage(outgunImage, weaponImage.getWidth() - pivotX, -pivotY - 10, 30, 30, null);
+                g2.drawImage(outgunImage, weaponImage.getWidth() - pivotX, -15, 30, 30, null);
             }
         }
         g2.setTransform(original);
