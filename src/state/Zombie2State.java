@@ -213,7 +213,7 @@ public class Zombie2State extends GameState {
             int startX = (int)(Math.random() * gp.worldWidth);
             int startY = (int)(Math.random() * gp.worldHeight);
             Enemy e = new Enemy(gp, gp.player, startX, startY, type);
-            e.speed = 1.7; // Giảm tốc độ chậm hơn nữa nhưng vẫn nhanh hơn màn 1 (1.5)
+            e.speed = 1.5; // Giống màn 1 (1.5)
             e.canDodge = true;
             e.damage = 5;
             e.minDistance = 150; // Khoảng cách tối thiểu để lùi lại
