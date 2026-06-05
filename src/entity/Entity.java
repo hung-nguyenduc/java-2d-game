@@ -1,7 +1,7 @@
 package entity;
 
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.List;
 
 // Lớp cơ sở cho tất cả các thực thể trong game (Player, Enemy, etc.)
@@ -18,7 +18,7 @@ public class Entity {
     public double aimAngle = 0; // Góc nhắm (độ)
 
     // Bullet list
-    public List<Bullet> bullets = new ArrayList<>(); // Danh sách đạn của thực thể
+    public List<Bullet> bullets = new CopyOnWriteArrayList<>(); // Danh sách đạn của thực thể
 
     // Health
     public int maxHealth = 100; // Máu tối đa
