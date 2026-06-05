@@ -18,6 +18,7 @@ public class Enemy extends Entity {
     public boolean canDodge = true;
     public int damage = 1;
     public int tick = (int)(Math.random() * 1000); // Dùng cho thuật toán Zig-zag
+    public int strafeDir = (Math.random() < 0.5) ? 1 : -1; // Hướng đi ngang lượn lờ quanh người chơi
     
     // Thuộc tính AI cho loại 3 (Taunter)
     public int lapsCompleted = 0;
@@ -127,7 +128,24 @@ public class Enemy extends Entity {
         vy = 0;
 
         // Tính toán hướng đi thông minh theo từng loại quái
-        if (distance > minDistance) { // Tiến lại gần
+        if (enemyType == 4) { // Bắn tỉa nhút nhát (Chạy lượn lờ thả diều)
+            tick++;
+            double randomX = Math.cos(tick * 0.05 + this.hashCode()) * 1.5;
+            double randomY = Math.sin(tick * 0.05 + this.hashCode()) * 1.5;
+            
+            if (distance < 400) { // Khi người chơi đến gần, vừa chạy lùi vừa đi ngang
+                double fleeX = -(dx / distance);
+                double fleeY = -(dy / distance);
+                double tangentX = -(dy / distance) * strafeDir;
+                double tangentY = (dx / distance) * strafeDir;
+                
+                vx = (fleeX * 1.2 + tangentX * 0.5 + randomX * 0.2) * speed;
+                vy = (fleeY * 1.2 + tangentY * 0.5 + randomY * 0.2) * speed;
+            } else { // Xa an toàn thì lượn lờ ngẫu nhiên
+                vx = randomX * (speed * 0.5);
+                vy = randomY * (speed * 0.5);
+            }
+        } else if (distance > minDistance) { // Tiến lại gần
             switch (enemyType) {
                 case 0: { // Predictive Chaser: Đoán trước hướng đi của Player
                     double predictX = player.worldX + player.vx * 30; // Dự đoán trước 30 frame
@@ -254,24 +272,6 @@ public class Enemy extends Entity {
                     }
                     break;
                 }
-                
-                case 4: { // Bắn tỉa nhút nhát (Chạy ngẫu nhiên, giữ khoảng cách xa và bắn)
-                    tick++;
-                    // Luôn có một lực ngẫu nhiên để lượn lờ (Perlin noise đơn giản)
-                    double randomX = Math.cos(tick * 0.05 + this.hashCode()) * 1.5;
-                    double randomY = Math.sin(tick * 0.05 + this.hashCode()) * 1.5;
-                    
-                    if (distance < 400) { // Nếu người chơi đến gần (< 400px), cắm đầu chạy ra xa
-                        double fleeX = -(dx / distance);
-                        double fleeY = -(dy / distance);
-                        vx = (fleeX + randomX * 0.3) * speed;
-                        vy = (fleeY + randomY * 0.3) * speed;
-                    } else { // Nếu an toàn, đi lang thang ngẫu nhiên
-                        vx = randomX * (speed * 0.5);
-                        vy = randomY * (speed * 0.5);
-                    }
-                    break;
-                }
                     
                 default: {
                     vx = (dx / distance) * speed;
@@ -279,14 +279,26 @@ public class Enemy extends Entity {
                     break;
                 }
             }
-        } else if (distance < minDistance - 20 && distance > 0) { // Quá gần thì lùi lại để giữ khoảng cách
-            if (enemyType == 3) { // Taunter lùi nhanh hơn
-                vx = -(dx / distance) * speed * 1.2;
-                vy = -(dy / distance) * speed * 1.2;
-            } else {
-                vx = -(dx / distance) * (speed * 0.5);
-                vy = -(dy / distance) * (speed * 0.5);
+        } else { // Khi đạt tới minDistance -> chuyển sang trạng thái lượn lờ (Strafing)
+            double nx = dx / distance;
+            double ny = dy / distance;
+            
+            // Lực đi ngang (vuông góc với hướng tới player)
+            double tangentX = -ny * strafeDir;
+            double tangentY = nx * strafeDir;
+            
+            // Mặc định lượn ngang quanh người chơi
+            double moveX = tangentX * (speed * 0.7);
+            double moveY = tangentY * (speed * 0.7);
+
+            // Nếu người chơi lao tới quá gần, kết hợp vừa đi ngang vừa lùi lại
+            if (distance < minDistance - 20 && distance > 0) {
+                double backSpeed = (enemyType == 3) ? speed * 1.2 : speed * 0.6;
+                moveX += -nx * backSpeed;
+                moveY += -ny * backSpeed;
             }
+            vx = moveX;
+            vy = moveY;
         }
 
         // Logic né đạn
