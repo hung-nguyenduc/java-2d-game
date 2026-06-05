@@ -41,7 +41,7 @@ public class Weapon {
     private void loadWeaponImage() {
         try {
             BufferedImage weaponTemp = ImageIO.read(getClass().getResourceAsStream("/weapon/ak47.jpg"));
-            weaponTemp = scaleImage(weaponTemp, 180, 60); // Chỉnh súng AK47 to gấp 3 lần (180x60)
+            weaponTemp = scaleImage(weaponTemp, 120, 80); // Làm súng ngắn lại (120) và bề dày to hơn (80)
             weaponImage = makeColorTransparent(weaponTemp, Color.WHITE, 120); // Dung sai lớn (120) để xóa sạch viền trắng
 
             BufferedImage outgunTemp = ImageIO.read(getClass().getResourceAsStream("/weapon/outgun.jpg"));
