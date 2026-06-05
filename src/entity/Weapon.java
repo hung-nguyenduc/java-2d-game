@@ -7,7 +7,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import javax.imageio.ImageIO;
-import java.util.ArrayList;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.List;
 
 public class Weapon {
@@ -17,7 +17,7 @@ public class Weapon {
 
     private BufferedImage weaponImage;
     private BufferedImage outgunImage;
-    public List<Bullet> bullets = new ArrayList<>(); // Đạn chuyển về cho vũ khí quản lý
+    public List<Bullet> bullets = new CopyOnWriteArrayList<>(); // Đạn chuyển về cho vũ khí quản lý
     
     private int flashTimer = 0; // Thời gian hiển thị hiệu ứng chớp lửa
 
@@ -41,12 +41,23 @@ public class Weapon {
     private void loadWeaponImage() {
         try {
             BufferedImage weaponTemp = ImageIO.read(getClass().getResourceAsStream("/weapon/ak47.jpg"));
-            weaponImage = makeColorTransparent(weaponTemp, Color.WHITE, 40); // Loại bỏ viền trắng với dung sai 40 cho AK47
+            weaponTemp = scaleImage(weaponTemp, 60, 20); // Thu nhỏ súng AK47 vừa tay cầm
+            weaponImage = makeColorTransparent(weaponTemp, Color.WHITE, 120); // Dung sai lớn (120) để xóa sạch viền trắng
+
             BufferedImage outgunTemp = ImageIO.read(getClass().getResourceAsStream("/weapon/outgun.jpg"));
             outgunImage = makeColorTransparent(outgunTemp, Color.WHITE, 40); // Loại bỏ viền trắng với dung sai 40
         } catch (IOException ex) {
             throw new RuntimeException("Không tìm thấy ảnh súng hoặc hiệu ứng outgun!", ex);
         }
+    }
+
+    private BufferedImage scaleImage(BufferedImage originalImage, int targetWidth, int targetHeight) {
+        BufferedImage resizedImage = new BufferedImage(targetWidth, targetHeight, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2 = resizedImage.createGraphics();
+        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        g2.drawImage(originalImage, 0, 0, targetWidth, targetHeight, null);
+        g2.dispose();
+        return resizedImage;
     }
 
     private BufferedImage makeColorTransparent(BufferedImage im, Color color, int tolerance) {
