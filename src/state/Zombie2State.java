@@ -201,10 +201,9 @@ public class Zombie2State extends GameState {
         }
 
         // Tầng 5: Vẽ giao diện hiển thị (HUD) cố định trên màn hình (Máu, Số mạng đã giết...)
-//        g2.setColor(Color.WHITE);
-//        g2.setFont(new Font("Arial", Font.BOLD, 20));
-//        g2.drawString("HP: " + gp.player.health, 20, 30);
-//        g2.drawString("KILLS: " + gp.killCount, 20, 60);
+        g2.setColor(Color.RED);
+        g2.setFont(new Font("Arial", Font.BOLD, 20));
+        g2.drawString("Man 2 - Giet quai: " + gp.killCount + " / 100", 10, 30);
 
         dialogueBox.draw(g2, gp.screenWidth, gp.screenHeight);
     }
