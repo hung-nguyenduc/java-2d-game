@@ -7,6 +7,8 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import javax.imageio.ImageIO;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Player extends Entity {
     GamePanel gp;
@@ -15,6 +17,10 @@ public class Player extends Entity {
 
     // Vũ khí có thể tháo lắp tùy màn chơi
     public Weapon currentWeapon;
+    
+    private int grenadeCooldown = 0;
+    private int kickCooldown = 0;
+    public List<SkillGrenade> skillGrenades = new ArrayList<>();
 
     private static final double DIAGONAL_FACTOR = 1.0 / Math.sqrt(2);
     private static final Font HEALTH_FONT = new Font("Arial", Font.BOLD, 11);
@@ -103,6 +109,55 @@ public class Player extends Entity {
         if (currentWeapon != null) {
             currentWeapon.update();
         }
+        
+        // Cooldowns
+        if (grenadeCooldown > 0) grenadeCooldown--;
+        if (kickCooldown > 0) kickCooldown--;
+        
+        // Kỹ năng Đá lùi (Kick)
+        if (keyH.kPressed && kickCooldown == 0 && gp.enemies.size() > 0) {
+            boolean kicked = false;
+            for (Enemy e : gp.enemies) {
+                double dx = e.worldX - worldX;
+                double dy = e.worldY - worldY;
+                double dist = Math.sqrt(dx*dx + dy*dy);
+                if (dist < 120) {
+                    // Push back enemy
+                    e.worldX += (dx / dist) * 150;
+                    e.worldY += (dy / dist) * 150;
+                    kicked = true;
+                }
+            }
+            if (kicked) kickCooldown = 120; // 2 seconds
+        }
+        
+        // Kỹ năng Ném lựu đạn (Grenade)
+        if (keyH.gPressed && grenadeCooldown == 0 && gp.enemies.size() > 0) {
+            Enemy nearest = null;
+            double minDist = Double.MAX_VALUE;
+            for (Enemy e : gp.enemies) {
+                double dx = e.worldX - worldX;
+                double dy = e.worldY - worldY;
+                double dist = Math.sqrt(dx*dx + dy*dy);
+                if (dist < minDist) {
+                    minDist = dist;
+                    nearest = e;
+                }
+            }
+            if (nearest != null) {
+                skillGrenades.add(new SkillGrenade(gp, worldX + 40, worldY + 40, nearest.worldX + 40, nearest.worldY + 40));
+                grenadeCooldown = 300; // 5 seconds
+            }
+        }
+        
+        // Cập nhật lựu đạn kỹ năng
+        for (int i = 0; i < skillGrenades.size(); i++) {
+            skillGrenades.get(i).update();
+            if (skillGrenades.get(i).isDead) {
+                skillGrenades.remove(i);
+                i--;
+            }
+        }
     }
 
     public void clampPlayerPosition() {
@@ -138,6 +193,11 @@ public class Player extends Entity {
         }
 
         g2.drawImage(img, screenX, screenY, 90, 90, null);
+
+        // Vẽ lựu đạn kỹ năng
+        for (SkillGrenade g : skillGrenades) {
+            g.draw(g2, cameraX, cameraY);
+        }
 
         if (currentWeapon != null) {
             currentWeapon.draw(g2, screenX, screenY, cameraX, cameraY);

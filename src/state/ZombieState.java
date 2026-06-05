@@ -99,6 +99,14 @@ public class ZombieState extends GameState {
         // Tải vật cản từ hằng số path đã định nghĩa
         this.obstacles = ObstacleManager.loadObstacles(OBSTACLE_TXT_PATH, this.scale);
 
+        // Sinh ngẫu nhiên thùng gỗ và thùng dầu
+        for (int i = 0; i < 10; i++) {
+            int obsType = (Math.random() < 0.5) ? 1 : 2; // 1: Thùng gỗ, 2: Thùng dầu
+            int obsX = (int)(Math.random() * (gp.worldWidth - 100));
+            int obsY = (int)(Math.random() * (gp.worldHeight - 100));
+            obstacles.add(new Obstacle(obsX, obsY, 72, 72, obsType));
+        }
+
         spawnEnemies();
 
         // Nạp ảnh chân dung nhân vật Vũ cho hội thoại
@@ -236,9 +244,21 @@ public class ZombieState extends GameState {
     }
 
     private void spawnEnemies() {
-        gp.enemies.add(new Enemy(gp, gp.player, 300, 300, 0));
-        gp.enemies.add(new Enemy(gp, gp.player, 800, 500, 1));
-        gp.enemies.add(new Enemy(gp, gp.player, 1200, 700, 2));
+        Enemy e1 = new Enemy(gp, gp.player, 300, 300, 0);
+        e1.speed = 1.5; e1.canDodge = false; e1.damage = 1; e1.minDistance = 50;
+        gp.enemies.add(e1);
+
+        Enemy e2 = new Enemy(gp, gp.player, 800, 500, 1);
+        e2.speed = 1.5; e2.canDodge = false; e2.damage = 1; e2.minDistance = 50;
+        gp.enemies.add(e2);
+
+        Enemy e3 = new Enemy(gp, gp.player, 1200, 700, 2);
+        e3.speed = 1.5; e3.canDodge = false; e3.damage = 1; e3.minDistance = 50;
+        gp.enemies.add(e3);
+
+        Enemy e4 = new Enemy(gp, gp.player, 500, 500, 3); // Thêm 1 quái bỏ chạy
+        e4.speed = 2.5; e4.canDodge = false; e4.damage = 1; e4.minDistance = 50;
+        gp.enemies.add(e4);
     }
 
     @Override

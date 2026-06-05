@@ -61,6 +61,14 @@ public class Zombie2State extends GameState {
         // Nạp danh sách vật cản từ file text thông qua Manager
         this.obstacles = ObstacleManager.loadObstacles(OBSTACLE_TXT_PATH, MAP_SCALE);
 
+        // Sinh ngẫu nhiên thùng gỗ và thùng dầu
+        for (int i = 0; i < 15; i++) {
+            int obsType = (Math.random() < 0.5) ? 1 : 2; // 1: Thùng gỗ, 2: Thùng dầu
+            int obsX = (int)(Math.random() * (gp.worldWidth - 100));
+            int obsY = (int)(Math.random() * (gp.worldHeight - 100));
+            obstacles.add(new Obstacle(obsX, obsY, 72, 72, obsType));
+        }
+
         // Reset các thông số hệ thống và dọn dẹp thực thể cũ
         gp.killCount = 0;
         gp.player.health = 100;
@@ -72,7 +80,7 @@ public class Zombie2State extends GameState {
 //        gp.player.worldY = 100; // Tọa độ Y mong muốn
         gp.player.spawnAtCenter();
         // Sinh quái (Enemy) riêng cho map này
-        //spawnEnemies();
+        spawnEnemies();
 
         // Bật nhạc nền riêng của màn này
         // gp.sound.playMusic("level3_theme");
@@ -124,9 +132,9 @@ public class Zombie2State extends GameState {
         gp.player.update();
 
         // Cập nhật logic quái vật
-//        for (int i = 0; i < gp.enemies.size(); i++) {
-//            gp.enemies.get(i).update();
-//        }
+        for (int i = 0; i < gp.enemies.size(); i++) {
+            gp.enemies.get(i).update();
+        }
 
         // Gọi bộ kiểm tra va chạm tập trung (Giữa các thực thể và vật cản)
         gp.checkCollisions();
@@ -167,9 +175,9 @@ public class Zombie2State extends GameState {
         }
 
         // Tầng 3: Vẽ các thực thể (Quái vật, Đạn, Checkpoint...)
-//        for (Enemy enemy : gp.enemies) {
-//            enemy.draw(g2, cameraX, cameraY);
-//        }
+        for (Enemy enemy : gp.enemies) {
+            enemy.draw(g2, cameraX, cameraY);
+        }
 
         // Tầng 4: Vẽ Nhân vật chính
         if (!dialogueBox.isActive() && dialogueLineCounter >= 8) {
@@ -196,5 +204,20 @@ public class Zombie2State extends GameState {
     @Override
     public void handleMouseClick(MouseEvent e) {
         // Xử lý các nút bấm đặc biệt trên màn hình nếu có (ví dụ nút Pause)
+    }
+
+    private void spawnEnemies() {
+        // Sinh ra nhiều quái
+        for (int i = 0; i < 20; i++) {
+            int type = 4; // Toàn bộ quái ở màn này là loại bắn tỉa bỏ chạy (type = 4)
+            int startX = (int)(Math.random() * gp.worldWidth);
+            int startY = (int)(Math.random() * gp.worldHeight);
+            Enemy e = new Enemy(gp, gp.player, startX, startY, type);
+            e.speed = 1.7; // Giảm tốc độ chậm hơn nữa nhưng vẫn nhanh hơn màn 1 (1.5)
+            e.canDodge = true;
+            e.damage = 5;
+            e.minDistance = 150; // Khoảng cách tối thiểu để lùi lại
+            gp.enemies.add(e);
+        }
     }
 }
