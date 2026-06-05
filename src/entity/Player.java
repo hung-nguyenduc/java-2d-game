@@ -137,7 +137,7 @@ public class Player extends Entity {
                 break;
         }
 
-        g2.drawImage(img, screenX, screenY, 90, 90, null);
+        g2.drawImage(img, screenX, screenY, 60, 90, null);
 
         if (currentWeapon != null) {
             currentWeapon.draw(g2, screenX, screenY, cameraX, cameraY);
