@@ -7,7 +7,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import javax.imageio.ImageIO;
-import java.util.ArrayList;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.List;
 
 public class Weapon {
@@ -17,7 +17,7 @@ public class Weapon {
 
     private BufferedImage weaponImage;
     private BufferedImage outgunImage;
-    public List<Bullet> bullets = new ArrayList<>(); // Đạn chuyển về cho vũ khí quản lý
+    public List<Bullet> bullets = new CopyOnWriteArrayList<>(); // Đạn chuyển về cho vũ khí quản lý
     
     private int flashTimer = 0; // Thời gian hiển thị hiệu ứng chớp lửa
 
@@ -40,12 +40,24 @@ public class Weapon {
 
     private void loadWeaponImage() {
         try {
-            weaponImage = ImageIO.read(getClass().getResourceAsStream("/weapon/shotgun.png"));
+            BufferedImage weaponTemp = ImageIO.read(getClass().getResourceAsStream("/weapon/ak47.jpg"));
+            weaponTemp = scaleImage(weaponTemp, 180, 60); // Chỉnh súng AK47 to gấp 3 lần (180x60)
+            weaponImage = makeColorTransparent(weaponTemp, Color.WHITE, 120); // Dung sai lớn (120) để xóa sạch viền trắng
+
             BufferedImage outgunTemp = ImageIO.read(getClass().getResourceAsStream("/weapon/outgun.jpg"));
             outgunImage = makeColorTransparent(outgunTemp, Color.WHITE, 40); // Loại bỏ viền trắng với dung sai 40
         } catch (IOException ex) {
             throw new RuntimeException("Không tìm thấy ảnh súng hoặc hiệu ứng outgun!", ex);
         }
+    }
+
+    private BufferedImage scaleImage(BufferedImage originalImage, int targetWidth, int targetHeight) {
+        BufferedImage resizedImage = new BufferedImage(targetWidth, targetHeight, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2 = resizedImage.createGraphics();
+        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        g2.drawImage(originalImage, 0, 0, targetWidth, targetHeight, null);
+        g2.dispose();
+        return resizedImage;
     }
 
     private BufferedImage makeColorTransparent(BufferedImage im, Color color, int tolerance) {
@@ -117,15 +129,26 @@ public class Weapon {
     }
 
     private void shoot() {
-        Bullet bullet1 = new Bullet(player.worldX + 40, player.worldY + 40, aimAngle);
+        // Vị trí pivot (tay cầm súng) trên thế giới
+        double pivotWorldX = player.worldX + 43;
+        double pivotWorldY = player.worldY + 45;
+        
+        // Khoảng cách từ pivot đến đầu súng
+        double gunLength = weaponImage.getWidth() - (weaponImage.getWidth() / 6.0);
+        
+        // Tọa độ mũi súng dựa trên góc ngắm
+        double tipX = pivotWorldX + Math.cos(Math.toRadians(aimAngle)) * gunLength;
+        double tipY = pivotWorldY + Math.sin(Math.toRadians(aimAngle)) * gunLength;
+
+        Bullet bullet1 = new Bullet(tipX, tipY, aimAngle);
         bullets.add(bullet1);
         
         flashTimer = 5; // Hiển thị chớp lửa trong 5 frames
         
         if (shotgunMode) {
             // Kỹ năng Shotgun: Bắn thêm 2 viên đạn tỏa ra 2 hướng
-            Bullet bullet2 = new Bullet(player.worldX + 40, player.worldY + 40, aimAngle - 15); // Lệch lên 15 độ
-            Bullet bullet3 = new Bullet(player.worldX + 40, player.worldY + 40, aimAngle + 15); // Lệch xuống 15 độ
+            Bullet bullet2 = new Bullet(tipX, tipY, aimAngle - 15); // Lệch lên 15 độ
+            Bullet bullet3 = new Bullet(tipX, tipY, aimAngle + 15); // Lệch xuống 15 độ
             bullets.add(bullet2);
             bullets.add(bullet3);
         }
@@ -143,8 +166,8 @@ public class Weapon {
         // 2. Vẽ súng
         int centerX = screenX + 43;
         int centerY = screenY + 45;
-        int pivotX = 10;
-        int pivotY = 20;
+        int pivotX = weaponImage.getWidth() / 6; // Tay cầm súng nằm ở 1/6 chiều dài
+        int pivotY = weaponImage.getHeight() / 2; // Đặt tâm quay ở giữa chiều cao của súng
 
         AffineTransform original = g2.getTransform();
         g2.translate(centerX, centerY);
@@ -152,14 +175,14 @@ public class Weapon {
 
         if (aimAngle > 90 || aimAngle < -90) {
             g2.scale(1, -1);
-            g2.drawImage(weaponImage, -pivotX, -(weaponImage.getHeight() - pivotY), null);
+            g2.drawImage(weaponImage, -pivotX, -pivotY, null);
             if (flashTimer > 0 && outgunImage != null) {
-                g2.drawImage(outgunImage, weaponImage.getWidth() - pivotX, -(weaponImage.getHeight() - pivotY) - 10, 30, 30, null);
+                g2.drawImage(outgunImage, weaponImage.getWidth() - pivotX, -15, 30, 30, null);
             }
         } else {
             g2.drawImage(weaponImage, -pivotX, -pivotY, null);
             if (flashTimer > 0 && outgunImage != null) {
-                g2.drawImage(outgunImage, weaponImage.getWidth() - pivotX, -pivotY - 10, 30, 30, null);
+                g2.drawImage(outgunImage, weaponImage.getWidth() - pivotX, -15, 30, 30, null);
             }
         }
         g2.setTransform(original);

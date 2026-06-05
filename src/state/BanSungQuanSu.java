@@ -232,7 +232,7 @@ public class BanSungQuanSu extends GameState {
 
                     if (bulletRect.intersects(biaRect)) {
                         System.out.println("TRÚNG ĐÍCH!");
-                        bulletIterator.remove(); // Xóa viên đạn vừa trúng
+                        ak47.bullets.remove(bullet); // Xóa viên đạn vừa trúng (Dùng remove trên collection để tránh lỗi với CopyOnWriteArrayList)
                         targetsDestroyed++;
                         gp.killCount = targetsDestroyed;
                         bulletHit = true;
