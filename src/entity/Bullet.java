@@ -11,7 +11,7 @@ public class Bullet {
     public double worldX, worldY; // Vị trí trong thế giới
     public double vx, vy;         // Vận tốc di chuyển (tính sẵn theo góc)
     public double bulletSpeed = 12.0; // Tăng tốc độ lên tí cho đạn shotgun bay mượt hơn
-    public int bulletSize = 12;   // Kích thước đạn
+    public int bulletSize = 30;   // Kích thước đạn
     public int maxRange = 1000;   // Phạm vi tối đa (px) viên đạn có thể bay
     public double travelDistance = 0; // Khoảng cách đã đi để check out of range
     public Color color = Color.RED;   // Màu sắc dự phòng
