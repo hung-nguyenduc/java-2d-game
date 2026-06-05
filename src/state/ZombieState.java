@@ -174,8 +174,8 @@ public class ZombieState extends GameState {
             return;
         }
 
-        // Kiểm tra điều kiện Hoàn thành (Diệt đủ 3 quái)
-        if (gp.killCount >= 3 && !isQuestCompleted) {
+        // Kiểm tra điều kiện Hoàn thành (Diệt đủ 8 quái)
+        if (gp.killCount >= 8 && !isQuestCompleted) {
             isQuestCompleted = true;
         }
 
@@ -239,7 +239,7 @@ public class ZombieState extends GameState {
         // 6. Vẽ Giao diện HUD
         g2.setColor(Color.RED);
         g2.setFont(HUD_FONT);
-        g2.drawString("Man 1 - Giet quai: " + gp.killCount + " / 3", 10, 30);
+        g2.drawString("Man 1 - Giet quai: " + gp.killCount + " / 8", 10, 30);
 
         // 7. Vẽ Hộp thoại
         dialogueBox.draw(g2, gp.screenWidth, gp.screenHeight);
