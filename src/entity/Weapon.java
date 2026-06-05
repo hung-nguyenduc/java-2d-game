@@ -40,7 +40,8 @@ public class Weapon {
 
     private void loadWeaponImage() {
         try {
-            weaponImage = ImageIO.read(getClass().getResourceAsStream("/weapon/shotgun.png"));
+            BufferedImage weaponTemp = ImageIO.read(getClass().getResourceAsStream("/weapon/ak47.jpg"));
+            weaponImage = makeColorTransparent(weaponTemp, Color.WHITE, 40); // Loại bỏ viền trắng với dung sai 40 cho AK47
             BufferedImage outgunTemp = ImageIO.read(getClass().getResourceAsStream("/weapon/outgun.jpg"));
             outgunImage = makeColorTransparent(outgunTemp, Color.WHITE, 40); // Loại bỏ viền trắng với dung sai 40
         } catch (IOException ex) {
