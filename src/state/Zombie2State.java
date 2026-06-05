@@ -85,6 +85,7 @@ public class Zombie2State extends GameState {
         if (gp.player.currentWeapon != null) {
             gp.player.currentWeapon.shotgunMode = false;
             gp.player.currentWeapon.shootInterval = 3;
+            gp.player.currentWeapon.automaticFire = true;
         }
 
         // Sinh quái (Enemy) riêng cho map này
@@ -215,8 +216,8 @@ public class Zombie2State extends GameState {
     }
 
     private void spawnEnemies() {
-        // Sinh ra nhiều quái (tăng số lượng lên 2.5 lần: 20 * 2.5 = 50)
-        for (int i = 0; i < 50; i++) {
+        // Sinh ra nhiều quái (tăng số lượng lên 2 lần: 50 * 2 = 100)
+        for (int i = 0; i < 100; i++) {
             int type = 4; // Toàn bộ quái ở màn này là loại bắn tỉa bỏ chạy (type = 4)
             int startX = (int)(Math.random() * gp.worldWidth);
             int startY = (int)(Math.random() * gp.worldHeight);

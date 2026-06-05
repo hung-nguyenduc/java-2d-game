@@ -93,6 +93,7 @@ public class ZombieState extends GameState {
         gp.player.health = gp.player.maxHealth;
 
         this.weapon = new Weapon(gp, gp.mouseH, gp.player);
+        this.weapon.automaticFire = true; // Bật chế độ sấy
         gp.player.equipWeapon(this.weapon);
         weapon.clearBullets();
 
@@ -253,6 +254,23 @@ public class ZombieState extends GameState {
         Enemy e4 = new Enemy(gp, gp.player, 500, 500, 3); // Thêm 1 quái bỏ chạy
         e4.speed = 2.5; e4.canDodge = false; e4.damage = 1; e4.minDistance = 50;
         gp.enemies.add(e4);
+        
+        // Gấp đôi số lượng quái
+        Enemy e5 = new Enemy(gp, gp.player, 400, 400, 0);
+        e5.speed = 1.5; e5.canDodge = false; e5.damage = 1; e5.minDistance = 50;
+        gp.enemies.add(e5);
+
+        Enemy e6 = new Enemy(gp, gp.player, 900, 600, 1);
+        e6.speed = 1.5; e6.canDodge = false; e6.damage = 1; e6.minDistance = 50;
+        gp.enemies.add(e6);
+
+        Enemy e7 = new Enemy(gp, gp.player, 1300, 800, 2);
+        e7.speed = 1.5; e7.canDodge = false; e7.damage = 1; e7.minDistance = 50;
+        gp.enemies.add(e7);
+
+        Enemy e8 = new Enemy(gp, gp.player, 600, 600, 3); 
+        e8.speed = 2.5; e8.canDodge = false; e8.damage = 1; e8.minDistance = 50;
+        gp.enemies.add(e8);
     }
 
     @Override

@@ -40,6 +40,15 @@ public class GamePanel extends JPanel implements Runnable, MouseListener, java.a
 
     // Game over flag
     public boolean gameOver = false;
+    public boolean isPaused = false;
+    private boolean showInstructions = false;
+    
+    // Nút Menu Tạm dừng
+    private Rectangle pauseButtonRect;
+    private Rectangle resumeButtonRect;
+    private Rectangle exitButtonRect;
+    private Rectangle helpButtonRect;
+    private Rectangle backButtonRect;
 
     // Kill counter (reset mỗi level)
     public int killCount = 0;
@@ -51,6 +60,12 @@ public class GamePanel extends JPanel implements Runnable, MouseListener, java.a
         this.setPreferredSize(new Dimension(screenWidth, screenHeight));
         this.setBackground(Color.BLACK);
         this.setDoubleBuffered(true);
+        
+        pauseButtonRect = new Rectangle(screenWidth - 60, 10, 50, 50);
+        resumeButtonRect = new Rectangle(screenWidth / 2 - 100, screenHeight / 2 - 100, 200, 50);
+        helpButtonRect = new Rectangle(screenWidth / 2 - 100, screenHeight / 2 - 30, 200, 50);
+        exitButtonRect = new Rectangle(screenWidth / 2 - 100, screenHeight / 2 + 40, 200, 50);
+        backButtonRect = new Rectangle(screenWidth / 2 - 100, screenHeight / 2 + 150, 200, 50);
 
         // Initialize state management - start with MenuState
         currentState = new MenuState(this);
@@ -145,8 +160,10 @@ public class GamePanel extends JPanel implements Runnable, MouseListener, java.a
 
     // Cập nhật trạng thái game mỗi frame
     public void update() {
-        currentState.update();
-        checkCollisions();
+        if (!isPaused) {
+            currentState.update();
+            checkCollisions();
+        }
     }
 
     public double getScaleRatio() {
@@ -190,8 +207,61 @@ public class GamePanel extends JPanel implements Runnable, MouseListener, java.a
         g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
                 RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         currentState.draw(g2);
+        
+        // --- DRAW PAUSE BUTTON & MENU ---
+        if (!(currentState instanceof MenuState) && !(currentState instanceof InstructionsState)) {
+            g2.setColor(new Color(0, 0, 0, 150));
+            g2.fillRoundRect(pauseButtonRect.x, pauseButtonRect.y, pauseButtonRect.width, pauseButtonRect.height, 10, 10);
+            g2.setColor(Color.WHITE);
+            g2.fillRect(pauseButtonRect.x + 15, pauseButtonRect.y + 12, 6, 26);
+            g2.fillRect(pauseButtonRect.x + 29, pauseButtonRect.y + 12, 6, 26);
+        }
+
+        if (isPaused) {
+            g2.setColor(new Color(0, 0, 0, 180));
+            g2.fillRect(0, 0, screenWidth, screenHeight);
+            
+            if (showInstructions) {
+                g2.setColor(Color.WHITE);
+                g2.setFont(new Font("Arial", Font.BOLD, 36));
+                g2.drawString("Hướng dẫn", 280, 100);
+
+                g2.setFont(new Font("Arial", Font.PLAIN, 24));
+                g2.drawString("Sử dụng các phím mũi tên để di chuyển:", 150, 200);
+                g2.drawString("↑: Lên", 200, 250);
+                g2.drawString("↓: Xuống", 200, 280);
+                g2.drawString("←: Trái", 200, 310);
+                g2.drawString("→: Phải", 200, 340);
+                g2.drawString("Click chuột để bắn (Tùy màn bắn sấy hoặc phát một)", 150, 390);
+                g2.drawString("K: Đá lùi quái | G: Ném lựu đạn", 150, 420);
+                
+                drawButton(g2, backButtonRect, "Quay lại");
+            } else {
+                g2.setColor(Color.WHITE);
+                g2.setFont(new Font("Arial", Font.BOLD, 40));
+                g2.drawString("PAUSED", screenWidth / 2 - 80, screenHeight / 2 - 150);
+                
+                drawButton(g2, resumeButtonRect, "Tiếp tục");
+                drawButton(g2, helpButtonRect, "Hướng dẫn chơi");
+                drawButton(g2, exitButtonRect, "Thoát (Menu)");
+            }
+        }
+        
         // KHÔNG dispose Graphics do Swing cấp — đó là lỗi, dispose sẽ làm hỏng các vẽ
         // tiếp theo
+    }
+    
+    private void drawButton(Graphics2D g2, Rectangle rect, String text) {
+        g2.setColor(Color.GRAY);
+        g2.fillRect(rect.x, rect.y, rect.width, rect.height);
+        g2.setColor(Color.BLACK);
+        g2.drawRect(rect.x, rect.y, rect.width, rect.height);
+        g2.setColor(Color.WHITE);
+        g2.setFont(new Font("Arial", Font.BOLD, 20));
+        FontMetrics fm = g2.getFontMetrics();
+        int textX = rect.x + (rect.width - fm.stringWidth(text)) / 2;
+        int textY = rect.y + (rect.height + fm.getAscent()) / 2 - fm.getDescent() + 2;
+        g2.drawString(text, textX, textY);
     }
 
     // Giới hạn camera không được nhìn thấy ngoài phạm vi map
@@ -234,6 +304,34 @@ public class GamePanel extends JPanel implements Runnable, MouseListener, java.a
     @Override
     public void mouseClicked(MouseEvent e) {
         MouseEvent translated = translateMouseEvent(e);
+        Point p = translated.getPoint();
+
+        if (!(currentState instanceof MenuState) && !(currentState instanceof InstructionsState)) {
+            if (!isPaused && pauseButtonRect.contains(p)) {
+                isPaused = true;
+                return;
+            }
+        }
+        
+        if (isPaused) {
+            if (showInstructions) {
+                if (backButtonRect.contains(p)) {
+                    showInstructions = false;
+                }
+            } else {
+                if (resumeButtonRect.contains(p)) {
+                    isPaused = false;
+                } else if (helpButtonRect.contains(p)) {
+                    showInstructions = true;
+                } else if (exitButtonRect.contains(p)) {
+                    isPaused = false;
+                    showInstructions = false;
+                    setState(new MenuState(this));
+                }
+            }
+            return;
+        }
+
         currentState.handleMouseClick(translated);
         mouseH.mouseClicked(translated);
     }

@@ -24,6 +24,7 @@ public class Weapon {
     private boolean previousMousePressed = false;
     
     public boolean shotgunMode = false;
+    public boolean automaticFire = false; // Thêm chế độ sấy
 
     private static final Color BULLET_COLOR = new Color(0, 80, 200);
 
@@ -60,9 +61,16 @@ public class Weapon {
         boolean currentMousePressed = mouseH.leftMousePressed;
         boolean justPressed = currentMousePressed && !previousMousePressed;
 
-        if (justPressed || (currentMousePressed && shootCooldown >= shootInterval)) {
-            shoot();
-            shootCooldown = 0;
+        if (automaticFire) {
+            if (justPressed || (currentMousePressed && shootCooldown >= shootInterval)) {
+                shoot();
+                shootCooldown = 0;
+            }
+        } else {
+            if (justPressed) {
+                shoot();
+                shootCooldown = 0;
+            }
         }
         previousMousePressed = currentMousePressed;
 
