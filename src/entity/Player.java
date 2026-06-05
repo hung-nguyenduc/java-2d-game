@@ -53,14 +53,14 @@ public class Player extends Entity {
 
     public void getPlayerImage() {
         try {
-            up1 = ImageIO.read(getClass().getResourceAsStream("/player/up1.png"));
-            up2 = ImageIO.read(getClass().getResourceAsStream("/player/up2.png"));
-            down1 = ImageIO.read(getClass().getResourceAsStream("/player/down1.png"));
-            down2 = ImageIO.read(getClass().getResourceAsStream("/player/down2.png"));
-            left1 = ImageIO.read(getClass().getResourceAsStream("/player/left1.png"));
-            left2 = ImageIO.read(getClass().getResourceAsStream("/player/left2.png"));
-            right1 = ImageIO.read(getClass().getResourceAsStream("/player/right1.png"));
-            right2 = ImageIO.read(getClass().getResourceAsStream("/player/right2.png"));
+            up1 = ImageIO.read(getClass().getResourceAsStream("/player/up1-ver2.png"));
+            up2 = ImageIO.read(getClass().getResourceAsStream("/player/up2-ver2.png"));
+            down1 = ImageIO.read(getClass().getResourceAsStream("/player/down1-ver2.png"));
+            down2 = ImageIO.read(getClass().getResourceAsStream("/player/down2-ver2.png"));
+            left1 = ImageIO.read(getClass().getResourceAsStream("/player/left1-ver2.png"));
+            left2 = ImageIO.read(getClass().getResourceAsStream("/player/left2-ver2.png"));
+            right1 = ImageIO.read(getClass().getResourceAsStream("/player/right1-ver2.png"));
+            right2 = ImageIO.read(getClass().getResourceAsStream("/player/right2-ver2.png"));
         } catch (IOException ex) {
             throw new RuntimeException("Lỗi tải ảnh nhân vật Vũ!", ex);
         }
@@ -192,7 +192,7 @@ public class Player extends Entity {
                 break;
         }
 
-        g2.drawImage(img, screenX, screenY, 90, 90, null);
+        g2.drawImage(img, screenX, screenY, 60, 90, null);
 
         // Vẽ lựu đạn kỹ năng
         for (SkillGrenade g : skillGrenades) {

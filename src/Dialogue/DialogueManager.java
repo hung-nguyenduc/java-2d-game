@@ -43,7 +43,7 @@ public class DialogueManager {
         // 3. VẼ AVATAR NGƯỜI NÓI (Nếu câu thoại đó có gán ảnh)
         if (currentLine.avatar != null) {
             int avatarSizeX = 90; // Kích thước ảnh đại diện (hình vuông)
-            int avatarSizeY = 140;
+            int avatarSizeY = 100;
             // Đặt Avatar nằm sát lề trái, nhô lên cạnh trên của khung thoại một chút
             int avatarX = boxX + 50;
             int avatarY = boxY -  80; // Trừ đi một nửa kích thước để nó đè lên cạnh trên
