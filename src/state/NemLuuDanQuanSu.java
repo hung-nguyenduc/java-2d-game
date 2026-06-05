@@ -123,6 +123,13 @@ public class NemLuuDanQuanSu extends GameState {
 
     @Override
     public void update() {
+        // Phím P để nhảy cấp nhanh
+        if (gp.keyH.pPressed) {
+            gp.keyH.pPressed = false;
+            gp.setState(new LoadingState2(gp, new ZombieState(gp)));
+            return;
+        }
+
         if (dialogueBox.isActive()) {
             if (gp.keyH.spacePressed) { dialogueBox.advanceDialogue(); gp.keyH.spacePressed = false; }
             return;
@@ -176,8 +183,8 @@ public class NemLuuDanQuanSu extends GameState {
                 }
             }
 
-            // Xóa quả lựu đạn khỏi màn hình khi nó hết thời gian và nổ tung
-            if (g.isExploded) {
+            // Xóa quả lựu đạn khỏi màn hình sau khi nó nổ xong hiệu ứng (isDead = true)
+            if (g.isDead) {
                 it.remove();
             }
         }
@@ -215,18 +222,20 @@ public class NemLuuDanQuanSu extends GameState {
         }
 
         // 2. Vẽ ô mục tiêu cát
-        g2.setColor(new Color(238, 214, 175, 160));
-        g2.fillRect(targetZone.x - cameraX, targetZone.y - cameraY, targetZone.width, targetZone.height);
-        g2.setColor(Color.ORANGE);
-        g2.setStroke(new BasicStroke(2));
-        g2.drawRect(targetZone.x - cameraX, targetZone.y - cameraY, targetZone.width, targetZone.height);
+        if (targetZone != null) {
+            g2.setColor(new Color(238, 214, 175, 160));
+            g2.fillRect(targetZone.x - cameraX, targetZone.y - cameraY, targetZone.width, targetZone.height);
+            g2.setColor(Color.ORANGE);
+            g2.setStroke(new BasicStroke(2));
+            g2.drawRect(targetZone.x - cameraX, targetZone.y - cameraY, targetZone.width, targetZone.height);
+        }
 
         // 3. Vẽ Vũ
         gp.player.draw(g2, cameraX, cameraY);
 
-        // 4. Vẽ lựu đạn đang bay/nảy
+        // 4. Vẽ lựu đạn đang bay/nảy/nổ
         for (Grenade g : grenades) {
-            g.draw(g2, cameraX, cameraY);
+            g.draw(g2, cameraX, cameraY, gp);
         }
 
         // 5. Vẽ dây kéo lực Angry Birds

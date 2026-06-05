@@ -141,6 +141,13 @@ public class ZombieState extends GameState {
 
     @Override
     public void update() {
+        // Phím P để nhảy cấp nhanh
+        if (gp.keyH.pPressed) {
+            gp.keyH.pPressed = false;
+            gp.setState(new LevelCompleteState(gp, 1, new Level2State(gp)));
+            return;
+        }
+
         // Nếu hộp thoại đang mở, chặn mọi tương tác di chuyển/bắn súng, chỉ cho bấm Space tua chữ
         if (dialogueBox.isActive()) {
             if (gp.keyH.spacePressed) {

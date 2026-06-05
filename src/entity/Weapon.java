@@ -16,7 +16,10 @@ public class Weapon {
     private Player player;
 
     private BufferedImage weaponImage;
+    private BufferedImage outgunImage;
     public List<Bullet> bullets = new ArrayList<>(); // Đạn chuyển về cho vũ khí quản lý
+    
+    private int flashTimer = 0; // Thời gian hiển thị hiệu ứng chớp lửa
 
     private int shootCooldown = 0;
     public int shootInterval = 3;
@@ -38,9 +41,33 @@ public class Weapon {
     private void loadWeaponImage() {
         try {
             weaponImage = ImageIO.read(getClass().getResourceAsStream("/weapon/shotgun.png"));
+            BufferedImage outgunTemp = ImageIO.read(getClass().getResourceAsStream("/weapon/outgun.jpg"));
+            outgunImage = makeColorTransparent(outgunTemp, Color.WHITE, 40); // Loại bỏ viền trắng với dung sai 40
         } catch (IOException ex) {
-            throw new RuntimeException("Không tìm thấy ảnh súng!", ex);
+            throw new RuntimeException("Không tìm thấy ảnh súng hoặc hiệu ứng outgun!", ex);
         }
+    }
+
+    private BufferedImage makeColorTransparent(BufferedImage im, Color color, int tolerance) {
+        BufferedImage dimg = new BufferedImage(im.getWidth(), im.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = dimg.createGraphics();
+        g.setComposite(AlphaComposite.Src);
+        g.drawImage(im, null, 0, 0);
+        g.dispose();
+        for(int i = 0; i < dimg.getHeight(); i++) {
+            for(int j = 0; j < dimg.getWidth(); j++) {
+                int px = dimg.getRGB(j, i);
+                int r = (px >> 16) & 0xFF;
+                int g_ = (px >> 8) & 0xFF;
+                int b = px & 0xFF;
+                if (Math.abs(r - color.getRed()) <= tolerance &&
+                    Math.abs(g_ - color.getGreen()) <= tolerance &&
+                    Math.abs(b - color.getBlue()) <= tolerance) {
+                    dimg.setRGB(j, i, 0x00FFFFFF); // Giữ nguyên RGB nhưng set Alpha = 0
+                }
+            }
+        }
+        return dimg;
     }
 
     public void update() {
@@ -82,11 +109,18 @@ public class Weapon {
                 i--;
             }
         }
+        
+        // Cập nhật hiệu ứng chớp
+        if (flashTimer > 0) {
+            flashTimer--;
+        }
     }
 
     private void shoot() {
         Bullet bullet1 = new Bullet(player.worldX + 40, player.worldY + 40, aimAngle);
         bullets.add(bullet1);
+        
+        flashTimer = 5; // Hiển thị chớp lửa trong 5 frames
         
         if (shotgunMode) {
             // Kỹ năng Shotgun: Bắn thêm 2 viên đạn tỏa ra 2 hướng
@@ -119,8 +153,14 @@ public class Weapon {
         if (aimAngle > 90 || aimAngle < -90) {
             g2.scale(1, -1);
             g2.drawImage(weaponImage, -pivotX, -(weaponImage.getHeight() - pivotY), null);
+            if (flashTimer > 0 && outgunImage != null) {
+                g2.drawImage(outgunImage, weaponImage.getWidth() - pivotX, -(weaponImage.getHeight() - pivotY) - 10, 30, 30, null);
+            }
         } else {
             g2.drawImage(weaponImage, -pivotX, -pivotY, null);
+            if (flashTimer > 0 && outgunImage != null) {
+                g2.drawImage(outgunImage, weaponImage.getWidth() - pivotX, -pivotY - 10, 30, 30, null);
+            }
         }
         g2.setTransform(original);
     }

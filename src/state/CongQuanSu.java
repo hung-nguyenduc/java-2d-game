@@ -121,6 +121,13 @@ public class CongQuanSu extends GameState {
 
     @Override
     public void update() {
+        // Phím P để nhảy cấp nhanh
+        if (gp.keyH.pPressed) {
+            gp.keyH.pPressed = false;
+            gp.setState(new LoadingState(gp, new BanSungQuanSu(gp)));
+            return;
+        }
+
         // Khóa toàn bộ game (hoặc chỉ Player) khi hội thoại đang chạy
         if (dialogueBox.isActive()) {
             if (gp.keyH.spacePressed) {

@@ -2,6 +2,7 @@ package entity;
 
 import main.GamePanel;
 import java.awt.*;
+import javax.swing.ImageIcon;
 
 public class SkillGrenade extends Entity {
     GamePanel gp;
@@ -17,6 +18,8 @@ public class SkillGrenade extends Entity {
     public int damage = 200;
     public boolean isDead = false;
     
+    private static Image explosionImage;
+    
     public SkillGrenade(GamePanel gp, double startX, double startY, double targetX, double targetY) {
         this.gp = gp;
         this.startX = startX;
@@ -26,6 +29,10 @@ public class SkillGrenade extends Entity {
         
         this.worldX = startX;
         this.worldY = startY;
+        
+        if (explosionImage == null) {
+            explosionImage = new ImageIcon(getClass().getResource("/weapon/bum.gif")).getImage();
+        }
     }
     
     public void update() {
@@ -66,13 +73,12 @@ public class SkillGrenade extends Entity {
         int screenY = (int) (worldY - cameraY);
         
         if (exploded) {
-            // Vẽ hiệu ứng nổ
-            int currentRadius = (int) ((double) explosionTimer / 15 * explosionRadius);
-            g2.setColor(new Color(255, 100, 0, 150));
-            g2.fillOval(screenX + 40 - currentRadius, screenY + 40 - currentRadius, currentRadius * 2, currentRadius * 2);
-            
-            g2.setColor(new Color(255, 200, 0, 200));
-            g2.fillOval(screenX + 40 - currentRadius/2, screenY + 40 - currentRadius/2, currentRadius, currentRadius);
+            // Vẽ hiệu ứng nổ bằng bum.gif
+            int drawSize = explosionRadius * 2;
+            if (explosionImage != null) {
+                // Sử dụng gp (GamePanel) làm ImageObserver để gif có thể tự animate
+                g2.drawImage(explosionImage, screenX + 40 - drawSize/2, screenY + 40 - drawSize/2, drawSize, drawSize, gp);
+            }
             return;
         }
         

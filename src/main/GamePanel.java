@@ -289,8 +289,8 @@ public class GamePanel extends JPanel implements Runnable, MouseListener, java.a
         if (currentState != null) {
             currentState.exit();
         }
-        currentState = newState;
-        currentState.enter();
+        newState.enter(); // Gọi enter() trước để khởi tạo dữ liệu an toàn
+        currentState = newState; // Sau đó mới gán để EDT paintComponent() không dính NPE
         // Lấy lại focus bàn phím sau mỗi lần chuyển state
         requestFocusInWindow();
     }

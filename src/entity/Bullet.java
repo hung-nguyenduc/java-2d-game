@@ -34,11 +34,34 @@ public class Bullet {
     // Nạp ảnh viên đạn từ thư mục resources
     public void getBulletImg() {
         try {
-            bulletImg = ImageIO.read(getClass().getResourceAsStream("/weapon/bullet.png"));
+            BufferedImage bulletTemp = ImageIO.read(getClass().getResourceAsStream("/weapon/flybullet.jpg"));
+            bulletImg = makeColorTransparent(bulletTemp, Color.BLACK, 40); // Loại bỏ viền đen với dung sai 40
         } catch (IOException e) {
-            System.err.println("Không thể nạp ảnh viên đạn /weapon/bullet.png");
+            System.err.println("Không thể nạp ảnh viên đạn /weapon/flybullet.jpg");
             e.printStackTrace();
         }
+    }
+
+    private BufferedImage makeColorTransparent(BufferedImage im, Color color, int tolerance) {
+        BufferedImage dimg = new BufferedImage(im.getWidth(), im.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = dimg.createGraphics();
+        g.setComposite(AlphaComposite.Src);
+        g.drawImage(im, null, 0, 0);
+        g.dispose();
+        for(int i = 0; i < dimg.getHeight(); i++) {
+            for(int j = 0; j < dimg.getWidth(); j++) {
+                int px = dimg.getRGB(j, i);
+                int r = (px >> 16) & 0xFF;
+                int g_ = (px >> 8) & 0xFF;
+                int b = px & 0xFF;
+                if (Math.abs(r - color.getRed()) <= tolerance &&
+                    Math.abs(g_ - color.getGreen()) <= tolerance &&
+                    Math.abs(b - color.getBlue()) <= tolerance) {
+                    dimg.setRGB(j, i, 0x00FFFFFF); // Giữ nguyên RGB nhưng set Alpha = 0
+                }
+            }
+        }
+        return dimg;
     }
 
     // Cập nhật vị trí đạn mỗi frame

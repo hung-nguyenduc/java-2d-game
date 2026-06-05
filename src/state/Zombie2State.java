@@ -124,6 +124,13 @@ public class Zombie2State extends GameState {
 
     @Override
     public void update() {
+        // Phím P để nhảy cấp nhanh
+        if (gp.keyH.pPressed) {
+            gp.keyH.pPressed = false;
+            gp.setState(new LevelCompleteState(gp, 3, new MenuState(gp)));
+            return;
+        }
+
         // Nếu đang hiện hội thoại thì đóng băng quái vật hoặc đóng băng di chuyển của Player lại
         if (dialogueBox.isActive() && dialogueLineCounter < 8) {
             // Chỉ cập nhật hiệu ứng chữ, không cho Player chạy đi đâu hết

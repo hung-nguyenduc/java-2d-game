@@ -4,6 +4,7 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import javax.swing.ImageIcon;
 
 public class Grenade {
     public double worldX, worldY;
@@ -15,6 +16,10 @@ public class Grenade {
     public int size = 24;
     public BufferedImage grenadeImg;
     public boolean isExploded = false;
+    public boolean isDead = false;
+    public int explosionTimer = 0;
+
+    private static Image explosionImage;
 
     // ĐIỀU CHỈNH: Thêm biến đếm số lần chạm đất
     public int bounceCount = 0;
@@ -34,9 +39,21 @@ public class Grenade {
         } catch (IOException e) {
             System.err.println("Chưa có ảnh lựu đạn, dùng hình tròn tạm thời.");
         }
+        
+        if (explosionImage == null) {
+            explosionImage = new ImageIcon(getClass().getResource("/weapon/bum.gif")).getImage();
+        }
     }
 
     public void update(int groundY) {
+        if (isExploded) {
+            explosionTimer++;
+            if (explosionTimer > 15) {
+                isDead = true;
+            }
+            return;
+        }
+
         lifeTime++;
         if (lifeTime >= MAX_LIFETIME) {
             isExploded = true;
@@ -71,9 +88,17 @@ public class Grenade {
         }
     }
 
-    public void draw(Graphics2D g2, int cameraX, int cameraY) {
+    public void draw(Graphics2D g2, int cameraX, int cameraY, main.GamePanel gp) {
         int screenX = (int) (worldX - cameraX);
         int screenY = (int) (worldY - cameraY);
+
+        if (isExploded) {
+            if (explosionImage != null) {
+                int drawSize = 100;
+                g2.drawImage(explosionImage, screenX - drawSize/2, screenY - drawSize/2, drawSize, drawSize, gp);
+            }
+            return;
+        }
 
         if (grenadeImg != null) {
             g2.drawImage(grenadeImg, screenX - size/2, screenY - size/2, size, size, null);

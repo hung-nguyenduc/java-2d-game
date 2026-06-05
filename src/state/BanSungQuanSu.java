@@ -155,6 +155,13 @@ public class BanSungQuanSu extends GameState {
 
     @Override
     public void update() {
+        // Phím P để nhảy cấp nhanh
+        if (gp.keyH.pPressed) {
+            gp.keyH.pPressed = false;
+            gp.setState(new LoadingState(gp, new NemLuuDanQuanSu(gp)));
+            return;
+        }
+
         if (dialogueBox.isActive()) {
             if (gp.keyH.spacePressed) {
                 dialogueBox.advanceDialogue();

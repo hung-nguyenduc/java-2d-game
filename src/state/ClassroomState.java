@@ -160,6 +160,13 @@ public class ClassroomState extends GameState {
 
     @Override
     public void update() {
+        // Phím P để nhảy cấp nhanh
+        if (gp.keyH.pPressed) {
+            gp.keyH.pPressed = false;
+            gp.setState(new LoadingState(gp, new CongQuanSu(gp)));
+            return;
+        }
+
         // Nếu đang hiện hội thoại (bất kể script 1 hay script 2) thì đóng băng logic di chuyển
         if (dialogueBox.isActive()) {
             if (gp.keyH.spacePressed) {
