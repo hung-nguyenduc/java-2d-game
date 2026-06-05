@@ -48,7 +48,7 @@ public class CollisionChecker {
                     Bullet bullet = gp.player.currentWeapon.bullets.get(i);
                     if (bullet.worldX + 10 > enemy.worldX && bullet.worldX < enemy.worldX + 80 &&
                             bullet.worldY + 10 > enemy.worldY && bullet.worldY < enemy.worldY + 80) {
-                        enemy.health -= 35;
+                        enemy.health -= 17;
                         gp.player.currentWeapon.bullets.remove(i);
                         i--;
                     }

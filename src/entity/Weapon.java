@@ -19,10 +19,11 @@ public class Weapon {
     public List<Bullet> bullets = new ArrayList<>(); // Đạn chuyển về cho vũ khí quản lý
 
     private int shootCooldown = 0;
-    private final int shootInterval = 30;
+    public int shootInterval = 3;
     private double aimAngle = 0;
+    private boolean previousMousePressed = false;
     
-    public boolean shotgunMode = true;
+    public boolean shotgunMode = false;
 
     private static final Color BULLET_COLOR = new Color(0, 80, 200);
 
@@ -56,10 +57,14 @@ public class Weapon {
 
         // 2. Xử lý logic bắn súng
         shootCooldown++;
-        if (mouseH.leftMousePressed && shootCooldown >= shootInterval) {
+        boolean currentMousePressed = mouseH.leftMousePressed;
+        boolean justPressed = currentMousePressed && !previousMousePressed;
+
+        if (justPressed || (currentMousePressed && shootCooldown >= shootInterval)) {
             shoot();
             shootCooldown = 0;
         }
+        previousMousePressed = currentMousePressed;
 
         // 3. Cập nhật và xóa đạn ngoài tầm
         for (int i = 0; i < bullets.size(); i++) {

@@ -79,6 +79,14 @@ public class Zombie2State extends GameState {
 //        gp.player.worldX = 100; // Tọa độ X mong muốn
 //        gp.player.worldY = 100; // Tọa độ Y mong muốn
         gp.player.spawnAtCenter();
+        
+        // Cấu hình súng cho màn đánh zombie 2:
+        // Tắt shotgun (3 hướng), bật chế độ sấy (liên thanh tốc độ cao)
+        if (gp.player.currentWeapon != null) {
+            gp.player.currentWeapon.shotgunMode = false;
+            gp.player.currentWeapon.shootInterval = 3;
+        }
+
         // Sinh quái (Enemy) riêng cho map này
         spawnEnemies();
 
@@ -207,8 +215,8 @@ public class Zombie2State extends GameState {
     }
 
     private void spawnEnemies() {
-        // Sinh ra nhiều quái
-        for (int i = 0; i < 20; i++) {
+        // Sinh ra nhiều quái (tăng số lượng lên 2.5 lần: 20 * 2.5 = 50)
+        for (int i = 0; i < 50; i++) {
             int type = 4; // Toàn bộ quái ở màn này là loại bắn tỉa bỏ chạy (type = 4)
             int startX = (int)(Math.random() * gp.worldWidth);
             int startY = (int)(Math.random() * gp.worldHeight);
@@ -217,6 +225,8 @@ public class Zombie2State extends GameState {
             e.canDodge = true;
             e.damage = 5;
             e.minDistance = 150; // Khoảng cách tối thiểu để lùi lại
+            e.maxHealth *= 5; // Tăng máu lên 5 lần
+            e.health = e.maxHealth; // Cập nhật lại máu hiện tại
             gp.enemies.add(e);
         }
     }
