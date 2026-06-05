@@ -174,8 +174,8 @@ public class ZombieState extends GameState {
             return;
         }
 
-        // Kiểm tra điều kiện Hoàn thành (Diệt đủ 3 quái)
-        if (gp.killCount >= 3 && !isQuestCompleted) {
+        // Kiểm tra điều kiện Hoàn thành (Diệt đủ 8 quái)
+        if (gp.killCount >= 8 && !isQuestCompleted) {
             isQuestCompleted = true;
         }
 

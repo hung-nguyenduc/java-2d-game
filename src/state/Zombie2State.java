@@ -161,9 +161,9 @@ public class Zombie2State extends GameState {
 //            return;
 //        }
 
-//        if (gp.killCount >= 10) { // Ví dụ diệt đủ 10 quái thì qua màn tiếp
-//            // gp.setState(new LevelCompleteState(gp, 3, new Level4State(gp)));
-//        }
+        if (gp.killCount >= 100) { // Diệt đủ 100 quái thì qua màn tiếp (hoặc MenuState)
+            gp.setState(new LevelCompleteState(gp, 3, new MenuState(gp)));
+        }
     }
 
     @Override
