@@ -41,7 +41,7 @@ public class Weapon {
     private void loadWeaponImage() {
         try {
             BufferedImage weaponTemp = ImageIO.read(getClass().getResourceAsStream("/weapon/ak47.jpg"));
-            weaponTemp = scaleImage(weaponTemp, 60, 20); // Thu nhỏ súng AK47 vừa tay cầm
+            weaponTemp = scaleImage(weaponTemp, 180, 60); // Chỉnh súng AK47 to gấp 3 lần (180x60)
             weaponImage = makeColorTransparent(weaponTemp, Color.WHITE, 120); // Dung sai lớn (120) để xóa sạch viền trắng
 
             BufferedImage outgunTemp = ImageIO.read(getClass().getResourceAsStream("/weapon/outgun.jpg"));
@@ -155,8 +155,8 @@ public class Weapon {
         // 2. Vẽ súng
         int centerX = screenX + 43;
         int centerY = screenY + 45;
-        int pivotX = 10;
-        int pivotY = 20;
+        int pivotX = weaponImage.getWidth() / 6; // Tay cầm súng nằm ở 1/6 chiều dài
+        int pivotY = weaponImage.getHeight() / 2; // Đặt tâm quay ở giữa chiều cao của súng
 
         AffineTransform original = g2.getTransform();
         g2.translate(centerX, centerY);
