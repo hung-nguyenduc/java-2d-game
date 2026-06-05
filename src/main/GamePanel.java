@@ -56,7 +56,7 @@ public class GamePanel extends JPanel implements Runnable, MouseListener, java.a
         currentState = new MenuState(this);
         currentState.enter();
 
-        // Thêm listener cho chuột qua GamePanel để có thể xử lý tọa độ khi scale
+        // Thêm listener cho chuột qua GanmePanel để có thể xử lý tọa độ khi scale
         this.addMouseListener(this);
         this.addMouseMotionListener(this);
 
@@ -152,11 +152,11 @@ public class GamePanel extends JPanel implements Runnable, MouseListener, java.a
     public double getScaleRatio() {
         return Math.min((double) getWidth() / screenWidth, (double) getHeight() / screenHeight);
     }
-    
+
     public int getXOffset() {
         return (int) ((getWidth() - screenWidth * getScaleRatio()) / 2);
     }
-    
+
     public int getYOffset() {
         return (int) ((getHeight() - screenHeight * getScaleRatio()) / 2);
     }
@@ -165,7 +165,8 @@ public class GamePanel extends JPanel implements Runnable, MouseListener, java.a
         double scaleRatio = getScaleRatio();
         int newX = (int) ((e.getX() - getXOffset()) / scaleRatio);
         int newY = (int) ((e.getY() - getYOffset()) / scaleRatio);
-        return new MouseEvent(e.getComponent(), e.getID(), e.getWhen(), e.getModifiersEx(), newX, newY, e.getClickCount(), e.isPopupTrigger(), e.getButton());
+        return new MouseEvent(e.getComponent(), e.getID(), e.getWhen(), e.getModifiersEx(), newX, newY,
+                e.getClickCount(), e.isPopupTrigger(), e.getButton());
     }
 
     // Vẽ tất cả các thành phần game
@@ -173,15 +174,15 @@ public class GamePanel extends JPanel implements Runnable, MouseListener, java.a
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
-        
+
         // Scale màn hình
         double scaleRatio = getScaleRatio();
         int xOffset = getXOffset();
         int yOffset = getYOffset();
-        
+
         g2.translate(xOffset, yOffset);
         g2.scale(scaleRatio, scaleRatio);
-        
+
         // Cắt bớt phần bên ngoài để tránh rác (nếu có)
         g2.setClip(0, 0, screenWidth, screenHeight);
 
@@ -260,7 +261,7 @@ public class GamePanel extends JPanel implements Runnable, MouseListener, java.a
         MouseEvent translated = translateMouseEvent(e);
         mouseH.mouseExited(translated);
     }
-    
+
     // MouseMotionListener methods
     @Override
     public void mouseDragged(MouseEvent e) {

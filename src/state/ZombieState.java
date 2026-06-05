@@ -99,13 +99,7 @@ public class ZombieState extends GameState {
         // Tải vật cản từ hằng số path đã định nghĩa
         this.obstacles = ObstacleManager.loadObstacles(OBSTACLE_TXT_PATH, this.scale);
 
-        // Sinh ngẫu nhiên thùng gỗ và thùng dầu
-        for (int i = 0; i < 10; i++) {
-            int obsType = (Math.random() < 0.5) ? 1 : 2; // 1: Thùng gỗ, 2: Thùng dầu
-            int obsX = (int)(Math.random() * (gp.worldWidth - 100));
-            int obsY = (int)(Math.random() * (gp.worldHeight - 100));
-            obstacles.add(new Obstacle(obsX, obsY, 72, 72, obsType));
-        }
+
 
         spawnEnemies();
 
