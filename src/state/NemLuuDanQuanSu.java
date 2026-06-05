@@ -25,7 +25,7 @@ public class NemLuuDanQuanSu extends GameState {
     private Image mapImage;
     private List<Obstacle> obstacles = new ArrayList<>();
     BufferedImage vuFace;
-
+    BufferedImage player;
     // Cơ chế Angry Birds
     private boolean isAiming = false;
     private int dragStartX, dragStartY;
@@ -79,6 +79,7 @@ public class NemLuuDanQuanSu extends GameState {
             g2d.drawImage(src, 0, 0, gp.worldWidth, gp.worldHeight, null);
             g2d.dispose();
             mapImage = compatibleMap;
+            player = ImageIO.read(getClass().getResourceAsStream("/player/right1-ver2.png"));
         } catch (Exception e) {
             System.err.println("Lỗi nạp ảnh bản đồ, dùng nền đen dự phòng.");
         }
@@ -109,11 +110,13 @@ public class NemLuuDanQuanSu extends GameState {
         } catch (Exception e) {}
 
         introScript = new DialogueLine[] {
-                new DialogueLine("Chào mừng Vũ đến với bãi tập ném lựu đạn nâng cao!", null),
-                new DialogueLine("Vũ: Mình có tổng cộng " + grenadesLeft + " quả lựu. Luật mới cực gắt: Quả lựu phải rơi trúng \nô cát ngay từ lần chạm đất ĐẦU TIÊN mới được tính điểm! Cần trúng " + REQUIRED_HITS + " quả.", vuFace)
+                new DialogueLine("Môn thi cuối cùng: Ném lựu đạn", null),
+                new DialogueLine("Cần ném trúng " + REQUIRED_HITS + "/" + grenadesLeft + " quả", null)
         };
-        afterQuestScript = new DialogueLine[] { new DialogueLine("Vũ: Đạt " + REQUIRED_HITS + " quả trúng mục tiêu rồi! Ném lựu đạn chuẩn chỉnh như sách giáo khoa!", vuFace) };
-        failScript = new DialogueLine[] { new DialogueLine("Giảng viên: Hết lựu đạn rồi Vũ ơi, ném trượt nhiều quá không đủ điểm đạt yêu cầu!", null) };
+        afterQuestScript = new DialogueLine[] { new DialogueLine("Vũ: Đạt " + REQUIRED_HITS + " quả trúng mục tiêu rồi! Qua môn rồi hẹ hẹ hẹ", null) };
+        failScript = new DialogueLine[] { new DialogueLine("Thầy giáo: Hết lựu đạn rồi Vũ ơi, ném trượt nhiều quá!", null),
+                new DialogueLine("Thầy giáo: Trượt môn về học lại đi em", null)
+        };
 
         dialogueBox.startDialogue(introScript);
     }
@@ -136,7 +139,7 @@ public class NemLuuDanQuanSu extends GameState {
         }
         if (isGameOver || isQuestCompleted) return;
 
-        gp.player.update();
+        //gp.player.update();
 
         // XỬ LÝ KÉO THẢ CHUỘT (ANGRY BIRDS)
         if (gp.mouseH.leftMousePressed) {
@@ -175,10 +178,10 @@ public class NemLuuDanQuanSu extends GameState {
 
                 // ĐIỀU KIỆN ĐÚNG LUẬT: Lần đầu chạm đất phải nằm trong Target Zone
                 if (grenadeRect.intersects(targetZone)) {
-                    System.out.println("XUẤT SẮC! Chạm đất phát trúng ngay!");
+                    System.out.println("Trúng");
                     targetsHit++;
                 } else {
-                    System.out.println("HỎNG! Lần đầu chạm đất bị lệch ra ngoài vùng mục tiêu.");
+                    System.out.println("Trượt");
                     // Quả lựu này tuy vẫn bay/nảy tiếp nhưng đã bị đánh dấu hụt điểm do trượt mục tiêu đầu
                 }
             }
@@ -231,7 +234,8 @@ public class NemLuuDanQuanSu extends GameState {
         }
 
         // 3. Vẽ Vũ
-        gp.player.draw(g2, cameraX, cameraY);
+        //gp.player.draw(g2, cameraX, cameraY);
+        g2.drawImage(player, 100, 300, 80, 120, null);
 
         // 4. Vẽ lựu đạn đang bay/nảy/nổ
         for (Grenade g : grenades) {
