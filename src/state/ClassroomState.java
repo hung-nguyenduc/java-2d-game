@@ -22,7 +22,7 @@ public class ClassroomState extends GameState {
     private Image mapImage;
     private List<Obstacle> obstacles = new ArrayList<>();
     BufferedImage vuFace;
-    BufferedImage doMimiFace;
+    BufferedImage thayGiaoFace;
 
     private Item mathBook;
     private boolean isNearBook = false;
@@ -121,7 +121,7 @@ public class ClassroomState extends GameState {
 
         try {
             vuFace = ImageIO.read(getClass().getResourceAsStream("/player/down1.png"));
-            doMimiFace = ImageIO.read(getClass().getResourceAsStream("/NPC/DoMiMi/DoMiMi-xoaphong.png"));
+            thayGiaoFace = ImageIO.read(getClass().getResourceAsStream("/NPC/thay-giao-gt.png"));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -129,7 +129,7 @@ public class ClassroomState extends GameState {
         // ĐÃ SỬA: Chỉ nạp và chạy 3 câu đầu tiên ở đây
         DialogueLine[] script1 = {
                 new DialogueLine("Vũ: Em xin lỗi thầy em đến muộn ạ, xin phép thầy cho em vào lớp\n", vuFace),
-                new DialogueLine("Thầy: Mới hôm đầu đi học mà đã muộn, lần sau muộn nữa\n tôi cho cậu trượt môn", null),
+                new DialogueLine("Thầy: Mới hôm đầu đi học mà đã muộn, lần sau muộn nữa\n tôi cho cậu trượt môn", thayGiaoFace),
                 new DialogueLine("Vũ với quyết tâm A+ giải tích nên đã \nlên thẳng bàn đầu ngồi", null)
         };
         dialogueBox.startDialogue(script1);
