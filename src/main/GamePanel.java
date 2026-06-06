@@ -68,7 +68,7 @@ public class GamePanel extends JPanel implements Runnable, MouseListener, java.a
         backButtonRect = new Rectangle(screenWidth / 2 - 100, screenHeight / 2 + 150, 200, 50);
 
         // Initialize state management - start with MenuState
-        currentState = new MenuState(this);
+        currentState = new BanSungQuanSu(this);
         currentState.enter();
 
         // Thêm listener cho chuột qua GanmePanel để có thể xử lý tọa độ khi scale

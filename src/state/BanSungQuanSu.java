@@ -21,15 +21,15 @@ import java.util.Random;
 
 public class BanSungQuanSu extends GameState {
     private boolean debugMode = false;
-    private static final String MAP_IMAGE_PATH = "/maps/b7.png";
+    private static final String MAP_IMAGE_PATH = "/maps/b7-updated.png";
     private static final String OBSTACLE_TXT_PATH = "/maps/b7.txt";
-    private static final double MAP_SCALE = 1.0 / 1.5;
+    private static final double MAP_SCALE = 1.0 / 3.0;
     private DialogueManager dialogueBox;
     private Image mapImage;
     private List<Obstacle> obstacles = new ArrayList<>();
     BufferedImage vuFace;
     BufferedImage playerBanSung;
-
+    BufferedImage thayGiao;
     private boolean isQuestCompleted = false;
     private boolean isPhase2DialoguePlayed = false;
     private DialogueLine[] introScript;
@@ -39,10 +39,10 @@ public class BanSungQuanSu extends GameState {
     // Quản lý bia đỡ đạn
     private List<Item> targetBia = new ArrayList<>();
     private int targetsDestroyed = 0;
-    private final int TOTAL_TARGETS = 5;
+    private final int TOTAL_TARGETS = 8;
 
     // CÁC BIẾN ĐIỀU KHIỂN BIA DI ĐỘNG "LỪA"
-    private int targetSpeedY = 2;
+    private int targetSpeedY = 3;
     private int targetMinY;
     private int targetMaxY;
     private Random random = new Random();
@@ -84,8 +84,9 @@ public class BanSungQuanSu extends GameState {
             g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
             g2d.drawImage(src, 0, 0, gp.worldWidth, gp.worldHeight, null);
             g2d.dispose();
-            playerBanSung = ImageIO.read(getClass().getResourceAsStream("/player/ban-sung.png"));
+            playerBanSung = ImageIO.read(getClass().getResourceAsStream("/player/ban-sung-updated.png"));
             mapImage = compatibleMap;
+            thayGiao =  ImageIO.read(getClass().getResourceAsStream("/NPC/thay-giao.png"));
         } catch (Exception e) {
             System.err.println("Lỗi nạp ảnh bản đồ tại: " + MAP_IMAGE_PATH);
             e.printStackTrace();
@@ -112,27 +113,28 @@ public class BanSungQuanSu extends GameState {
 
         // Thiết lập biên di chuyển dọc
         targetMinY = gp.worldHeight / 5 + 100;
-        targetMaxY = (gp.worldHeight * 4) / 5;
+        targetMaxY = (gp.worldHeight * 4) / 5 -10;
 
         spawnSingleBiaMucTieu();
 
         try {
-            vuFace = ImageIO.read(getClass().getResourceAsStream("/player/down1.png"));
+            vuFace = ImageIO.read(getClass().getResourceAsStream("/player/down3.png"));
         } catch (Exception e) {
             e.printStackTrace();
         }
 
         introScript = new DialogueLine[] {
-                new DialogueLine("Học phần bắn súng tính điểm khắc nghiệt bắt đầu!", null),
-                new DialogueLine("Vũ: Bia đợt này di chuyển cực kỳ lắt léo và mình chỉ có đúng " + bulletsLeft + " \nviên đạn. Bắn trượt một viên là coi như trượt môn!", null),
+                new DialogueLine("Học phần bắn súng Kỹ thuật chiến đấu bộ binh và chiến thuật bắt đầu!", thayGiao),
+                new DialogueLine("Bắn trúng " + bulletsLeft + " viên đạn để qua môn", thayGiao),
         };
 
         afterQuestScript = new DialogueLine[] {
-                new DialogueLine("Vũ: Xuất sắc! 5/5 phát trúng đích. \nThiên tài bắn súng B7 chính là mình!", null),
+                new DialogueLine("Ngon! Trúng được 8 viên, qua môn rồi hẹ hẹ hẹ", vuFace),
         };
 
         failScript = new DialogueLine[] {
-                new DialogueLine("Giảng viên: Bắn trượt rồi Vũ ơi! Hết đạn mà chưa đủ điểm, \nchuẩn bị tiền học lại quân sự đi em...", null),
+                new DialogueLine("Thầy giáo: Bắn trượt rồi Vũ ơi! Hết đạn mà chưa đủ điểm.", thayGiao),
+                new DialogueLine("Thầy giáo: Chuẩn bị tiền học lại đi em", thayGiao)
         };
 
         dialogueBox.startDialogue(introScript);
