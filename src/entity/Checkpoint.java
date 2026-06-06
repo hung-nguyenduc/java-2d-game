@@ -11,6 +11,8 @@ public class Checkpoint {
     GamePanel gp;
     public int worldX, worldY;
     public BufferedImage checkpointImage;
+    private static BufferedImage cachedCheckpointImage = null;
+    private static boolean isCheckpointLoaded = false;
     public int sizeX = 30;
     public int sizeY = 80;
 
@@ -25,12 +27,23 @@ public class Checkpoint {
 
     // Tải hình ảnh của Checkpoint
     public void getCheckpointImage() {
+        if (isCheckpointLoaded) {
+            checkpointImage = cachedCheckpointImage;
+            return;
+        }
         try {
-            checkpointImage = ImageIO.read(getClass().getResourceAsStream("/checkpoint/checkpoint.png"));
-        } catch (IOException e) {
-            System.out.println("LỖI: Không tìm thấy ảnh checkpoint!");
+            java.io.InputStream is = getClass().getResourceAsStream("/checkpoint/checkpoint.png");
+            if (is != null) {
+                cachedCheckpointImage = ImageIO.read(is);
+            } else {
+                System.err.println("Không tìm thấy ảnh checkpoint /checkpoint/checkpoint.png");
+            }
+        } catch (Exception e) {
+            System.out.println("LỖI: Không thể nạp ảnh checkpoint!");
             e.printStackTrace();
         }
+        isCheckpointLoaded = true;
+        checkpointImage = cachedCheckpointImage;
     }
 
     // Vẽ Checkpoint

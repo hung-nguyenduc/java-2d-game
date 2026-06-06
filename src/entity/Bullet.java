@@ -9,16 +9,20 @@ import java.io.IOException;
 // Lớp đại diện cho đạn trong game - Đã hợp thể và tối ưu cấu trúc mới
 public class Bullet {
     public double worldX, worldY; // Vị trí trong thế giới
-    public double vx, vy;         // Vận tốc di chuyển (tính sẵn theo góc)
+    public double vx, vy; // Vận tốc di chuyển (tính sẵn theo góc)
     public double bulletSpeed = 12.0; // Tăng tốc độ lên tí cho đạn shotgun bay mượt hơn
-    public int bulletSize = 30;   // Kích thước đạn
-    public int maxRange = 1000;   // Phạm vi tối đa (px) viên đạn có thể bay
+    public int bulletSize = 30; // Kích thước đạn
+    public int maxRange = 1000; // Phạm vi tối đa (px) viên đạn có thể bay
     public double travelDistance = 0; // Khoảng cách đã đi để check out of range
-    public Color color = Color.RED;   // Màu sắc dự phòng
+    public Color color = Color.RED; // Màu sắc dự phòng
     public BufferedImage bulletImg;
-    public double angle;          // Góc bắn của đạn (độ)
+    public double angle; // Góc bắn của đạn (độ)
 
-    // Constructor: Khởi tạo đạn với vị trí tâm súng và góc bắn từ Weapon truyền sang
+    private static BufferedImage cachedBulletImg = null;
+    private static boolean isImageLoaded = false;
+
+    // Constructor: Khởi tạo đạn với vị trí tâm súng và góc bắn từ Weapon truyền
+    // sang
     public Bullet(double startX, double startY, double angle) {
         this.worldX = startX;
         this.worldY = startY;
@@ -31,15 +35,25 @@ public class Bullet {
         getBulletImg();
     }
 
-    // Nạp ảnh viên đạn từ thư mục resources
     public void getBulletImg() {
+        if (isImageLoaded) {
+            bulletImg = cachedBulletImg;
+            return;
+        }
         try {
-            BufferedImage bulletTemp = ImageIO.read(getClass().getResourceAsStream("/weapon/flybullet.jpg"));
-            bulletImg = makeColorTransparent(bulletTemp, Color.BLACK, 40); // Loại bỏ viền đen với dung sai 40
-        } catch (IOException e) {
+            java.io.InputStream is = getClass().getResourceAsStream("/weapon/flybullet.jpg");
+            if (is != null) {
+                BufferedImage bulletTemp = ImageIO.read(is);
+                cachedBulletImg = makeColorTransparent(bulletTemp, Color.BLACK, 40); // Loại bỏ viền đen với dung sai 40
+            } else {
+                System.err.println("Không tìm thấy ảnh viên đạn /weapon/flybullet.jpg");
+            }
+        } catch (Exception e) {
             System.err.println("Không thể nạp ảnh viên đạn /weapon/flybullet.jpg");
             e.printStackTrace();
         }
+        isImageLoaded = true;
+        bulletImg = cachedBulletImg;
     }
 
     private BufferedImage makeColorTransparent(BufferedImage im, Color color, int tolerance) {
@@ -48,15 +62,15 @@ public class Bullet {
         g.setComposite(AlphaComposite.Src);
         g.drawImage(im, null, 0, 0);
         g.dispose();
-        for(int i = 0; i < dimg.getHeight(); i++) {
-            for(int j = 0; j < dimg.getWidth(); j++) {
+        for (int i = 0; i < dimg.getHeight(); i++) {
+            for (int j = 0; j < dimg.getWidth(); j++) {
                 int px = dimg.getRGB(j, i);
                 int r = (px >> 16) & 0xFF;
                 int g_ = (px >> 8) & 0xFF;
                 int b = px & 0xFF;
                 if (Math.abs(r - color.getRed()) <= tolerance &&
-                    Math.abs(g_ - color.getGreen()) <= tolerance &&
-                    Math.abs(b - color.getBlue()) <= tolerance) {
+                        Math.abs(g_ - color.getGreen()) <= tolerance &&
+                        Math.abs(b - color.getBlue()) <= tolerance) {
                     dimg.setRGB(j, i, 0x00FFFFFF); // Giữ nguyên RGB nhưng set Alpha = 0
                 }
             }
@@ -73,7 +87,8 @@ public class Bullet {
         travelDistance += bulletSpeed;
     }
 
-    // Kiểm tra xem đạn có vượt quá phạm vi cho phép không để Weapon tự xóa khỏi danh sách
+    // Kiểm tra xem đạn có vượt quá phạm vi cho phép không để Weapon tự xóa khỏi
+    // danh sách
     public boolean isOutOfRange() {
         return travelDistance > maxRange;
     }
