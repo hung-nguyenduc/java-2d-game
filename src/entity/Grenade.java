@@ -39,7 +39,7 @@ public class Grenade {
 
         if (!isGrenadeLoaded) {
             try {
-                java.io.InputStream is = getClass().getResourceAsStream("/weapon/bullet.png");
+                java.io.InputStream is = getClass().getResourceAsStream("/weapon/grenade.png");
                 if (is != null) {
                     cachedGrenadeImg = ImageIO.read(is);
                 } else {
