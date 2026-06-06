@@ -35,13 +35,13 @@ public class KTXState extends GameState {
     private int itemsCollected = 0;
     private final int TOTAL_QUEST_ITEMS = 3;
     private Item nearbyItem = null;
-    private Rectangle doorRect = new Rectangle(337, 655, 64, 64);
+    private Rectangle doorRect = new Rectangle(337, 655, 69, 64);
     private boolean isNearDoor = false;
 
     // Kích thước và bán kính
     private final int PLAYER_SIZE = 48;
     private final double PLAYER_RADIUS = 24;
-    private final double DOOR_RADIUS = 50;
+    private final double DOOR_RADIUS = 55;
 
     public KTXState(GamePanel gp) {
         super(gp);
@@ -260,7 +260,10 @@ public class KTXState extends GameState {
             for (Obstacle obs : obstacles) {
                 obs.draw(g2, cameraX, cameraY);
             }
+            g2.setColor(Color.DARK_GRAY);
+            g2.drawRect(doorRect.x, doorRect.y, doorRect.width, doorRect.height);
         }
+
 
 
         // Tầng 3: Vẽ Item
