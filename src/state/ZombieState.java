@@ -185,6 +185,10 @@ public class ZombieState extends GameState {
             dialogueBox.startDialogue(afterQuestScript);
             isPhase2DialoguePlayed = true;
         }
+
+        if (isPhase2DialoguePlayed) {
+            gp.setState(new Ending(gp, new MenuState(gp)));
+        }
     }
 
     @Override
@@ -240,7 +244,7 @@ public class ZombieState extends GameState {
         // 6. Vẽ Giao diện HUD
         g2.setColor(Color.RED);
         g2.setFont(HUD_FONT);
-        g2.drawString("Man 1 - Giet quai: " + gp.killCount + " / 8", 10, 30);
+        g2.drawString("Tiêu diệt kẻ địch: " + gp.killCount + " / 8", 10, 30);
 
         // 7. Vẽ Hộp thoại
         dialogueBox.draw(g2, gp.screenWidth, gp.screenHeight);
