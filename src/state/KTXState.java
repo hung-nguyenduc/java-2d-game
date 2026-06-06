@@ -8,6 +8,7 @@ import collision.ObstacleManager;
 import entity.Item;
 
 import java.awt.*;
+import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
 import java.awt.event.MouseEvent;
@@ -264,10 +265,32 @@ public class KTXState extends GameState {
             g2.drawRect(doorRect.x, doorRect.y, doorRect.width, doorRect.height);
         }
 
-
+        // --- HIỆU ỨNG PHÁT SÁNG CHO ITEM ---
+        long time = System.currentTimeMillis();
+        // Tính alpha dao động mượt mà từ 0.2 đến 0.8 để tạo nhịp nhấp nháy
+        float pulseAlpha = 0.5f + 0.3f * (float) Math.sin(time / 200.0);
 
         // Tầng 3: Vẽ Item
         for (Item item : questItems) {
+            // Xác định tâm của vật phẩm trên màn hình
+            float itemScreenCenterX = (float) (item.worldX + PLAYER_SIZE / 2.0 - cameraX);
+            float itemScreenCenterY = (float) (item.worldY + PLAYER_SIZE / 2.0 - cameraY);
+            float glowRadius = (float) item.radius + 15; // Quầng sáng to hơn vùng chọn một chút
+
+            // Vẽ quầng sáng bằng RadialGradient
+            float[] fractions = {0.0f, 1.0f};
+            Color[] colors = {new Color(1f, 1f, 0.4f, pulseAlpha), new Color(1f, 1f, 0.4f, 0f)};
+            RadialGradientPaint rgp = new RadialGradientPaint(
+                    new Point2D.Float(itemScreenCenterX, itemScreenCenterY), glowRadius, fractions, colors);
+
+            // Lưu lại lớp Paint hiện tại để không ảnh hưởng đến các thành phần vẽ sau
+            Paint oldPaint = g2.getPaint();
+            g2.setPaint(rgp);
+            g2.fillOval((int)(itemScreenCenterX - glowRadius), (int)(itemScreenCenterY - glowRadius),
+                    (int)(glowRadius * 2), (int)(glowRadius * 2));
+            g2.setPaint(oldPaint); // Phục hồi Paint
+
+            // Vẽ bản thân item đè lên trên quầng sáng
             item.draw(g2, cameraX, cameraY);
         }
 

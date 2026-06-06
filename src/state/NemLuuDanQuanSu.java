@@ -17,15 +17,23 @@ import java.util.List;
 
 public class NemLuuDanQuanSu extends GameState {
     private boolean debugMode = false;
-    private static final String MAP_IMAGE_PATH = "/maps/b7.png";
+    private static final String MAP_IMAGE_PATH = "/maps/nem-luu.png";
     private static final String OBSTACLE_TXT_PATH = "/maps/b7.txt";
-    private static final double MAP_SCALE = 1.0 / 1.5;
+    private static final double MAP_SCALE = 1.0 / 3.5;
 
     private DialogueManager dialogueBox;
     private Image mapImage;
     private List<Obstacle> obstacles = new ArrayList<>();
     BufferedImage vuFace;
-    BufferedImage player;
+    BufferedImage thayGiaoFace;
+
+    // ĐÃ THÊM: Các biến quản lý ảnh nhân vật
+    private BufferedImage playerIdle;
+    private BufferedImage playerAiming;
+    private BufferedImage playerThrowing;
+    private BufferedImage currentPlayerImage;
+    private int throwTimer = 0;
+
     // Cơ chế Angry Birds
     private boolean isAiming = false;
     private int dragStartX, dragStartY;
@@ -79,7 +87,18 @@ public class NemLuuDanQuanSu extends GameState {
             g2d.drawImage(src, 0, 0, gp.worldWidth, gp.worldHeight, null);
             g2d.dispose();
             mapImage = compatibleMap;
-            player = ImageIO.read(getClass().getResourceAsStream("/player/right1-ver2.png"));
+
+            // ĐÃ THÊM: Load các ảnh tư thế của người chơi
+            playerIdle = ImageIO.read(getClass().getResourceAsStream("/player/chuan-bi.png"));
+            // Nhớ thay đường dẫn này cho khớp thực tế
+            playerAiming = ImageIO.read(getClass().getResourceAsStream("/player/nem.png"));
+            // Nhớ thay đường dẫn này cho khớp thực tế
+            playerThrowing = ImageIO.read(getClass().getResourceAsStream("/player/nem.png"));
+
+            currentPlayerImage = playerIdle; // Gán ảnh mặc định
+
+            thayGiaoFace = ImageIO.read(getClass().getResourceAsStream("/NPC/thay-giao.png"));
+
         } catch (Exception e) {
             System.err.println("Lỗi nạp ảnh bản đồ, dùng nền đen dự phòng.");
         }
@@ -99,23 +118,23 @@ public class NemLuuDanQuanSu extends GameState {
         gp.player.worldY = groundY - 50;
 
         // Thiết lập ô cát mục tiêu
-        int zoneWidth = 140;
-        int zoneHeight = 40;
+        int zoneWidth = 120;
+        int zoneHeight = 55;
         int zoneX = 600;
-        int zoneY = groundY - zoneHeight;
+        int zoneY = 225;
         targetZone = new Rectangle(zoneX, zoneY, zoneWidth, zoneHeight);
 
         try {
-            vuFace = ImageIO.read(getClass().getResourceAsStream("/player/down1.png"));
+            vuFace = ImageIO.read(getClass().getResourceAsStream("/player/down3.png"));
         } catch (Exception e) {}
 
         introScript = new DialogueLine[] {
-                new DialogueLine("Môn thi cuối cùng: Ném lựu đạn", null),
-                new DialogueLine("Cần ném trúng " + REQUIRED_HITS + "/" + grenadesLeft + " quả", null)
+                new DialogueLine("Môn thi cuối cùng: Ném lựu đạn", thayGiaoFace),
+                new DialogueLine("Cần ném trúng " + REQUIRED_HITS + "/" + grenadesLeft + " quả", thayGiaoFace)
         };
-        afterQuestScript = new DialogueLine[] { new DialogueLine("Vũ: Đạt " + REQUIRED_HITS + " quả trúng mục tiêu rồi! Qua môn rồi hẹ hẹ hẹ", null) };
-        failScript = new DialogueLine[] { new DialogueLine("Thầy giáo: Hết lựu đạn rồi Vũ ơi, ném trượt nhiều quá!", null),
-                new DialogueLine("Thầy giáo: Trượt môn về học lại đi em", null)
+        afterQuestScript = new DialogueLine[] { new DialogueLine("Vũ: Đạt " + REQUIRED_HITS + " quả trúng mục tiêu rồi! Qua môn rồi hẹ hẹ hẹ", vuFace) };
+        failScript = new DialogueLine[] { new DialogueLine("Thầy giáo: Hết lựu đạn rồi Vũ ơi, ném trượt nhiều quá!", thayGiaoFace),
+                new DialogueLine("Thầy giáo: Trượt môn về học lại đi em", thayGiaoFace)
         };
 
         dialogueBox.startDialogue(introScript);
@@ -139,14 +158,15 @@ public class NemLuuDanQuanSu extends GameState {
         }
         if (isGameOver || isQuestCompleted) return;
 
-        //gp.player.update();
-
         // XỬ LÝ KÉO THẢ CHUỘT (ANGRY BIRDS)
         if (gp.mouseH.leftMousePressed) {
             if (!isAiming) {
                 isAiming = true;
                 dragStartX = gp.mouseH.mouseX;
                 dragStartY = gp.mouseH.mouseY;
+
+                // ĐÃ THÊM: Đổi ảnh lúc kéo ngắm
+                currentPlayerImage = playerAiming;
             } else {
                 double dx = dragStartX - gp.mouseH.mouseX;
                 double dy = dragStartY - gp.mouseH.mouseY;
@@ -161,6 +181,20 @@ public class NemLuuDanQuanSu extends GameState {
                 Grenade g = new Grenade(gp.player.worldX + 24, gp.player.worldY + 16, launchAngle, launchPower);
                 grenades.add(g);
                 grenadesLeft--;
+
+                // ĐÃ THÊM: Đổi ảnh lúc ném và setup timer
+                currentPlayerImage = playerThrowing;
+                throwTimer = 30; // Số frame giữ dáng ném
+            } else {
+                currentPlayerImage = playerIdle;
+            }
+        }
+
+        // ĐÃ THÊM: Xử lý timer đưa dáng ném về lại dáng đứng yên
+        if (throwTimer > 0) {
+            throwTimer--;
+            if (throwTimer == 0) {
+                currentPlayerImage = playerIdle;
             }
         }
 
@@ -182,7 +216,6 @@ public class NemLuuDanQuanSu extends GameState {
                     targetsHit++;
                 } else {
                     System.out.println("Trượt");
-                    // Quả lựu này tuy vẫn bay/nảy tiếp nhưng đã bị đánh dấu hụt điểm do trượt mục tiêu đầu
                 }
             }
 
@@ -221,28 +254,20 @@ public class NemLuuDanQuanSu extends GameState {
 
         // 1. Vẽ Map nền
         if (mapImage != null) {
-            g2.drawImage(mapImage, 0, 0, gp.screenWidth, gp.screenHeight, cameraX, cameraY, cameraX + gp.screenWidth, cameraY + gp.screenHeight, null);
+            g2.drawImage(mapImage, -200, -100, gp.screenWidth, gp.screenHeight, cameraX, cameraY, cameraX + gp.screenWidth, cameraY + gp.screenHeight, null);
         }
 
-        // 2. Vẽ ô mục tiêu cát
-        if (targetZone != null) {
-            g2.setColor(new Color(238, 214, 175, 160));
-            g2.fillRect(targetZone.x - cameraX, targetZone.y - cameraY, targetZone.width, targetZone.height);
-            g2.setColor(Color.ORANGE);
-            g2.setStroke(new BasicStroke(2));
-            g2.drawRect(targetZone.x - cameraX, targetZone.y - cameraY, targetZone.width, targetZone.height);
+        // 2. Vẽ Vũ (ĐÃ THAY ĐỔI: Vẽ ảnh theo trạng thái currentPlayerImage)
+        if (currentPlayerImage != null) {
+            g2.drawImage(currentPlayerImage, 100, 300, 60, 100, null);
         }
 
-        // 3. Vẽ Vũ
-        //gp.player.draw(g2, cameraX, cameraY);
-        g2.drawImage(player, 100, 300, 80, 120, null);
-
-        // 4. Vẽ lựu đạn đang bay/nảy/nổ
+        // 3. Vẽ lựu đạn đang bay/nảy/nổ
         for (Grenade g : grenades) {
             g.draw(g2, cameraX, cameraY, gp);
         }
 
-        // 5. Vẽ dây kéo lực Angry Birds
+        // 4. Vẽ dây kéo lực Angry Birds
         if (isAiming && grenadesLeft >= 0) {
             int pScreenX = (int)(gp.player.worldX - cameraX) + 24;
             int pScreenY = (int)(gp.player.worldY - cameraY) + 16;
@@ -255,7 +280,7 @@ public class NemLuuDanQuanSu extends GameState {
             g2.drawLine(pScreenX, pScreenY, endX, endY);
         }
 
-        // 6. Vẽ HUD thông số nâng cấp
+        // 5. Vẽ HUD thông số nâng cấp
         g2.setColor(Color.BLACK); g2.fillRect(15, 15, 270, 65);
         g2.setColor(Color.CYAN); g2.drawRect(15, 15, 270, 65);
         g2.setColor(Color.WHITE); g2.setFont(new Font("Consolas", Font.BOLD, 14));
