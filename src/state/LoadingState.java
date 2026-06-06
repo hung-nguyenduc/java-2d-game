@@ -49,10 +49,10 @@ public class LoadingState extends GameState {
 
         // Căn giữa cái GIF (Mày tự thay đổi chiều rộng, chiều cao cho khớp với ảnh gốc)
         if (loadingGif != null) {
-            int gifWidth = 400;  // Chỉnh lại theo độ phân giải GIF của mày
-            int gifHeight = 300; // Chỉnh lại theo độ phân giải GIF của mày
-            int x = (gp.screenWidth - gifWidth) / 2;
-            int y = (gp.screenHeight - gifHeight) / 2;
+            int gifWidth = 800;  // Chỉnh lại theo độ phân giải GIF của mày
+            int gifHeight = 500; // Chỉnh lại theo độ phân giải GIF của mày
+            int x = 0;
+            int y = 0;
 
             // Chú ý: Truyền gp (GamePanel) vào tham số cuối (ImageObserver) để nó cập nhật frame liên tục
             g2.drawImage(loadingGif, x, y, gifWidth, gifHeight, gp);
