@@ -17,6 +17,7 @@ import java.util.List;
 
 public class KTXState extends GameState {
     private boolean debugMode =  false;
+    private boolean isIntroPlaying = true;
     private static final String MAP_IMAGE_PATH = "/maps/ktx-xoa-balo.png";
     private static final String OBSTACLE_TXT_PATH = "/maps/ktx_obstacles.txt";
     private static final double MAP_SCALE = 1.0 / 2.5;
@@ -26,6 +27,7 @@ public class KTXState extends GameState {
     private List<Obstacle> obstacles = new ArrayList<>();
     private BufferedImage vuFace;
     private BufferedImage doMimiFace;
+    private BufferedImage vuNgu, vuNgheDT, vuQuyetTam, vuHoangHot;
 
     private boolean isQuestCompleted = false;
     private boolean isPhase2DialoguePlayed = false;
@@ -50,6 +52,7 @@ public class KTXState extends GameState {
             @Override
             public void onDialogueComplete() {
                 // Xử lý khi hết thoại
+                isIntroPlaying = false;
             }
         };
     }
@@ -83,10 +86,18 @@ public class KTXState extends GameState {
         gp.player.bullets.clear();
         gp.enemies.clear();
 
-        gp.player.spawnAtCenter();
+        //gp.player.spawnAtCenter();
+
+        gp.player.worldX = 300;
+        gp.player.worldY = 600;
 
         try {
             vuFace = ImageIO.read(getClass().getResourceAsStream("/player/down1.png"));
+            vuNgu = ImageIO.read(getClass().getResourceAsStream("/player/vuNgu.png"));
+            vuNgheDT = ImageIO.read(getClass().getResourceAsStream("/player/vuNgheDT.png"));
+            vuQuyetTam = ImageIO.read(getClass().getResourceAsStream("/player/vuQuyetTam.png"));
+            vuHoangHot = ImageIO.read(getClass().getResourceAsStream("/player/vuHoangHot.png"));
+
             doMimiFace = ImageIO.read(getClass().getResourceAsStream("/NPC/DoMiMi/DoMiMi-xoaphong.png"));
         } catch (Exception e) {
             e.printStackTrace();
@@ -94,13 +105,13 @@ public class KTXState extends GameState {
 
         introScript = new DialogueLine[] {
                 new DialogueLine("Giới thiệu nhân vật:\nĐây là Vũ, tân sinh viên Bách Khoa K36.", vuFace),
-                new DialogueLine("Vũ tự tin bước vào trường với ước mơ ra trường đúng hạn\nvà trở thành một kỹ sư tài ba.", vuFace),
-                new DialogueLine("Vũ đang ngủ ở kí túc xá, ngáy khò khò", vuFace),
+                new DialogueLine("Vũ tự tin bước vào trường với ước mơ ra trường đúng hạn\nvà trở thành một kỹ sư tài ba.", vuQuyetTam),
+                new DialogueLine("Vũ đang ngủ ở kí túc xá, ngáy khò khò", vuNgu),
                 new DialogueLine("Độ Mimi: Alo Vũ à Vũ?", doMimiFace),
                 new DialogueLine("Độ Mimi: Ôi em ơi, số điện thoại, địa chỉ nhà\nanh đều có ở đây hết rồi, em đừng có chối!", doMimiFace),
-                new DialogueLine("Vũ: Ơ anh nhầm người rồi...", vuFace),
+                new DialogueLine("Vũ: Ơ anh nhầm người rồi...", vuNgheDT),
                 new DialogueLine("Độ Mimi: Thế em có định đi học giải tích ko?", doMimiFace),
-                new DialogueLine("Vũ: Ôi thôi chết quên mẹ giờ học rồi, phải đi ngay thôi!", vuFace),
+                new DialogueLine("Vũ: Ôi thôi chết quên mẹ giờ học rồi, phải đi ngay thôi!", vuHoangHot),
                 new DialogueLine("Nhiệm vụ: thu thập cặp sách, sách giải tích, hộp bút để đi học", null)
         };
 
@@ -295,7 +306,9 @@ public class KTXState extends GameState {
         }
 
         // Tầng 4: Vẽ Player
-        gp.player.draw(g2, cameraX, cameraY);
+        if (!isIntroPlaying) {
+            gp.player.draw(g2, cameraX, cameraY);
+        }
 
         // HIỂN THỊ HUD NHẶT ĐỒ
         if (nearbyItem != null && !isQuestCompleted) {
