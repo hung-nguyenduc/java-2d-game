@@ -42,8 +42,8 @@ public class DialogueManager {
 
         // 3. VẼ AVATAR NGƯỜI NÓI (Nếu câu thoại đó có gán ảnh)
         if (currentLine.avatar != null) {
-            int avatarSizeX = 90; // Kích thước ảnh đại diện (hình vuông)
-            int avatarSizeY = 100;
+            int avatarSizeX = 110; // Kích thước ảnh đại diện (hình vuông)
+            int avatarSizeY = 90;
             // Đặt Avatar nằm sát lề trái, nhô lên cạnh trên của khung thoại một chút
             int avatarX = boxX + 50;
             int avatarY = boxY -  80; // Trừ đi một nửa kích thước để nó đè lên cạnh trên
@@ -56,7 +56,7 @@ public class DialogueManager {
 //            g2.drawRoundRect(avatarX - 4, avatarY - 4, avatarSize + 8, avatarSize + 8, 15, 15);
 
             // Vẽ ảnh nhân vật (ví dụ ảnh Độ Mimi hoặc Vũ)
-            g2.drawImage(currentLine.avatar, avatarX, avatarY, avatarSizeY, avatarSizeX, null);
+            g2.drawImage(currentLine.avatar, avatarX, avatarY, avatarSizeX, avatarSizeY, null);
         }
 
         // 4. VẼ KHUNG THOẠI CHÍNH
