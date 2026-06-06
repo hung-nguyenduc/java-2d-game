@@ -130,6 +130,7 @@ public class CongQuanSu extends GameState {
 
         // Khóa toàn bộ game (hoặc chỉ Player) khi hội thoại đang chạy
         if (dialogueBox.isActive()) {
+            dialogueBox.update();
             if (gp.keyH.spacePressed) {
                 dialogueBox.advanceDialogue();
                 gp.keyH.spacePressed = false; // Reset phím ngay lập tức để tránh bị trôi chữ quá nhanh

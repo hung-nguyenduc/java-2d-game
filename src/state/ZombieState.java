@@ -150,6 +150,7 @@ public class ZombieState extends GameState {
 
         // Nếu hộp thoại đang mở, chặn mọi tương tác di chuyển/bắn súng, chỉ cho bấm Space tua chữ
         if (dialogueBox.isActive()) {
+            dialogueBox.update();
             if (gp.keyH.spacePressed) {
                 dialogueBox.advanceDialogue();
                 gp.keyH.spacePressed = false;

@@ -199,6 +199,7 @@ public class KTXState extends GameState {
 
         // Khóa game khi đang hội thoại
         if (dialogueBox.isActive()) {
+            dialogueBox.update();
             if (gp.keyH.spacePressed) {
                 dialogueBox.advanceDialogue();
                 gp.keyH.spacePressed = false;

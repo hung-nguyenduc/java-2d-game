@@ -153,7 +153,11 @@ public class NemLuuDanQuanSu extends GameState {
         }
 
         if (dialogueBox.isActive()) {
-            if (gp.keyH.spacePressed) { dialogueBox.advanceDialogue(); gp.keyH.spacePressed = false; }
+            dialogueBox.update();
+            if (gp.keyH.spacePressed) {
+                dialogueBox.advanceDialogue();
+                gp.keyH.spacePressed = false;
+            }
             return;
         }
         if (isGameOver || isQuestCompleted) return;

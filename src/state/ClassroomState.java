@@ -169,6 +169,7 @@ public class ClassroomState extends GameState {
 
         // Nếu đang hiện hội thoại (bất kể script 1 hay script 2) thì đóng băng logic di chuyển
         if (dialogueBox.isActive()) {
+            dialogueBox.update();
             if (gp.keyH.spacePressed) {
                 dialogueBox.advanceDialogue();
                 gp.keyH.spacePressed = false;

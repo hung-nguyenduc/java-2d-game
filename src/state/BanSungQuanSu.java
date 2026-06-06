@@ -165,6 +165,7 @@ public class BanSungQuanSu extends GameState {
         }
 
         if (dialogueBox.isActive()) {
+            dialogueBox.update();
             if (gp.keyH.spacePressed) {
                 dialogueBox.advanceDialogue();
                 gp.keyH.spacePressed = false;
