@@ -125,7 +125,7 @@ public class BanSungQuanSu extends GameState {
 
         introScript = new DialogueLine[] {
                 new DialogueLine("Học phần bắn súng Kỹ thuật chiến đấu bộ binh và chiến thuật bắt đầu!", thayGiao),
-                new DialogueLine("Bắn trúng " + bulletsLeft + " viên đạn để qua môn", thayGiao),
+                new DialogueLine("Bắn trúng " + TOTAL_TARGETS + " viên đạn để qua môn", thayGiao),
         };
 
         afterQuestScript = new DialogueLine[] {
