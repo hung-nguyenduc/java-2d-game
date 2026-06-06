@@ -15,6 +15,9 @@ public class Grenade {
 
     public int size = 24;
     public BufferedImage grenadeImg;
+    private static BufferedImage cachedGrenadeImg = null;
+    private static boolean isGrenadeLoaded = false;
+    
     public boolean isExploded = false;
     public boolean isDead = false;
     public int explosionTimer = 0;
@@ -34,11 +37,20 @@ public class Grenade {
         this.vx = Math.cos(Math.toRadians(angle)) * power;
         this.vy = Math.sin(Math.toRadians(angle)) * power;
 
-        try {
-            grenadeImg = ImageIO.read(getClass().getResourceAsStream("/weapon/bullet.png"));
-        } catch (IOException e) {
-            System.err.println("Chưa có ảnh lựu đạn, dùng hình tròn tạm thời.");
+        if (!isGrenadeLoaded) {
+            try {
+                java.io.InputStream is = getClass().getResourceAsStream("/weapon/bullet.png");
+                if (is != null) {
+                    cachedGrenadeImg = ImageIO.read(is);
+                } else {
+                    System.err.println("Chưa có ảnh lựu đạn, dùng hình tròn tạm thời.");
+                }
+            } catch (Exception e) {
+                System.err.println("Lỗi khi load ảnh lựu đạn.");
+            }
+            isGrenadeLoaded = true;
         }
+        grenadeImg = cachedGrenadeImg;
         
         if (explosionImage == null) {
             explosionImage = new ImageIcon(getClass().getResource("/weapon/bum.gif")).getImage();

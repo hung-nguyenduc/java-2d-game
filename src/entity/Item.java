@@ -15,6 +15,8 @@ public class Item {
 
     private static final int ITEM_SIZE = 48;
     private static final double DEFAULT_PICKUP_RADIUS = 60;
+    
+    private static java.util.HashMap<String, BufferedImage> imageCache = new java.util.HashMap<>();
 
     public Item(String name, String imagePath, int worldX, int worldY) {
         this.name = name;
@@ -25,17 +27,27 @@ public class Item {
         this.radius = DEFAULT_PICKUP_RADIUS;
 
         // Load ảnh
-        try {
-            BufferedImage original = ImageIO.read(getClass().getResourceAsStream(imagePath));
-            if (original != null) {
-                this.image = new BufferedImage(ITEM_SIZE, ITEM_SIZE, BufferedImage.TYPE_INT_ARGB);
-                Graphics2D g2d = this.image.createGraphics();
-                g2d.drawImage(original, 0, 0, ITEM_SIZE, ITEM_SIZE, null);
-                g2d.dispose();
+        if (imageCache.containsKey(imagePath)) {
+            this.image = imageCache.get(imagePath);
+        } else {
+            try {
+                java.io.InputStream is = getClass().getResourceAsStream(imagePath);
+                if (is != null) {
+                    BufferedImage original = ImageIO.read(is);
+                    if (original != null) {
+                        this.image = new BufferedImage(ITEM_SIZE, ITEM_SIZE, BufferedImage.TYPE_INT_ARGB);
+                        Graphics2D g2d = this.image.createGraphics();
+                        g2d.drawImage(original, 0, 0, ITEM_SIZE, ITEM_SIZE, null);
+                        g2d.dispose();
+                        imageCache.put(imagePath, this.image);
+                    }
+                } else {
+                    System.err.println("Không tìm thấy ảnh: " + imagePath);
+                }
+            } catch (Exception e) {
+                System.err.println("Lỗi load ảnh: " + imagePath);
+                e.printStackTrace();
             }
-        } catch (Exception e) {
-            System.err.println("Lỗi load ảnh: " + imagePath);
-            e.printStackTrace();
         }
     }
 

@@ -17,6 +17,11 @@ public class Weapon {
 
     private BufferedImage weaponImage;
     private BufferedImage outgunImage;
+    
+    private static BufferedImage cachedWeaponImage = null;
+    private static BufferedImage cachedOutgunImage = null;
+    private static boolean isWeaponImageLoaded = false;
+
     public List<Bullet> bullets = new CopyOnWriteArrayList<>(); // Đạn chuyển về cho vũ khí quản lý
     
     private int flashTimer = 0; // Thời gian hiển thị hiệu ứng chớp lửa
@@ -39,16 +44,31 @@ public class Weapon {
     }
 
     private void loadWeaponImage() {
-        try {
-            BufferedImage weaponTemp = ImageIO.read(getClass().getResourceAsStream("/weapon/ak47.jpg"));
-            weaponTemp = scaleImage(weaponTemp, 120, 80); // Làm súng ngắn lại (120) và bề dày to hơn (80)
-            weaponImage = makeColorTransparent(weaponTemp, Color.WHITE, 120); // Dung sai lớn (120) để xóa sạch viền trắng
-
-            BufferedImage outgunTemp = ImageIO.read(getClass().getResourceAsStream("/weapon/outgun.jpg"));
-            outgunImage = makeColorTransparent(outgunTemp, Color.WHITE, 40); // Loại bỏ viền trắng với dung sai 40
-        } catch (IOException ex) {
-            throw new RuntimeException("Không tìm thấy ảnh súng hoặc hiệu ứng outgun!", ex);
+        if (isWeaponImageLoaded) {
+            weaponImage = cachedWeaponImage;
+            outgunImage = cachedOutgunImage;
+            return;
         }
+        try {
+            java.io.InputStream isWeapon = getClass().getResourceAsStream("/weapon/ak47.jpg");
+            if (isWeapon != null) {
+                BufferedImage weaponTemp = ImageIO.read(isWeapon);
+                weaponTemp = scaleImage(weaponTemp, 120, 80); // Làm súng ngắn lại (120) và bề dày to hơn (80)
+                cachedWeaponImage = makeColorTransparent(weaponTemp, Color.WHITE, 120); // Dung sai lớn (120) để xóa sạch viền trắng
+            }
+
+            java.io.InputStream isOutgun = getClass().getResourceAsStream("/weapon/outgun.jpg");
+            if (isOutgun != null) {
+                BufferedImage outgunTemp = ImageIO.read(isOutgun);
+                cachedOutgunImage = makeColorTransparent(outgunTemp, Color.WHITE, 40); // Loại bỏ viền trắng với dung sai 40
+            }
+        } catch (Exception ex) {
+            System.err.println("Không tìm thấy ảnh súng hoặc hiệu ứng outgun!");
+            ex.printStackTrace();
+        }
+        isWeaponImageLoaded = true;
+        weaponImage = cachedWeaponImage;
+        outgunImage = cachedOutgunImage;
     }
 
     private BufferedImage scaleImage(BufferedImage originalImage, int targetWidth, int targetHeight) {

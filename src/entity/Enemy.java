@@ -44,50 +44,50 @@ public class Enemy extends Entity {
     }
     public String enemyDirection;
     public String[] enemyNames = {"gt1", "gt3", "ds", "ds", "gt3"}; // Thêm phần tử cho loại 4
-    //public String enemySource = "/enemy/" + enemyNames[enemyType] + "_" + enemyDirection + ".png";
+
+    private static BufferedImage[] cachedLeftImages = new BufferedImage[5];
+    private static BufferedImage[] cachedRightImages = new BufferedImage[5];
+    private static boolean[] isImageLoaded = new boolean[5];
+
     public String getEnemySource() {
         return "/enemy/" + enemyNames[enemyType] + "_" + enemyDirection + ".png";
     }
+
     public void getEnemyDirection(double dx) {
         if (dx >= 0) {
             enemyDirection = "right";
-        }
-        else {
+        } else {
             enemyDirection = "left";
         }
     }
+
     // Tải hình ảnh của Enemy dựa trên loại enemy
     public void getEnemyImage() {
-//        try {
-//            // Load 3 different enemy images from enemy folder
-////            switch(enemyType) {
-////                case 0:
-////                    enemyImage = ImageIO.read(getClass().getResourceAsStream(enemySource));
-////                    break;
-////                case 1:
-////                    enemyImage = ImageIO.read(getClass().getResourceAsStream(enemySource));
-////                    break;
-////                case 2:
-////                    enemyImage = ImageIO.read(getClass().getResourceAsStream(enemySource));
-////                    break;
-////                default:
-////                    enemyImage = ImageIO.read(getClass().getResourceAsStream(enemySource));
-//            enemyImage = ImageIO.read(getClass().getResourceAsStream(getEnemySource()));
-////            }
-//        } catch (IOException e) {
-//            System.out.println("LỖI: Không tìm thấy ảnh quái vật!");
-//            e.printStackTrace();
-//        }
+        if (enemyType >= 0 && enemyType < 5 && isImageLoaded[enemyType]) {
+            imageLeft = cachedLeftImages[enemyType];
+            imageRight = cachedRightImages[enemyType];
+            currentImage = imageLeft;
+            return;
+        }
 
         try {
             String base = "/enemy/" + enemyNames[enemyType];
-            imageLeft = ImageIO.read(getClass().getResourceAsStream(base + "_left.png"));
-            imageRight = ImageIO.read(getClass().getResourceAsStream(base + "_right.png"));
+            java.io.InputStream isLeft = getClass().getResourceAsStream(base + "_left.png");
+            java.io.InputStream isRight = getClass().getResourceAsStream(base + "_right.png");
+            
+            if (isLeft != null) imageLeft = ImageIO.read(isLeft);
+            if (isRight != null) imageRight = ImageIO.read(isRight);
+
+            if (enemyType >= 0 && enemyType < 5) {
+                cachedLeftImages[enemyType] = imageLeft;
+                cachedRightImages[enemyType] = imageRight;
+                isImageLoaded[enemyType] = true;
+            }
 
             // Set a default starting image
             currentImage = imageLeft;
-        } catch (IOException | IllegalArgumentException e) {
-            System.out.println("LỖI: Không tìm thấy ảnh cho " + enemyNames[enemyType]);
+        } catch (Exception e) {
+            System.out.println("LỖI: Không thể nạp ảnh cho " + enemyNames[enemyType]);
             e.printStackTrace();
         }
     }
