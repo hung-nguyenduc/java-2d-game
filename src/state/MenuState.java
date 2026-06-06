@@ -5,122 +5,142 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Random;
 
 import main.GamePanel;
 
 public class MenuState extends GameState {
-    // Tao chỉnh lại tọa độ và kích thước nút một chút cho cân đối hơn
-    private Rectangle playButton = new Rectangle(300, 220, 200, 60);
-    private Rectangle instructionsButton = new Rectangle(300, 310, 200, 60);
-    private Rectangle infoButton = new Rectangle(300, 400, 200, 60);
+    private Rectangle playButton;
+    private Rectangle instructionsButton;
+    private Rectangle infoButton;
     private BufferedImage background;
+
+    // Hệ thống hạt (Particles) cho hiệu ứng lửa và khói
+    private ArrayList<Particle> particles;
+    private Random random;
 
     public MenuState(GamePanel gp) {
         super(gp);
         getBackgroundImage();
+
+        // Căn giữa các nút theo kích thước màn hình
+        int btnWidth = 220;
+        int btnHeight = 60;
+        int centerX = (gp.screenWidth - btnWidth) / 2;
+
+        playButton = new Rectangle(centerX, 250, btnWidth, btnHeight);
+        instructionsButton = new Rectangle(centerX, 330, btnWidth, btnHeight);
+        infoButton = new Rectangle(centerX, 410, btnWidth, btnHeight);
+
+        particles = new ArrayList<>();
+        random = new Random();
     }
 
     @Override
-    public void enter() {
-        // No special initialization
-    }
+    public void enter() {}
 
     @Override
-    public void exit() {
-        // No special cleanup
-    }
+    public void exit() {}
 
     @Override
     public void update() {
-        // No updates needed for menu
+        // Tạo thêm hạt lửa/khói mới mỗi frame
+        for (int i = 0; i < 5; i++) {
+            particles.add(new Particle(
+                    random.nextInt(gp.screenWidth), // Xuất hiện ngẫu nhiên theo chiều ngang
+                    gp.screenHeight + 10,           // Bắt đầu từ dưới đáy màn hình
+                    random.nextInt(15) + 5          // Kích thước hạt
+            ));
+        }
+
+        // Cập nhật vị trí hạt và xóa các hạt đã bay lên quá cao hoặc hết "tuổi thọ"
+        Iterator<Particle> it = particles.iterator();
+        while (it.hasNext()) {
+            Particle p = it.next();
+            p.update();
+            if (p.life <= 0 || p.y < 0) {
+                it.remove();
+            }
+        }
     }
 
     public void getBackgroundImage() {
         try {
             background = ImageIO.read(getClass().getResourceAsStream("/DialogueBackground/thu-vien.png"));
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            System.out.println("Lỗi load ảnh background, nhớ check lại đường dẫn nha mày!");
         }
     }
 
     @Override
     public void draw(Graphics2D g2) {
-        // BẬT KHỬ RĂNG CƯA (Cực kỳ quan trọng để UI đẹp)
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
-        // Vẽ background (giữ nguyên của mày)
+        // 1. Vẽ background
         if (background != null) {
             g2.drawImage(background, 0, 0, gp.screenWidth, gp.screenHeight, null);
-        } else {
-            g2.setColor(Color.BLACK);
-            g2.fillRect(0, 0, gp.screenWidth, gp.screenHeight);
         }
 
-        // Làm tối background một chút để làm nổi bật Title và Button
-        g2.setColor(new Color(0, 0, 0, 100)); // Lớp phủ đen trong suốt 40%
+        // 2. Phủ một lớp bóng tối lên background để làm nổi bật lửa và UI
+        g2.setColor(new Color(20, 10, 10, 180)); // Màu tối hơi ám đỏ
         g2.fillRect(0, 0, gp.screenWidth, gp.screenHeight);
 
-        // Vẽ Title (Không dùng hộp chữ nhật nữa, vẽ chữ nổi 3D đẹp hơn)
-        drawTitle(g2, "Sinh Tồn Ở HUST", 130);
+        // 3. Vẽ hiệu ứng hạt (Lửa và Khói)
+        for (Particle p : particles) {
+            p.draw(g2);
+        }
 
-        // Vẽ Buttons
-        drawButton(g2, playButton, "Chơi Ngay");
-        drawButton(g2, instructionsButton, "Hướng Dẫn");
-        drawButton(g2, infoButton, "Thông Tin");
+        // 4. Vẽ Tiêu đề (Gradient Lửa)
+        drawFieryTitle(g2, "SINH TỒN Ở HUST", 150);
+
+        // 5. Vẽ các nút bấm style Sinh tồn
+        drawSurvivalButton(g2, playButton, "CHƠI NGAY");
+        drawSurvivalButton(g2, instructionsButton, "HƯỚNG DẪN");
+        drawSurvivalButton(g2, infoButton, "THÔNG TIN");
     }
 
-    private void drawTitle(Graphics2D g2, String text, int y) {
-        g2.setFont(new Font("Arial", Font.BOLD, 64));
+    private void drawFieryTitle(Graphics2D g2, String text, int y) {
+        g2.setFont(new Font("Arial", Font.BOLD, 75)); // Dùng font cứng cáp hơn
         FontMetrics fm = g2.getFontMetrics();
         int x = (gp.screenWidth - fm.stringWidth(text)) / 2;
 
-        // 1. Đổ bóng (Shadow) cho Title
-        g2.setColor(new Color(0, 0, 0, 180));
-        g2.drawString(text, x + 5, y + 5);
+        // Đổ bóng đen siêu đậm phía sau
+        g2.setColor(new Color(0, 0, 0, 200));
+        g2.drawString(text, x + 6, y + 6);
+        g2.drawString(text, x - 2, y + 2);
 
-        // 2. Chuyển màu (Gradient) cho chữ: từ Vàng cam xuống Cam đậm
-        GradientPaint gradient = new GradientPaint(x, y - 50, new Color(241, 196, 15),
-                x, y, new Color(230, 126, 34));
-        g2.setPaint(gradient);
+        // Gradient màu lửa cho chữ
+        GradientPaint fireGradient = new GradientPaint(
+                x, y - 70, new Color(255, 200, 0),    // Vàng sáng ở trên
+                x, y, new Color(220, 20, 20)          // Đỏ rực ở dưới
+        );
+        g2.setPaint(fireGradient);
         g2.drawString(text, x, y);
-
-        // 3. Viền chữ (Stroke) màu trắng mỏng để nổi bật (Tùy chọn, tao dùng drawString đè lên để giả viền)
-        // Cách nhanh nhất trong Java2D để giả viền là không cần thiết nếu đổ bóng đã tốt,
-        // nhưng tao giữ gọn nhẹ như vầy là đủ đẹp rồi.
     }
 
-    private void drawButton(Graphics2D g2, Rectangle rect, String text) {
-        // 1. Đổ bóng cho nút (Shadow)
-        g2.setColor(new Color(0, 0, 0, 120)); // Đen trong suốt
-        g2.fillRoundRect(rect.x + 5, rect.y + 5, rect.width, rect.height, 25, 25);
+    private void drawSurvivalButton(Graphics2D g2, Rectangle rect, String text) {
+        // Nền nút màu đen xám trong suốt
+        g2.setColor(new Color(30, 30, 30, 200));
+        g2.fillRect(rect.x, rect.y, rect.width, rect.height);
 
-        // 2. Nền nút chuyển màu Gradient (Từ xanh nhạt xuống xanh đậm)
-        Color colorTop = new Color(52, 152, 219);
-        Color colorBottom = new Color(41, 128, 185);
-        GradientPaint gp = new GradientPaint(rect.x, rect.y, colorTop,
-                rect.x, rect.y + rect.height, colorBottom);
-        g2.setPaint(gp);
-        g2.fillRoundRect(rect.x, rect.y, rect.width, rect.height, 25, 25);
+        // Viền nút màu cam/đỏ rực
+        g2.setColor(new Color(255, 69, 0)); // Orange Red
+        g2.setStroke(new BasicStroke(3f));
+        g2.drawRect(rect.x, rect.y, rect.width, rect.height);
 
-        // 3. Viền nút (Sáng nhẹ để tạo cảm giác kính/nổi)
-        g2.setColor(new Color(255, 255, 255, 100)); // Trắng mờ
-        g2.setStroke(new BasicStroke(2f));
-        g2.drawRoundRect(rect.x, rect.y, rect.width, rect.height, 25, 25);
+        // Glow nhẹ ở viền trong
+        g2.setColor(new Color(255, 140, 0, 100)); // Dark Orange mờ
+        g2.drawRect(rect.x + 2, rect.y + 2, rect.width - 4, rect.height - 4);
 
-        // 4. Căn giữa và vẽ text
+        // Text
         g2.setColor(Color.WHITE);
-        g2.setFont(new Font("Arial", Font.BOLD, 22));
+        g2.setFont(new Font("Arial", Font.BOLD, 24));
         FontMetrics fm = g2.getFontMetrics();
         int textX = rect.x + (rect.width - fm.stringWidth(text)) / 2;
         int textY = rect.y + ((rect.height - fm.getHeight()) / 2) + fm.getAscent();
 
-        // Đổ bóng cho text trong nút
-        g2.setColor(new Color(0, 0, 0, 150));
-        g2.drawString(text, textX + 2, textY + 2);
-
-        // Vẽ text chính
-        g2.setColor(Color.WHITE);
         g2.drawString(text, textX, textY);
     }
 
@@ -133,6 +153,56 @@ public class MenuState extends GameState {
             gp.setState(new InstructionsState(gp));
         } else if (infoButton.contains(p)) {
             gp.setState(new InfoState(gp));
+        }
+    }
+
+    // --- INNER CLASS ĐỂ QUẢN LÝ CÁC HẠT LỬA/KHÓI ---
+    private class Particle {
+        float x, y;
+        float speedX, speedY;
+        int size;
+        int life, maxLife;
+        Color color;
+
+        public Particle(float x, float y, int size) {
+            this.x = x;
+            this.y = y;
+            this.size = size;
+            this.maxLife = random.nextInt(100) + 50;
+            this.life = this.maxLife;
+
+            this.speedX = (random.nextFloat() - 0.5f) * 2; // Bay lượn ngang xíu
+            this.speedY = -(random.nextFloat() * 3 + 1);   // Bay tốc độ khác nhau lên trên
+
+            // Random màu: 60% Đỏ/Cam, 20% Vàng, 20% Xám đen (khói)
+            int colorChoice = random.nextInt(100);
+            if (colorChoice < 40) {
+                color = new Color(220, 20, 20, 150); // Đỏ
+            } else if (colorChoice < 60) {
+                color = new Color(255, 140, 0, 150); // Cam
+            } else if (colorChoice < 80) {
+                color = new Color(255, 215, 0, 150); // Vàng
+            } else {
+                color = new Color(80, 80, 80, 100);  // Khói
+            }
+        }
+
+        public void update() {
+            x += speedX;
+            y += speedY;
+            life--;
+            // Hạt nhỏ dần khi bay lên
+            if (life % 10 == 0 && size > 1) {
+                size--;
+            }
+        }
+
+        public void draw(Graphics2D g2) {
+            // Mờ dần theo thời gian sống
+            float alpha = (float) life / maxLife;
+            Color c = new Color(color.getRed(), color.getGreen(), color.getBlue(), (int)(color.getAlpha() * alpha));
+            g2.setColor(c);
+            g2.fillOval((int) x, (int) y, size, size);
         }
     }
 }
