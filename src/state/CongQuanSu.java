@@ -82,8 +82,8 @@ public class CongQuanSu extends GameState {
         gp.enemies.clear();
 
         // Đặt vị trí xuất phát cho Player trong map mới này
-        gp.player.worldX = 400; // Tọa độ X mong muốn
-        gp.player.worldY = 400; // Tọa độ Y mong muốn
+        gp.player.worldX = 30; // Tọa độ X mong muốn
+        gp.player.worldY = 250; // Tọa độ Y mong muốn
         //gp.player.spawnAtCenter();
         // Sinh quái (Enemy) riêng cho map này
         //spawnEnemies();
