@@ -261,12 +261,12 @@ public class Level3State extends GameState {
     }
 
     private void spawnEnemies() {
-        gp.enemies.add(new Enemy(gp, gp.player, 300,  400, 0));
-        gp.enemies.add(new Enemy(gp, gp.player, 700,  300, 1));
-        gp.enemies.add(new Enemy(gp, gp.player, 1100, 600, 2));
-        gp.enemies.add(new Enemy(gp, gp.player, 500,  1200, 1));
-        gp.enemies.add(new Enemy(gp, gp.player, 1500, 900, 0));
-        gp.enemies.add(new Enemy(gp, gp.player, 1800, 400, 2));
+        gp.enemies.add(new Enemy(gp, gp.player, 300,  400));
+        gp.enemies.add(new Enemy(gp, gp.player, 700,  300));
+        gp.enemies.add(new Enemy(gp, gp.player, 1100, 600));
+        gp.enemies.add(new Enemy(gp, gp.player, 500,  1200));
+        gp.enemies.add(new Enemy(gp, gp.player, 1500, 900));
+        gp.enemies.add(new Enemy(gp, gp.player, 1800, 400));
     }
 
     @Override

@@ -100,11 +100,11 @@ public class Level2State extends GameState {
 
     private void spawnEnemies() {
         // 5 quái, vị trí khác hoàn toàn so với màn 1
-        gp.enemies.add(new Enemy(gp, gp.player, 200,  800, 0));
-        gp.enemies.add(new Enemy(gp, gp.player, 600,  200, 1));
-        gp.enemies.add(new Enemy(gp, gp.player, 1400, 400, 2));
-        gp.enemies.add(new Enemy(gp, gp.player, 900, 1500, 1));
-        gp.enemies.add(new Enemy(gp, gp.player, 1700, 1200, 0));
+        gp.enemies.add(new Enemy(gp, gp.player, 200,  800));
+        gp.enemies.add(new Enemy(gp, gp.player, 600,  200));
+        gp.enemies.add(new Enemy(gp, gp.player, 1400, 400));
+        gp.enemies.add(new Enemy(gp, gp.player, 900, 1500));
+        gp.enemies.add(new Enemy(gp, gp.player, 1700, 1200));
     }
 
     @Override

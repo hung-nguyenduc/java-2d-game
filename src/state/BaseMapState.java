@@ -130,9 +130,9 @@ public class BaseMapState extends GameState {
 
     private void spawnEnemies() {
         // Bạn có thể tùy chỉnh tọa độ sinh quái tại đây (đây là hệ tọa độ gốc, tự động ăn theo kích thước chuẩn)
-        gp.enemies.add(new Enemy(gp, gp.player, 300, 300, 0));
-        gp.enemies.add(new Enemy(gp, gp.player, 800, 500, 1));
-        gp.enemies.add(new Enemy(gp, gp.player, 1200, 700, 2));
+        gp.enemies.add(new Enemy(gp, gp.player, 300, 300));
+        gp.enemies.add(new Enemy(gp, gp.player, 800, 500));
+        gp.enemies.add(new Enemy(gp, gp.player, 1200, 700));
     }
 
     public List<Obstacle> getObstacles() {

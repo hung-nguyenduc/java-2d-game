@@ -227,7 +227,7 @@ public class Zombie2State extends GameState {
             int type = 4; // Toàn bộ quái ở màn này là loại bắn tỉa bỏ chạy (type = 4)
             int startX = (int)(Math.random() * gp.worldWidth);
             int startY = (int)(Math.random() * gp.worldHeight);
-            Enemy e = new Enemy(gp, gp.player, startX, startY, type);
+            Enemy e = new Enemy(gp, gp.player, startX, startY);
             e.speed = 1.5; // Giống màn 1 (1.5)
             e.canDodge = true;
             e.damage = 5;
