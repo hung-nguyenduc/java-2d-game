@@ -39,7 +39,7 @@ public class LoadingState2 extends GameState {
         // CẢI TIẾN: Nếu ấn Space hoặc hết thời gian loading thì đều chuyển sang map mới
         if (gp.keyH.spacePressed || frameCounter >= LOADING_DURATION) {
             gp.keyH.spacePressed = false; // QUAN TRỌNG: Reset phím Space về false để tránh map sau vừa vào đã tự kích hoạt Space
-            gp.setState(new ZombieState(gp));
+            gp.setState(new LenDuong(gp, new ZombieState(gp))); // Chuyển sang State LenDuong thay vì nextState trực tiếp để có thêm hiệu ứng bảng thông báo
         }
     }
 
