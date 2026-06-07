@@ -175,7 +175,7 @@ public class CongQuanSu extends GameState {
             isNearDoor = true;
             if (gp.keyH.fPressed) {
                     System.out.println("Qua màn!");
-                    // CHUYỂN SANG MAP TIẾP THEO Ở ĐÂY. Thay Level2State bằng state mày muốn.
+                    // CHUYỂN SANG MAP TIẾP THEO Ở ĐÂY. Thay bằng state mày muốn.
                     gp.setState(new LoadingState(gp, new BanSungQuanSu(gp)));
                 gp.keyH.fPressed = false; // Reset phím F
             }
