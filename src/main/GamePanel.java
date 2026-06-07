@@ -3,7 +3,6 @@ package main;
 import collision.CollisionChecker;
 import entity.Player;
 import entity.Enemy;
-import entity.Checkpoint;
 import state.*;
 
 import javax.swing.*;
@@ -36,7 +35,6 @@ public class GamePanel extends JPanel implements Runnable, MouseListener, java.a
     public Player player = new Player(this, keyH, mouseH);
     CollisionChecker cChecker = new CollisionChecker(this);
 
-    Checkpoint checkpoint = null;
 
     // Game over flag
     public boolean gameOver = false;
@@ -279,10 +277,6 @@ public class GamePanel extends JPanel implements Runnable, MouseListener, java.a
         return new int[] { cameraX, cameraY };
     }
 
-    // Sinh checkpoint tại vị trí giữa map
-    public void spawnCheckpoint() {
-        checkpoint = new Checkpoint(this, worldWidth / 2 - 40, worldHeight / 2 - 40);
-    }
 
     // Set a new game state
     public void setState(GameState newState) {
