@@ -49,6 +49,9 @@ public class LenDuong extends GameState {
         dialogueIndex = 0;
         charIndex = 0;
         textFrameCounter = 0;
+
+        // Bật âm thanh hành quân "đi trên đường" trong lúc GIF chạy
+        gp.sound.playMusic("am_thanh_di_tren_duong");
     }
 
     @Override
@@ -58,6 +61,7 @@ public class LenDuong extends GameState {
             frameCounter++;
             if (frameCounter >= LOADING_DURATION) {
                 showDialogue = true; // Chạy xong GIF thì kích hoạt bảng thông báo
+                gp.sound.stopMusic(); // Hết GIF thì tắt âm thanh hành quân
             }
         }
         // GIAI ĐOẠN 2: Hiệu ứng gõ chữ của bảng thông báo
@@ -139,6 +143,7 @@ public class LenDuong extends GameState {
     @Override
     public void exit() {
         loadingGif = null; // Dọn rác bớt
+        gp.sound.stopMusic(); // Đảm bảo tắt âm thanh khi rời màn
     }
 
     @Override
