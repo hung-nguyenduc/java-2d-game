@@ -11,7 +11,7 @@ public class LoadingState extends GameState {
     private Image loadingGif;
     private int frameCounter = 0;
     // Chỉnh thời gian loading ở đây (Ví dụ: 60 FPS * 3 giây = 180 frames)
-    private final int LOADING_DURATION = 180;
+    private final int LOADING_DURATION = 150;
     private GameState nextState;
 
     // Nhận vào GamePanel và cái State mà mày muốn chuyển tới sau khi load xong
@@ -25,7 +25,7 @@ public class LoadingState extends GameState {
         try {
             // LƯU Ý QUAN TRỌNG:
             // Phải dùng ImageIcon thay vì ImageIO.read() thì file GIF nó mới giữ được hoạt ảnh
-            loadingGif = new ImageIcon(getClass().getResource("/video/0602.gif")).getImage();
+            loadingGif = new ImageIcon(getClass().getResource("/video/0607.gif")).getImage();
         } catch (Exception e) {
             System.err.println("Không tìm thấy file GIF loading!");
             e.printStackTrace();
