@@ -24,8 +24,8 @@ public class TachMonState extends GameState {
             e.printStackTrace();
         }
 
-        // Có thể bật bài nhạc buồn buồn lúc trượt môn ở đây
-        // gp.sound.playMusic("sad_ending_theme");
+        // Bật bài nhạc buồn lúc trượt môn
+        gp.sound.playMusic("puon");
     }
 
     @Override
