@@ -16,7 +16,7 @@ import javax.imageio.ImageIO;
 import java.util.List;
 import java.util.ArrayList;
 
-public class DanhGiacMy extends GameState {
+public class ZombieState extends GameState {
     private boolean debugMode = false;
     private static final String MAP_IMAGE_PATH = "/maps/destroyed-c1.png";
     private static final String OBSTACLE_TXT_PATH = "/maps/destroyed-c1.txt";
@@ -35,7 +35,7 @@ public class DanhGiacMy extends GameState {
     private DialogueLine[] introScript;
     private DialogueLine[] afterQuestScript;
 
-    public DanhGiacMy(GamePanel gp) {
+    public ZombieState(GamePanel gp) {
         super(gp);
         this.obstacles = new ArrayList<>();
         this.weapon = new Weapon(gp, gp.mouseH, gp.player);

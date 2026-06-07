@@ -69,7 +69,7 @@ public class NemLuuDanQuanSu extends GameState {
                     gp.setState(new NemLuuDanQuanSu(gp));
                 }
                 else if (isQuestCompleted) {
-                    gp.setState(new LoadingState2(gp, new DanhGiacMy(gp)));
+                    gp.setState(new LoadingState2(gp, new ZombieState(gp)));
                 }
             }
         };
@@ -148,7 +148,7 @@ public class NemLuuDanQuanSu extends GameState {
         // Phím P để nhảy cấp nhanh
         if (gp.keyH.pPressed) {
             gp.keyH.pPressed = false;
-            gp.setState(new LoadingState2(gp, new DanhGiacMy(gp)));
+            gp.setState(new LoadingState2(gp, new ZombieState(gp)));
             return;
         }
 
