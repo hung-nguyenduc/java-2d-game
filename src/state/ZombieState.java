@@ -239,7 +239,7 @@ public class ZombieState extends GameState {
         }
 
         // 6. Vẽ HUD
-        String hudText = "Tiêu diệt kẻ địch: " + gp.killCount + " / 8";
+        String hudText = "Tiêu diệt kẻ địch: " + gp.killCount + " / 3";
         g2.setColor(Color.RED);
         g2.setFont(HUD_FONT);
         FontMetrics fm = g2.getFontMetrics();
