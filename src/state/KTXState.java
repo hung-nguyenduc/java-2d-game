@@ -86,6 +86,9 @@ public class KTXState extends GameState {
         gp.player.bullets.clear();
         gp.enemies.clear();
 
+        // Bật nhạc nền cho màn KTX
+        gp.sound.playMusic("nhac_nen_1");
+
         //gp.player.spawnAtCenter();
 
         gp.player.worldX = 300;
