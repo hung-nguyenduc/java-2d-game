@@ -51,6 +51,7 @@ public class CongQuanSu extends GameState {
 
     @Override
     public void enter() {
+        gp.sound.playMusic("am_thanh_chap2"); // Nhạc nền màn Cổng Quân Sự
         try {
             BufferedImage src = ImageIO.read(getClass().getResourceAsStream(MAP_IMAGE_PATH));
             gp.worldWidth = (int) (src.getWidth() * MAP_SCALE);
