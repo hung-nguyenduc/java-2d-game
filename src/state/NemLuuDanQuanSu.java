@@ -213,6 +213,8 @@ public class NemLuuDanQuanSu extends GameState {
             if (g.bounceCount == 1 && !g.isFirstTouchHandled) {
                 g.isFirstTouchHandled = true; // Đảm bảo chỉ check va chạm duy nhất một lần tại frame này
 
+                gp.sound.playSE("o_cai_tam_chat"); // Tiếng nổ lựu đạn khi chạm đất
+
                 Rectangle grenadeRect = new Rectangle((int)g.worldX, (int)g.worldY, g.size, g.size);
 
                 // ĐIỀU KIỆN ĐÚNG LUẬT: Lần đầu chạm đất phải nằm trong Target Zone
