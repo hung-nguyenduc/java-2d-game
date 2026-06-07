@@ -161,6 +161,7 @@ public class Ending extends GameState {
     @Override
     public void exit() {
         endingGif = null; // Dọn rác khi xong Ending
+        gp.sound.stopMusic(); // Tắt nhạc khi rời màn Ending
     }
 
     @Override
@@ -183,6 +184,7 @@ public class Ending extends GameState {
                 // Nếu hết thoại -> Chuyển sang Phase 1 (Chạy GIF)
                 if (dialogueIndex >= dialogueLines.length) {
                     currentPhase = 1;
+                    gp.sound.playMusic("am_thanh_end_game"); // Nhạc cho đoạn GIF tưởng niệm
                 }
             }
         }
