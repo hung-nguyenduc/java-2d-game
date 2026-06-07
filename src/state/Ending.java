@@ -37,8 +37,8 @@ public class Ending extends GameState {
                 "Mùa hè đỏ lửa năm 1971 - 1972, giữa lúc cuộc kháng chiến\nchống Mỹ cứu nước bước vào giai đoạn khốc liệt nhất, " +
                         "\nnghe theo tiếng gọi thiêng liêng của Tổ quốc, gần 3.000\ncán bộ và sinh viên Đại học Bách Khoa Hà Nội đã tạm gác lại\nhoài bão kỹ sư, " +
                         "xếp lại bút nghiên để lên đường ra mặt trận.",
-                "Trong những trận chiến sinh tử ấy, hơn 200 người con ưu tú\ncủa Bách Khoa đã mãi mãi gửi lại tuổi đôi mươi nơi chiến trường, " +
-                        "\nxương máu các anh đã hòa vào lòng đất mẹ cho màu xanh\nhòa bình hôm nay.",
+                "Trong những trận chiến sinh tử ấy, hơn 200 người con ưu tú\ncủa Bách Khoa đã mãi mãi gửi lại tuổi đôi mươi nơi chiến\ntrường, " +
+                        "xương máu các anh đã hòa vào lòng đất mẹ cho màu\nxanh hòa bình hôm nay.",
                 "Những trang sách giảng đường có thể dở dang, nhưng thiên\nanh hùng ca về một thế hệ 'Xếp bút nghiên chiến đấu' sẽ còn\nvang vọng mãi. " +
                         "Xin nghiêng mình tri ân các anh, những người\nđã ngã xuống để cổng trường Parabol luôn rộng mở đón các\nthế hệ mai sau..."
 
