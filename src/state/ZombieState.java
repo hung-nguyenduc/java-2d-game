@@ -1,7 +1,7 @@
 package state;
 
-import Dialogue.DialogueLine;
-import Dialogue.DialogueManager;
+import dialogue.DialogueLine;
+import dialogue.DialogueManager;
 import entity.Enemy;
 import entity.Weapon;
 import main.*;

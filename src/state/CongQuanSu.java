@@ -1,8 +1,7 @@
 package state;
 
-import Dialogue.DialogueLine;
-import Dialogue.DialogueManager;
-import entity.Enemy;
+import dialogue.DialogueLine;
+import dialogue.DialogueManager;
 import main.GamePanel;
 import collision.Obstacle;
 import collision.ObstacleManager;

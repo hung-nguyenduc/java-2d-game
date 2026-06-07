@@ -1,4 +1,4 @@
-package Dialogue;
+package dialogue;
 
 import java.awt.image.BufferedImage;
 
