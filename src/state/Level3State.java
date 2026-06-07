@@ -88,6 +88,7 @@ public class Level3State extends GameState {
             case APPROACHING_DOOR:
                 if (movePlayerToward(DOOR_FRONT_X, DOOR_FRONT_Y)) {
                     door.open();
+                    gp.sound.playSE("open-door-1-14550"); // Tiếng mở cửa
                     phase = Phase.DOOR_OPENING;
                 }
                 break;
