@@ -56,6 +56,9 @@ public class GamePanel extends JPanel implements Runnable, MouseListener, java.a
     // Game state management
     private GameState currentState;
 
+    // Quản lý âm thanh dùng chung cho toàn game
+    public Sound sound = new Sound();
+
     public GamePanel() {
         this.setPreferredSize(new Dimension(screenWidth, screenHeight));
         this.setBackground(Color.BLACK);
@@ -70,6 +73,9 @@ public class GamePanel extends JPanel implements Runnable, MouseListener, java.a
         // Initialize state management - start with MenuState
         currentState = new MenuState(this);
         currentState.enter();
+
+        // Bật nhạc nền menu ngay khi mở game
+        sound.playMusic("nhac_nen_mainmenu");
 
         // Thêm listener cho chuột qua GanmePanel để có thể xử lý tọa độ khi scale
         this.addMouseListener(this);

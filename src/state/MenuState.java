@@ -147,10 +147,13 @@ public class MenuState extends GameState {
     public void handleMouseClick(MouseEvent e) {
         Point p = e.getPoint();
         if (playButton.contains(p)) {
+            gp.sound.playSE("click");
             gp.setState(new KTXState(gp));
         } else if (instructionsButton.contains(p)) {
+            gp.sound.playSE("click");
             gp.setState(new InstructionsState(gp));
         } else if (infoButton.contains(p)) {
+            gp.sound.playSE("click");
             gp.setState(new InfoState(gp));
         }
     }
