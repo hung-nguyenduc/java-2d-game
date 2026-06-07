@@ -1,0 +1,4 @@
+# File toa do vat can cho map b7 (man Ban sung & Nem luu dan Quan su).
+# Dinh dang moi dong: x y width height (toa do goc, se duoc nhan voi MAP_SCALE).
+# Hai man nay nhan vat dung yen nen hien chua can vat can.
+# Them toa do vat can o duoi neu can:

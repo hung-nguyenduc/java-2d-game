@@ -12,9 +12,8 @@ public class InstructionsState extends GameState {
     private boolean isHovered = false;
     private BufferedImage bgImage;
 
-    // TODO: THAY ĐƯỜNG DẪN ẢNH BACKGROUND CỦA MÀY VÀO ĐÂY
-    // Ví dụ: "/res/backgrounds/instruction_bg.png" (Nếu dùng thư mục resources)
-    private final String BACKGROUND_IMAGE_PATH = "/res/maps/classroom.png";
+    // Đường dẫn ảnh nền màn Hướng dẫn (tính từ gốc classpath = thư mục res, KHÔNG kèm tiền tố /res/)
+    private final String BACKGROUND_IMAGE_PATH = "/maps/classroom.png";
 
     public InstructionsState(GamePanel gp) {
         super(gp);
