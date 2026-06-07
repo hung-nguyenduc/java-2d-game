@@ -2,11 +2,8 @@ package state;
 
 import Dialogue.DialogueLine;
 import Dialogue.DialogueManager;
-import collision.CollisionChecker;
 import entity.Enemy;
 import entity.Weapon;
-import entity.Bullet;
-import main.MouseHandler;
 import main.*;
 import collision.Obstacle;
 import collision.ObstacleManager;
@@ -19,7 +16,7 @@ import javax.imageio.ImageIO;
 import java.util.List;
 import java.util.ArrayList;
 
-public class ZombieState extends GameState {
+public class DanhGiacMy extends GameState {
     private boolean debugMode = false;
     private static final String MAP_IMAGE_PATH = "/maps/destroyed-c1.png";
     private static final String OBSTACLE_TXT_PATH = "/maps/destroyed-c1.txt";
@@ -38,7 +35,7 @@ public class ZombieState extends GameState {
     private DialogueLine[] introScript;
     private DialogueLine[] afterQuestScript;
 
-    public ZombieState(GamePanel gp) {
+    public DanhGiacMy(GamePanel gp) {
         super(gp);
         this.obstacles = new ArrayList<>();
         this.weapon = new Weapon(gp, gp.mouseH, gp.player);

@@ -71,7 +71,7 @@ public class GameOverState extends GameState {
             // Reset player rồi quay về màn 1
             gp.player.worldX = 1000;
             gp.player.worldY = 1000;
-            gp.setState(new ZombieState(gp));
+            gp.setState(new DanhGiacMy(gp));
         } else if (menuButton.contains(p)) {
             gp.player.worldX = 1000;
             gp.player.worldY = 1000;
