@@ -42,7 +42,7 @@ public class Enemy extends Entity {
         this.player = player;
         worldX = startX;
         worldY = startY;
-        speed = 2.0; // Tốc độ di chuyển
+        speed = 1.0; // Tốc độ di chuyển
         aimAngle = 0;
         health = maxHealth; // Đặt máu ban đầu
         enemyDirection = "down"; // Hướng mặc định ban đầu
