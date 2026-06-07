@@ -57,6 +57,7 @@ public class SkillGrenade extends Entity {
     
     private void explode() {
         exploded = true;
+        gp.sound.playSE("o_cai_tam_chat"); // Tiếng nổ lựu đạn
         // Gây sát thương diện rộng
         for (Enemy e : gp.enemies) {
             double dx = e.worldX - targetX;
