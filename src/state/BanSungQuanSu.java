@@ -133,7 +133,7 @@ public class BanSungQuanSu extends GameState {
         };
 
         failScript = new DialogueLine[] {
-                new DialogueLine("Thầy giáo: Bắn trượt rồi Vũ ơi! Hết đạn mà chưa đủ điểm.", thayGiao),
+                new DialogueLine("Thầy giáo: Bắn trượt rồi Vũ ơi! Thế này mà ra trận thì chết à", thayGiao),
                 new DialogueLine("Thầy giáo: Chuẩn bị tiền học lại đi em", thayGiao)
         };
 
