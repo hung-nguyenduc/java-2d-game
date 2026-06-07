@@ -8,11 +8,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ObstacleManager {
-
     /**
      * Hàm tiện ích static để đọc file tọa độ và tự động scale kích thước vật cản
+     *
      * @param filePath Đường dẫn đến file chứa tọa độ (.txt)
-     * @param scale Tỉ lệ co giãn map hiện tại
+     * @param scale    Tỉ lệ co giãn map hiện tại
      * @return Danh sách các Obstacle đã được scale chuẩn kích thước game
      */
     public static List<Obstacle> loadObstacles(String filePath, double scale) {
@@ -36,7 +36,7 @@ public class ObstacleManager {
                     continue;
                 }
 
-                // Tách các con số bằng dấu cách dựa theo file txt của bạn
+                // Tách các con số bằng dấu cách
                 String[] data = line.split(" ");
                 if (data.length == 4) {
                     int x = Integer.parseInt(data[0].trim());
@@ -44,7 +44,7 @@ public class ObstacleManager {
                     int width = Integer.parseInt(data[2].trim());
                     int height = Integer.parseInt(data[3].trim());
 
-                    // Tự động tính toán scale theo map con
+                    // Tính toán scale theo map
                     int finalX = (int) (x * scale);
                     int finalY = (int) (y * scale);
                     int finalWidth = (int) (width * scale);
