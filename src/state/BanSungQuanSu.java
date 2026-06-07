@@ -74,6 +74,7 @@ public class BanSungQuanSu extends GameState {
 
     @Override
     public void enter() {
+        gp.sound.playMusic("nhac_nen03"); // Nhạc nền màn Bắn Súng
         try {
             BufferedImage src = ImageIO.read(getClass().getResourceAsStream(MAP_IMAGE_PATH));
             gp.worldWidth = (int) (src.getWidth() * MAP_SCALE);
