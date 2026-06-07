@@ -24,7 +24,7 @@ public class Ending extends GameState {
     // --- BIẾN CHO GIF ---
     private Image endingGif;
     private int gifFrameCounter = 0;
-    private final int GIF_DURATION = 300; // Thời gian chạy GIF (VD: 300 frames = 5 giây ở 60FPS)
+    private final int GIF_DURATION = 760; // Thời gian chạy GIF (VD: 300 frames = 5 giây ở 60FPS)
     private GameState nextState; // State chuyển đến sau khi xem xong Ending (VD: Menu)
 
     public Ending(GamePanel gp, GameState nextState) {
@@ -49,7 +49,7 @@ public class Ending extends GameState {
     public void enter() {
         try {
             // MÀY ĐỔI ĐƯỜNG DẪN FILE GIF Ở ĐÂY
-            endingGif = new ImageIcon(getClass().getResource("/video/ending.gif")).getImage();
+            endingGif = new ImageIcon(getClass().getResource("/video/dai-tuong-niem.gif")).getImage();
         } catch (Exception e) {
             System.err.println("Lỗi: Không tìm thấy file GIF Ending!");
             e.printStackTrace();
@@ -148,8 +148,8 @@ public class Ending extends GameState {
             // ==========================================
             if (endingGif != null) {
                 int gifWidth = 880;  // Thay đổi thông số này theo GIF gốc
-                int gifHeight = 620;
-                int x = -65;
+                int gifHeight = 600;
+                int x = -50;
                 int y = -30;
 
                 // Cập nhật frame GIF liên tục bằng 'gp'
