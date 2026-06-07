@@ -138,6 +138,8 @@ public class ClassroomState extends GameState {
     private void submitAnswer(int selectedOptionIndex) {
         if (selectedOptionIndex == correctAnswers[currentQuestionIndex]) {
             score++;
+        } else {
+            gp.sound.playSE("nhac_tra_loi_sai"); // Tiếng báo trả lời sai
         }
 
         currentQuestionIndex++;
