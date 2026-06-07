@@ -1,8 +1,7 @@
 package state;
 
-import Dialogue.DialogueLine;
-import Dialogue.DialogueManager;
-import entity.Enemy;
+import dialogue.DialogueLine;
+import dialogue.DialogueManager;
 import main.GamePanel;
 import collision.Obstacle;
 import collision.ObstacleManager;
@@ -89,7 +88,7 @@ public class BanSungQuanSu extends GameState {
             g2d.dispose();
             playerBanSung = ImageIO.read(getClass().getResourceAsStream("/player/ban-sung-updated.png"));
             mapImage = compatibleMap;
-            thayGiao =  ImageIO.read(getClass().getResourceAsStream("/NPC/thay-giao.png"));
+            thayGiao = ImageIO.read(getClass().getResourceAsStream("/NPC/thay-giao.png"));
         } catch (Exception e) {
             System.err.println("Lỗi nạp ảnh bản đồ tại: " + MAP_IMAGE_PATH);
             e.printStackTrace();
@@ -116,7 +115,7 @@ public class BanSungQuanSu extends GameState {
 
         // Thiết lập biên di chuyển dọc
         targetMinY = gp.worldHeight / 5 + 100;
-        targetMaxY = (gp.worldHeight * 4) / 5 -10;
+        targetMaxY = (gp.worldHeight * 4) / 5 - 10;
 
         spawnSingleBiaMucTieu();
 
@@ -126,27 +125,27 @@ public class BanSungQuanSu extends GameState {
             e.printStackTrace();
         }
 
-        introScript = new DialogueLine[] {
+        introScript = new DialogueLine[]{
                 new DialogueLine("Học phần bắn súng Kỹ thuật chiến đấu bộ binh và chiến thuật bắt đầu!", thayGiao),
                 new DialogueLine("Bắn hết cả " + TOTAL_BULLETS + " viên, trúng từ " + TOTAL_TARGETS + " viên trở lên để qua môn!", thayGiao),
         };
 
         // Lời thoại khi qua môn với đúng 8 viên trúng
-        afterQuestScript = new DialogueLine[] {
+        afterQuestScript = new DialogueLine[]{
                 new DialogueLine("Ngon! Trúng được 8 viên, vừa đủ điểm", vuFace),
         };
 
         // Lời thoại khi trúng 9 viên
-        afterQuest9Script = new DialogueLine[] {
+        afterQuest9Script = new DialogueLine[]{
                 new DialogueLine("Ngon luôn, bắn trúng 9 đạn!!!", vuFace),
         };
 
         // Lời thoại khi trúng trọn vẹn 10 viên
-        afterQuest10Script = new DialogueLine[] {
+        afterQuest10Script = new DialogueLine[]{
                 new DialogueLine("Bắn trúng 10 đạn, em thật xuất sắc!!!", vuFace),
         };
 
-        failScript = new DialogueLine[] {
+        failScript = new DialogueLine[]{
                 new DialogueLine("Thầy giáo: Bắn trượt rồi Vũ ơi! Thế này mà ra trận thì chết à", thayGiao),
                 new DialogueLine("Thầy giáo: Chuẩn bị tiền học lại đi em", thayGiao)
         };
@@ -231,7 +230,7 @@ public class BanSungQuanSu extends GameState {
             Iterator<Bullet> bulletIterator = ak47.bullets.iterator();
             while (bulletIterator.hasNext()) {
                 Bullet bullet = bulletIterator.next();
-                Rectangle bulletRect = new Rectangle((int)bullet.worldX, (int)bullet.worldY, bullet.bulletSize, bullet.bulletSize);
+                Rectangle bulletRect = new Rectangle((int) bullet.worldX, (int) bullet.worldY, bullet.bulletSize, bullet.bulletSize);
 
                 boolean bulletHit = false;
 
@@ -320,7 +319,7 @@ public class BanSungQuanSu extends GameState {
         // Tầng 3: Vẽ Nhân vật Vũ
         //gp.player.draw(g2, cameraX, cameraY);
 
-            g2.drawImage(playerBanSung, 100, 290, 100, 60, null);
+        g2.drawImage(playerBanSung, 100, 290, 100, 60, null);
 
 
         // Tầng 4: Vẽ Súng AK47 và các viên đạn đang bay
@@ -362,5 +361,6 @@ public class BanSungQuanSu extends GameState {
     }
 
     @Override
-    public void handleMouseClick(MouseEvent e) {}
+    public void handleMouseClick(MouseEvent e) {
+    }
 }
