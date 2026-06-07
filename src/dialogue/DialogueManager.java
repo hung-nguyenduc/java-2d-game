@@ -7,9 +7,9 @@ public class DialogueManager {
     private int dialogueIndex = 0;
     private boolean isActive = false;
 
-    // --- CÁC BIẾN MỚI CHO HIỆU ỨNG GÕ CHỮ ---
+    // Hiệu ứng gõ chữ
     private int charIndex = 0;   // Vị trí chữ hiện tại đang hiển thị
-    private int textSpeed = 1;   // Tốc độ gõ (số frame chờ để hiện 1 chữ, nhỏ thì nhanh)
+    private int textSpeed = 1;   // Tốc độ gõ (số frame chờ để hiện 1 chữ)
     private int frameCounter = 0; // Bộ đếm đếm số frame trôi qua
 
     public void startDialogue(DialogueLine[] newLines) {
@@ -17,12 +17,11 @@ public class DialogueManager {
         this.dialogueIndex = 0;
         this.isActive = true;
 
-        // Nhớ reset lại bộ đếm khi bắt đầu đoạn thoại mới
+        // Reset bộ đếm khi bắt đầu đoạn thoại mới
         this.charIndex = 0;
         this.frameCounter = 0;
     }
 
-    // TẠO THÊM HÀM UPDATE: Mày cần gọi hàm này liên tục trong Game Loop
     public void update() {
         if (!isActive || lines == null || dialogueIndex >= lines.length) return;
 
@@ -43,8 +42,7 @@ public class DialogueManager {
 
         DialogueLine currentLine = lines[dialogueIndex];
 
-        // TRICK HAY CHO GAME:
-        // Nếu chữ đang chạy mà bấm Space -> Cho hiện toàn bộ câu luôn (skip hiệu ứng)
+        // Nếu chữ đang chạy mà bấm Space -> Cho hiện toàn bộ câu
         if (charIndex < currentLine.text.length()) {
             charIndex = currentLine.text.length();
         } else {
@@ -64,21 +62,23 @@ public class DialogueManager {
         // Xử lý sau khi đọc xong thoại
     }
 
-    public boolean isActive() { return isActive; }
+    public boolean isActive() {
+        return isActive;
+    }
 
     public void draw(Graphics2D g2, int screenWidth, int screenHeight) {
         if (!isActive || lines == null || dialogueIndex >= lines.length) return;
 
-        // 1. Định vị khung thoại
+        // Định vị khung thoại
         int boxX = screenWidth / 10;
         int boxY = (int) (screenHeight * 0.7);
         int boxWidth = (int) (screenWidth * 0.8);
         int boxHeight = (int) (screenHeight * 0.22);
 
-        // 2. Lấy dữ liệu
+        // Lấy dữ liệu
         DialogueLine currentLine = lines[dialogueIndex];
 
-        // 3. VẼ AVATAR
+        // Avatar
         if (currentLine.avatar != null) {
             int avatarSizeX = 110;
             int avatarSizeY = 90;
@@ -88,14 +88,14 @@ public class DialogueManager {
             g2.drawImage(currentLine.avatar, avatarX, avatarY, avatarSizeX, avatarSizeY, null);
         }
 
-        // 4. VẼ KHUNG THOẠI CHÍNH
+        // Vẽ khung thoại chính
         g2.setColor(new Color(0, 0, 0, 210));
         g2.fillRoundRect(boxX, boxY, boxWidth, boxHeight, 25, 25);
         g2.setColor(Color.WHITE);
         g2.setStroke(new BasicStroke(3));
         g2.drawRoundRect(boxX, boxY, boxWidth, boxHeight, 25, 25);
 
-        // 5. VẼ CHỮ LỜI THOẠI (Hiệu ứng từng chữ)
+        // Vẽ chữ lời thoại (hiệu ứng từng chữ)
         g2.setFont(new Font("Arial", Font.PLAIN, 18));
         g2.setColor(Color.WHITE);
 
@@ -113,7 +113,7 @@ public class DialogueManager {
             textY += 30;
         }
 
-        // Gợi ý bấm nút: Mày có thể set cho nó chỉ hiện khi câu thoại đã chạy xong chữ
+        // Gợi ý bấm nút
         if (charIndex >= currentLine.text.length()) {
             g2.setFont(new Font("Arial", Font.ITALIC, 12));
             g2.setColor(Color.YELLOW);

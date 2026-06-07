@@ -4,13 +4,11 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
 
-// Lớp đại diện cho đạn trong game - Đã hợp thể và tối ưu cấu trúc mới
 public class Bullet {
     public double worldX, worldY; // Vị trí trong thế giới
     public double vx, vy; // Vận tốc di chuyển (tính sẵn theo góc)
-    public double bulletSpeed = 12.0; // Tăng tốc độ lên tí cho đạn shotgun bay mượt hơn
+    public double bulletSpeed = 12.0; // tốc độ
     public int bulletSize = 30; // Kích thước đạn
     public int maxRange = 1000; // Phạm vi tối đa (px) viên đạn có thể bay
     public double travelDistance = 0; // Khoảng cách đã đi để check out of range
@@ -21,14 +19,11 @@ public class Bullet {
     private static BufferedImage cachedBulletImg = null;
     private static boolean isImageLoaded = false;
 
-    // Constructor: Khởi tạo đạn với vị trí tâm súng và góc bắn từ Weapon truyền
-    // sang
     public Bullet(double startX, double startY, double angle) {
         this.worldX = startX;
         this.worldY = startY;
         this.angle = angle;
 
-        // Tính toán sẵn vận tốc vector một lần duy nhất tại đây để tối ưu CPU
         this.vx = Math.cos(Math.toRadians(angle)) * bulletSpeed;
         this.vy = Math.sin(Math.toRadians(angle)) * bulletSpeed;
 
@@ -71,7 +66,7 @@ public class Bullet {
                 if (Math.abs(r - color.getRed()) <= tolerance &&
                         Math.abs(g_ - color.getGreen()) <= tolerance &&
                         Math.abs(b - color.getBlue()) <= tolerance) {
-                    dimg.setRGB(j, i, 0x00FFFFFF); // Giữ nguyên RGB nhưng set Alpha = 0
+                    dimg.setRGB(j, i, 0x00FFFFFF);
                 }
             }
         }
@@ -87,8 +82,7 @@ public class Bullet {
         travelDistance += bulletSpeed;
     }
 
-    // Kiểm tra xem đạn có vượt quá phạm vi cho phép không để Weapon tự xóa khỏi
-    // danh sách
+    // Kiểm tra xem đạn có vượt quá phạm vi cho phép không để Weapon tự xóa khỏi danh sách
     public boolean isOutOfRange() {
         return travelDistance > maxRange;
     }
@@ -108,13 +102,13 @@ public class Bullet {
         // Lưu trạng thái gốc của nét vẽ
         AffineTransform original = g2.getTransform();
 
-        // 1. Dịch chuyển trục tọa độ đến đúng tâm viên đạn trên màn hình
+        // Dịch chuyển trục tọa độ đến đúng tâm viên đạn trên màn hình
         g2.translate(screenX + bulletSize / 2.0, screenY + bulletSize / 2.0);
 
-        // 2. Xoay hệ tọa độ theo góc bay của viên đạn
+        // Xoay hệ tọa độ theo góc bay của viên đạn
         g2.rotate(Math.toRadians(angle));
 
-        // 3. Vẽ ảnh đạn (đặt gốc tọa độ về góc âm để căn giữa chuẩn chỉ)
+        // Vẽ ảnh đạn (đặt gốc tọa độ về góc âm để căn giữa chuẩn chỉ)
         g2.drawImage(bulletImg, -bulletSize / 2, -bulletSize / 2, bulletSize, bulletSize, null);
 
         // Khôi phục lại trạng thái hệ tọa độ gốc cho các thực thể khác vẽ tiếp
