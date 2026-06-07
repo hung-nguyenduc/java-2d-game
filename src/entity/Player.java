@@ -20,7 +20,7 @@ public class Player extends Entity {
     
     private int grenadeCooldown = 0;
     private int kickCooldown = 0;
-    public List<SkillGrenade> skillGrenades = new ArrayList<>();
+    public List<SkillGrenade> skillGrenades = new java.util.concurrent.CopyOnWriteArrayList<>();
 
     private static final double DIAGONAL_FACTOR = 1.0 / Math.sqrt(2);
     private static final Font HEALTH_FONT = new Font("Arial", Font.BOLD, 11);

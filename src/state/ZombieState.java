@@ -29,7 +29,7 @@ public class ZombieState extends GameState {
     double scale;
     BufferedImage vuFace;
 
-    // Quản lý trạng thái nhiệm vụ và hội thoại
+    // Quản lý trạng thái nhiệm vụ và hội thoại giống các map trước
     private boolean isQuestCompleted = false;
     private boolean isPhase2DialoguePlayed = false;
     private DialogueLine[] introScript;
@@ -45,8 +45,8 @@ public class ZombieState extends GameState {
             @Override
             public void onDialogueComplete() {
                 if (isQuestCompleted) {
-                    // SỬA LỖI: Chỉ chuyển sang Ending state khi người chơi đọc xong hội thoại
-                    gp.setState(new Ending(gp, new MenuState(gp)));
+                    // Sau khi bắn hết quái và đọc xong hội thoại ăn mừng -> chuyển sang Level 2 qua LoadingState
+                    gp.setState(new LevelCompleteState(gp, 1, new Level2State(gp)));
                 }
             }
         };
@@ -54,6 +54,7 @@ public class ZombieState extends GameState {
 
     @Override
     public void enter() {
+        // Pre-scale map một lần duy nhất
         try {
             BufferedImage src = ImageIO.read(getClass().getResourceAsStream(MAP_IMAGE_PATH));
 
@@ -89,11 +90,11 @@ public class ZombieState extends GameState {
         gp.player.health = gp.player.maxHealth;
 
         this.weapon = new Weapon(gp, gp.mouseH, gp.player);
-        this.weapon.automaticFire = true;
+        this.weapon.automaticFire = true; // Bật chế độ sấy
         gp.player.equipWeapon(this.weapon);
         weapon.clearBullets();
 
-        // Tải vật cản
+        // Tải vật cản từ hằng số path đã định nghĩa
         this.obstacles = ObstacleManager.loadObstacles(OBSTACLE_TXT_PATH, this.scale);
 
         // TÍNH NĂNG MỚI: Chỉ sinh con quái đầu tiên khi bắt đầu màn
@@ -106,6 +107,7 @@ public class ZombieState extends GameState {
             e.printStackTrace();
         }
 
+        // Kịch bản hội thoại mở đầu và kết thúc
         introScript = new DialogueLine[] {
                 new DialogueLine("Giặc đến Bách Khoa rồi! Mình nhất định phải bảo vệ ngôi trường này.", vuFace),
                 new DialogueLine("Quyết tử cho Tổ quốc quyết sinh!", vuFace)
@@ -115,6 +117,7 @@ public class ZombieState extends GameState {
                 new DialogueLine("Phù... Tạm thời khu vực này đã an toàn. \nPhải di chuyển tiếp sang khu nhà bên cạnh thôi!", vuFace)
         };
 
+        // Kích hoạt chuỗi hội thoại đầu game
         dialogueBox.startDialogue(introScript);
     }
 
@@ -141,7 +144,7 @@ public class ZombieState extends GameState {
             return;
         }
 
-        // Chặn tương tác khi hội thoại mở
+        // Nếu hộp thoại đang mở, chặn mọi tương tác di chuyển/bắn súng, chỉ cho bấm Space tua chữ
         if (dialogueBox.isActive()) {
             dialogueBox.update();
             if (gp.keyH.spacePressed) {
@@ -151,8 +154,10 @@ public class ZombieState extends GameState {
             return;
         }
 
+        // Nếu đã thắng hoàn toàn và đọc xong đối thoại thì dừng update logic màn chơi
         if (isQuestCompleted) return;
 
+        // Cập nhật người chơi và lũ Zombie
         gp.player.update();
         for (int i = 0; i < gp.enemies.size(); i++) {
             gp.enemies.get(i).update();
@@ -160,6 +165,7 @@ public class ZombieState extends GameState {
 
         gp.checkCollisions();
 
+        // Kiểm tra điều kiện Thua cuộc (Vũ hết máu)
         if (gp.player.health <= 0) {
             gp.setState(new GameOverState(gp));
             return;
@@ -189,36 +195,42 @@ public class ZombieState extends GameState {
         cameraX = clamped[0];
         cameraY = clamped[1];
 
-        // 1. Vẽ Map
+        // 1. Vẽ Map nền
         if (mapImage != null) {
             g2.drawImage(mapImage, 0, 0, gp.screenWidth, gp.screenHeight, cameraX, cameraY, cameraX + gp.screenWidth, cameraY + gp.screenHeight, null);
         }
 
-        // 2. Vẽ Vật cản & Debug Mode
+        // 2. VẼ CÁC VẬT CẢN & XỬ LÝ ĐIỀU KIỆN DEBUG MODE
         for (Obstacle obs : obstacles) {
+            // Đầu tiên vẫn vẽ hình ảnh vật cản bình thường để chơi game
             obs.draw(g2, cameraX, cameraY);
+
+            // Cải tiến: Nếu bật debugMode lên đầu class (= true), vẽ thêm khung viền màu đỏ đè lên
             if (debugMode) {
                 g2.setColor(Color.RED);
-                g2.setStroke(new BasicStroke(2));
+                g2.setStroke(new BasicStroke(2)); // Độ dày viền khung debug
+                // Tính tọa độ hiển thị trên màn hình dựa vào Camera
                 int screenObsX = obs.worldX - cameraX;
                 int screenObsY = obs.worldY - cameraY;
                 g2.drawRect(screenObsX, screenObsY, obs.width, obs.height);
             }
         }
 
-        // 3. Vẽ Lũ quái vật
+        // 3. Vẽ Lũ quái vật Zombie
         for (Enemy enemy : gp.enemies) {
             enemy.draw(g2, cameraX, cameraY);
+
+            // Vẽ thêm khung đỏ cho cả quái vật luôn nếu muốn soi vị trí va chạm
             if (debugMode) {
                 g2.setColor(Color.RED);
                 g2.drawRect((int)enemy.worldX - cameraX, (int)enemy.worldY - cameraY, 48, 48);
             }
         }
 
-        // 4. Vẽ Vũ
+        // 4. Vẽ Nhân vật Vũ
         gp.player.draw(g2, cameraX, cameraY);
 
-        // 5. Vẽ Súng
+        // 5. Vẽ Súng và Đạn
         int screenX = (int) (gp.player.worldX - cameraX);
         int screenY = (int) (gp.player.worldY - cameraY);
         if (weapon != null) {
@@ -226,9 +238,25 @@ public class ZombieState extends GameState {
         }
 
         // 6. Vẽ HUD
+        String hudText = "Tiêu diệt kẻ địch: " + gp.killCount + " / 8";
         g2.setColor(Color.RED);
         g2.setFont(HUD_FONT);
-        g2.drawString("Tiêu diệt kẻ địch: " + gp.killCount + " / 8", 10, 30);
+        FontMetrics fm = g2.getFontMetrics();
+        int hudWidth = fm.stringWidth(hudText) + 20;
+        int hudHeight = fm.getHeight() + 10;
+
+        // Vẽ khung nền trong suốt
+        g2.setColor(new Color(0, 0, 0, 150));
+        g2.fillRoundRect(10, 10, hudWidth, hudHeight, 10, 10);
+
+        // Vẽ viền trắng
+        g2.setColor(Color.WHITE);
+        g2.setStroke(new BasicStroke(2));
+        g2.drawRoundRect(10, 10, hudWidth, hudHeight, 10, 10);
+
+        // Vẽ chữ
+        g2.setColor(Color.RED);
+        g2.drawString(hudText, 20, 10 + fm.getAscent() + 5);
 
         // 7. Vẽ Hộp thoại
         dialogueBox.draw(g2, gp.screenWidth, gp.screenHeight);
