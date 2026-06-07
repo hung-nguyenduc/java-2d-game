@@ -102,7 +102,7 @@ public class ZombieState extends GameState {
 
         // Nạp ảnh nhân vật Vũ
         try {
-            vuFace = ImageIO.read(getClass().getResourceAsStream("/player/down1.png"));
+            vuFace = ImageIO.read(getClass().getResourceAsStream("/player/vuQuyetTam.png"));
         } catch (Exception e) {
             e.printStackTrace();
         }
