@@ -20,7 +20,7 @@ public class InstructionsState extends GameState {
 
         // Load ảnh nền
         try {
-            bgImage = ImageIO.read(getClass().getResourceAsStream(BACKGROUND_IMAGE_PATH));
+            //bgImage = ImageIO.read(getClass().getResourceAsStream(BACKGROUND_IMAGE_PATH));
         } catch (Exception e) {
             System.out.println("Không tìm thấy ảnh nền Hướng dẫn, sử dụng nền Gradient mặc định.");
         }
