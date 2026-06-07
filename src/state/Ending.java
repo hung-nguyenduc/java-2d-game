@@ -18,7 +18,7 @@ public class Ending extends GameState {
     private String[] dialogueLines;
     private int dialogueIndex = 0;
     private int charIndex = 0;
-    private int textSpeed = 2; // Tốc độ gõ chữ (càng nhỏ càng nhanh)
+    private int textSpeed = 1; // Tốc độ gõ chữ (càng nhỏ càng nhanh)
     private int textFrameCounter = 0;
 
     // --- BIẾN CHO GIF ---

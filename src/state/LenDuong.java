@@ -29,7 +29,7 @@ public class LenDuong extends GameState {
 
         // TỰ ĐỊNH NGHĨA NỘI DUNG THÔNG BÁO Ở ĐÂY NHA MÀY
         dialogueLines = new String[] {
-                "Nghe theo tiếng gọi thiêng liêng của Tổ quốc, \nVũ và hàng ngàn sinh viên Bách Khoa đã gác lại giảng đường \nđể lên đường ra mặt trận.",
+                "Nghe theo tiếng gọi thiêng liêng của Tổ quốc, Vũ và hàng ngàn\nsinh viên Bách Khoa đã gác lại giảng đường để lên đường ra mặt trận.",
 
         };
     }

@@ -42,7 +42,7 @@ public class BanSungQuanSu extends GameState {
     private final int TOTAL_TARGETS = 8;
 
     // CÁC BIẾN ĐIỀU KHIỂN BIA DI ĐỘNG "LỪA"
-    private int targetSpeedY = 3;
+    private int targetSpeedY = 2;
     private int targetMinY;
     private int targetMaxY;
     private Random random = new Random();

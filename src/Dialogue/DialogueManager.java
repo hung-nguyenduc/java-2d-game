@@ -9,7 +9,7 @@ public class DialogueManager {
 
     // --- CÁC BIẾN MỚI CHO HIỆU ỨNG GÕ CHỮ ---
     private int charIndex = 0;   // Vị trí chữ hiện tại đang hiển thị
-    private int textSpeed = 2;   // Tốc độ gõ (số frame chờ để hiện 1 chữ, nhỏ thì nhanh)
+    private int textSpeed = 1;   // Tốc độ gõ (số frame chờ để hiện 1 chữ, nhỏ thì nhanh)
     private int frameCounter = 0; // Bộ đếm đếm số frame trôi qua
 
     public void startDialogue(DialogueLine[] newLines) {
