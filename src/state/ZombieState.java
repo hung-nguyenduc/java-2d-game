@@ -252,36 +252,36 @@ public class ZombieState extends GameState {
 
     private void spawnEnemies() {
         Enemy e1 = new Enemy(gp, gp.player, 300, 300);
-        e1.speed = 1.5; e1.canDodge = false; e1.damage = 1; e1.minDistance = 50;
+        e1.speed = 1.5; e1.canDodge = true; e1.damage = 5; e1.minDistance = 150; e1.maxHealth *= 5; e1.health = e1.maxHealth;
         gp.enemies.add(e1);
 
         Enemy e2 = new Enemy(gp, gp.player, 800, 500);
-        e2.speed = 1.5; e2.canDodge = false; e2.damage = 1; e2.minDistance = 50;
+        e2.speed = 1.5; e2.canDodge = true; e2.damage = 5; e2.minDistance = 150; e2.maxHealth *= 5; e2.health = e2.maxHealth;
         gp.enemies.add(e2);
 
         Enemy e3 = new Enemy(gp, gp.player, 1200, 700);
-        e3.speed = 1.5; e3.canDodge = false; e3.damage = 1; e3.minDistance = 50;
+        e3.speed = 1.5; e3.canDodge = true; e3.damage = 5; e3.minDistance = 150; e3.maxHealth *= 5; e3.health = e3.maxHealth;
         gp.enemies.add(e3);
 
         Enemy e4 = new Enemy(gp, gp.player, 500, 500); // Thêm 1 quái bỏ chạy
-        e4.speed = 2.5; e4.canDodge = false; e4.damage = 1; e4.minDistance = 50;
+        e4.speed = 2.5; e4.canDodge = true; e4.damage = 5; e4.minDistance = 150; e4.maxHealth *= 5; e4.health = e4.maxHealth;
         gp.enemies.add(e4);
         
         // Gấp đôi số lượng quái
         Enemy e5 = new Enemy(gp, gp.player, 400, 400);
-        e5.speed = 1.5; e5.canDodge = false; e5.damage = 1; e5.minDistance = 50;
+        e5.speed = 1.5; e5.canDodge = true; e5.damage = 5; e5.minDistance = 150; e5.maxHealth *= 5; e5.health = e5.maxHealth;
         gp.enemies.add(e5);
 
         Enemy e6 = new Enemy(gp, gp.player, 900, 600);
-        e6.speed = 1.5; e6.canDodge = false; e6.damage = 1; e6.minDistance = 50;
+        e6.speed = 1.5; e6.canDodge = true; e6.damage = 5; e6.minDistance = 150; e6.maxHealth *= 5; e6.health = e6.maxHealth;
         gp.enemies.add(e6);
 
         Enemy e7 = new Enemy(gp, gp.player, 1300, 800);
-        e7.speed = 1.5; e7.canDodge = false; e7.damage = 1; e7.minDistance = 50;
+        e7.speed = 1.5; e7.canDodge = true; e7.damage = 5; e7.minDistance = 150; e7.maxHealth *= 5; e7.health = e7.maxHealth;
         gp.enemies.add(e7);
 
         Enemy e8 = new Enemy(gp, gp.player, 600, 600);
-        e8.speed = 2.5; e8.canDodge = false; e8.damage = 1; e8.minDistance = 50;
+        e8.speed = 2.5; e8.canDodge = true; e8.damage = 5; e8.minDistance = 150; e8.maxHealth *= 5; e8.health = e8.maxHealth;
         gp.enemies.add(e8);
     }
 

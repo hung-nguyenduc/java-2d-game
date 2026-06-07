@@ -5,18 +5,27 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
 
-// Lớp đại diện cho enemy trong game (Đã rút gọn còn 1 loại)
+// Lớp đại diện cho enemy trong game - Lính Mỹ chiến tranh Việt Nam
+// Hỗ trợ 6 hướng di chuyển: up, down, left, right, down_left, up_right
 public class Enemy extends Entity {
     GamePanel gp;
     Player player;
 
-    // --- 8 BIẾN HÌNH ẢNH CHO 4 HƯỚNG ---
-    public BufferedImage up1, up2, down1, down2, left1, left2, right1, right2;
+    // --- 24 BIẾN HÌNH ẢNH CHO 6 HƯỚNG x 4 FRAME ---
+    // 4 hướng cơ bản
+    public BufferedImage up1, up2, up3, up4;
+    public BufferedImage down1, down2, down3, down4;
+    public BufferedImage left1, left2, left3, left4;
+    public BufferedImage right1, right2, right3, right4;
+    // 2 hướng chéo
+    public BufferedImage downLeft1, downLeft2, downLeft3, downLeft4;
+    public BufferedImage upRight1, upRight2, upRight3, upRight4;
+
     public BufferedImage currentImage;
 
     // --- BIẾN ANIMATION CHUYỂN FRAME ---
     public int spriteCounter = 0;
-    public int spriteNum = 1;
+    public int spriteNum = 1; // 1-4 frame animation
 
     private int shootCooldown = 0;
     private final int shootInterval = 60; // Bắn mỗi 60 frames
@@ -27,7 +36,7 @@ public class Enemy extends Entity {
 
     public String enemyDirection;
 
-    // Constructor: Khởi tạo Enemy với vị trí ban đầu (Đã bỏ tham số enemyType)
+    // Constructor: Khởi tạo Enemy với vị trí ban đầu
     public Enemy(GamePanel gp, Player player, int startX, int startY) {
         this.gp = gp;
         this.player = player;
@@ -41,25 +50,51 @@ public class Enemy extends Entity {
         getEnemyImage();
     }
 
-    // Nạp ảnh cho 1 loại quái duy nhất
+    // Nạp ảnh cho lính Mỹ - 6 hướng x 4 frame = 24 ảnh
     public void getEnemyImage() {
         try {
-            // MÀY ĐIỀN TÊN FILE GỐC CỦA MÀY VÀO ĐÂY (Ví dụ: "/enemy/quai_vat")
-            String base = "/enemy/ds";
+            String base = "/enemy/soldier/";
 
-            up1 = ImageIO.read(getClass().getResourceAsStream(base + "_up1.png"));
-            up2 = ImageIO.read(getClass().getResourceAsStream(base + "_up2.png"));
-            down1 = ImageIO.read(getClass().getResourceAsStream(base + "_down1.png"));
-            down2 = ImageIO.read(getClass().getResourceAsStream(base + "_down2.png"));
-            left1 = ImageIO.read(getClass().getResourceAsStream(base + "_left1.png"));
-            left2 = ImageIO.read(getClass().getResourceAsStream(base + "_left2.png"));
-            right1 = ImageIO.read(getClass().getResourceAsStream(base + "_right1.png"));
-            right2 = ImageIO.read(getClass().getResourceAsStream(base + "_right2.png"));
+            // Hướng xuống (TRƯỚC)
+            down1 = ImageIO.read(getClass().getResourceAsStream(base + "down_1.png"));
+            down2 = ImageIO.read(getClass().getResourceAsStream(base + "down_2.png"));
+            down3 = ImageIO.read(getClass().getResourceAsStream(base + "down_3.png"));
+            down4 = ImageIO.read(getClass().getResourceAsStream(base + "down_4.png"));
+
+            // Hướng lên (SAU)
+            up1 = ImageIO.read(getClass().getResourceAsStream(base + "up_1.png"));
+            up2 = ImageIO.read(getClass().getResourceAsStream(base + "up_2.png"));
+            up3 = ImageIO.read(getClass().getResourceAsStream(base + "up_3.png"));
+            up4 = ImageIO.read(getClass().getResourceAsStream(base + "up_4.png"));
+
+            // Hướng trái
+            left1 = ImageIO.read(getClass().getResourceAsStream(base + "left_1.png"));
+            left2 = ImageIO.read(getClass().getResourceAsStream(base + "left_2.png"));
+            left3 = ImageIO.read(getClass().getResourceAsStream(base + "left_3.png"));
+            left4 = ImageIO.read(getClass().getResourceAsStream(base + "left_4.png"));
+
+            // Hướng phải
+            right1 = ImageIO.read(getClass().getResourceAsStream(base + "right_1.png"));
+            right2 = ImageIO.read(getClass().getResourceAsStream(base + "right_2.png"));
+            right3 = ImageIO.read(getClass().getResourceAsStream(base + "right_3.png"));
+            right4 = ImageIO.read(getClass().getResourceAsStream(base + "right_4.png"));
+
+            // Hướng chéo xuống-trái (3/4 TRƯỚC)
+            downLeft1 = ImageIO.read(getClass().getResourceAsStream(base + "down_left_1.png"));
+            downLeft2 = ImageIO.read(getClass().getResourceAsStream(base + "down_left_2.png"));
+            downLeft3 = ImageIO.read(getClass().getResourceAsStream(base + "down_left_3.png"));
+            downLeft4 = ImageIO.read(getClass().getResourceAsStream(base + "down_left_4.png"));
+
+            // Hướng chéo lên-phải (3/4 SAU)
+            upRight1 = ImageIO.read(getClass().getResourceAsStream(base + "up_right_1.png"));
+            upRight2 = ImageIO.read(getClass().getResourceAsStream(base + "up_right_2.png"));
+            upRight3 = ImageIO.read(getClass().getResourceAsStream(base + "up_right_3.png"));
+            upRight4 = ImageIO.read(getClass().getResourceAsStream(base + "up_right_4.png"));
 
             // Đặt hình mặc định khi spawn
             currentImage = down1;
         } catch (Exception e) {
-            System.out.println("LỖI: Không thể nạp ảnh cho Enemy!");
+            System.out.println("LỖI: Không thể nạp ảnh cho Enemy Lính Mỹ!");
             e.printStackTrace();
         }
     }
@@ -137,47 +172,28 @@ public class Enemy extends Entity {
         vx += repX;
         vy += repY;
 
-        // --- XÁC ĐỊNH HƯỚNG QUAY MẶT THEO VẬN TỐC ---
-        if (Math.abs(vx) > Math.abs(vy)) {
-            if (vx > 0) {
-                enemyDirection = "right";
-            } else if (vx < 0) {
-                enemyDirection = "left";
+        // --- XÁC ĐỊNH HƯỚNG QUAY MẶT THEO VẬN TỐC (6 HƯỚNG) ---
+        updateDirection();
+
+        // --- XỬ LÝ ANIMATION HOẠT ẢNH DI CHUYỂN (4 FRAME) ---
+        boolean isMoving = (Math.abs(vx) > 0.1 || Math.abs(vy) > 0.1);
+        if (isMoving) {
+            spriteCounter++;
+            if (spriteCounter > 8) { // Đổi ảnh mỗi 8 frame để mượt hơn
+                spriteNum++;
+                if (spriteNum > 4) {
+                    spriteNum = 1;
+                }
+                spriteCounter = 0;
             }
         } else {
-            if (vy > 0) {
-                enemyDirection = "down";
-            } else if (vy < 0) {
-                enemyDirection = "up";
-            }
-        }
-
-        // --- XỬ LÝ ANIMATION HOẠT ẢNH DI CHUYỂN ---
-        spriteCounter++;
-        if (spriteCounter > 12) { // 12 frame đổi ảnh 1 lần
-            if (spriteNum == 1) {
-                spriteNum = 2;
-            } else if (spriteNum == 2) {
-                spriteNum = 1;
-            }
+            // Đứng yên thì đưa về frame 1 (dáng đứng)
+            spriteNum = 1;
             spriteCounter = 0;
         }
 
         // Gán ảnh dựa theo hướng và frame hiện tại
-        switch (enemyDirection) {
-            case "up":
-                currentImage = (spriteNum == 1) ? up1 : up2;
-                break;
-            case "down":
-                currentImage = (spriteNum == 1) ? down1 : down2;
-                break;
-            case "left":
-                currentImage = (spriteNum == 1) ? left1 : left2;
-                break;
-            case "right":
-                currentImage = (spriteNum == 1) ? right1 : right2;
-                break;
-        }
+        updateCurrentImage();
 
         // --- CẬP NHẬT TỌA ĐỘ VÀ GIỚI HẠN BẢN ĐỒ ---
         aimAngle = Math.toDegrees(Math.atan2(dy, dx));
@@ -201,6 +217,87 @@ public class Enemy extends Entity {
         if (shootCooldown >= shootInterval) {
             shoot();
             shootCooldown = 0;
+        }
+    }
+
+    // Xác định hướng 6 chiều dựa trên góc di chuyển
+    private void updateDirection() {
+        // Tính góc di chuyển (radian → độ)
+        double moveAngle = Math.toDegrees(Math.atan2(vy, vx));
+        // Chuẩn hóa về 0-360
+        if (moveAngle < 0) moveAngle += 360;
+
+        // Nếu vận tốc gần bằng 0 thì giữ nguyên hướng cũ
+        if (Math.abs(vx) < 0.1 && Math.abs(vy) < 0.1) return;
+
+        // Chia 360° thành 8 vùng, mỗi vùng 45°
+        // Nhưng chỉ có 6 hướng sprite, nên ta ánh xạ 8 vùng → 6 hướng
+        //
+        //   315-360/0-45   → right      (0°)
+        //   45-90          → down_right  → dùng down (vì không có sprite down_right)
+        //   90-135         → down        (90°)
+        //   135-180        → down_left   (135°)
+        //   180-225        → left        (180°)
+        //   225-270        → up_left     → dùng up (vì không có sprite up_left)
+        //   270-315        → up          (270°)
+        //   Riêng up_right → dùng cho vùng 315-360
+
+        if (moveAngle >= 337.5 || moveAngle < 22.5) {
+            enemyDirection = "right";
+        } else if (moveAngle >= 22.5 && moveAngle < 67.5) {
+            // Chéo xuống-phải → dùng down (flip down_left hoặc dùng down)
+            enemyDirection = "down";
+        } else if (moveAngle >= 67.5 && moveAngle < 112.5) {
+            enemyDirection = "down";
+        } else if (moveAngle >= 112.5 && moveAngle < 157.5) {
+            enemyDirection = "down_left";
+        } else if (moveAngle >= 157.5 && moveAngle < 202.5) {
+            enemyDirection = "left";
+        } else if (moveAngle >= 202.5 && moveAngle < 247.5) {
+            // Chéo lên-trái → dùng up
+            enemyDirection = "up";
+        } else if (moveAngle >= 247.5 && moveAngle < 292.5) {
+            enemyDirection = "up";
+        } else if (moveAngle >= 292.5 && moveAngle < 337.5) {
+            enemyDirection = "up_right";
+        }
+    }
+
+    // Chọn ảnh hiện tại dựa theo hướng và frame animation
+    private void updateCurrentImage() {
+        switch (enemyDirection) {
+            case "up":
+                currentImage = getFrame(up1, up2, up3, up4);
+                break;
+            case "down":
+                currentImage = getFrame(down1, down2, down3, down4);
+                break;
+            case "left":
+                currentImage = getFrame(left1, left2, left3, left4);
+                break;
+            case "right":
+                currentImage = getFrame(right1, right2, right3, right4);
+                break;
+            case "down_left":
+                currentImage = getFrame(downLeft1, downLeft2, downLeft3, downLeft4);
+                break;
+            case "up_right":
+                currentImage = getFrame(upRight1, upRight2, upRight3, upRight4);
+                break;
+            default:
+                currentImage = down1;
+                break;
+        }
+    }
+
+    // Trả về frame tương ứng với spriteNum hiện tại
+    private BufferedImage getFrame(BufferedImage f1, BufferedImage f2, BufferedImage f3, BufferedImage f4) {
+        switch (spriteNum) {
+            case 1: return f1;
+            case 2: return f2;
+            case 3: return f3;
+            case 4: return f4;
+            default: return f1;
         }
     }
 
