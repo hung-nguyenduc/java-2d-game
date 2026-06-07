@@ -22,21 +22,6 @@ public class CollisionChecker {
         gp.player.vy = 0;
     }
 
-    // --- HÀM MỚI CHUYÊN DÙNG CHO LOGIC "TRƯỢT TƯỜNG" CỦA ENEMY ---
-    public boolean isObstacleAt(int x, int y, int width, int height) {
-        if (gp.getCurrentState() == null) return false;
-        List<Obstacle> currentObstacles = gp.getCurrentState().getObstacles();
-        if (currentObstacles == null) return false;
-
-        Rectangle bounds = new Rectangle(x, y, width, height);
-        for (Obstacle obs : currentObstacles) {
-            if (bounds.intersects(obs.getBounds())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     public void checkAllCollisions() {
         // 1. Kiểm tra va chạm thực thể (Player <=> Enemy và Đạn)
         for (int i = 0; i < gp.enemies.size(); i++) {
@@ -83,7 +68,7 @@ public class CollisionChecker {
             }
         }
 
-        // 2. Lấy danh sách vật cản xử lý cho Player và Đạn (Enemy tự xử lý trượt bên class của nó)
+        // 2. Lấy danh sách vật cản xử lý cho Player và Đạn
         if (gp.getCurrentState() == null) return;
         List<Obstacle> currentObstacles = gp.getCurrentState().getObstacles();
         if (currentObstacles == null) return;
@@ -92,7 +77,7 @@ public class CollisionChecker {
             Rectangle obsBounds = obs.getBounds();
 
             // Va chạm Player - Vật cản
-            Rectangle playerBounds = new Rectangle((int)gp.player.worldX + 10, (int)gp.player.worldY + 20, 55, 65);
+            Rectangle playerBounds = new Rectangle((int) gp.player.worldX + 10, (int) gp.player.worldY + 20, 55, 65);
             if (playerBounds.intersects(obsBounds)) {
                 restorePos();
             }
@@ -101,7 +86,7 @@ public class CollisionChecker {
             if (gp.player.currentWeapon != null) {
                 for (int i = 0; i < gp.player.currentWeapon.bullets.size(); i++) {
                     Bullet bullet = gp.player.currentWeapon.bullets.get(i);
-                    Rectangle bulletBounds = new Rectangle((int) bullet.worldX, (int)bullet.worldY, 10, 10);
+                    Rectangle bulletBounds = new Rectangle((int) bullet.worldX, (int) bullet.worldY, 10, 10);
                     if (bulletBounds.intersects(obsBounds)) {
                         gp.player.currentWeapon.bullets.remove(i);
                         i--;
@@ -109,12 +94,11 @@ public class CollisionChecker {
                 }
             }
 
-            // XÓA logic va chạm đứng khựng của Enemy ở đây.
-            // Chỉ giữ lại: Va chạm Đạn Enemy - Vật cản
+            // Va chạm Đạn Enemy - Vật cản
             for (Enemy enemy : gp.enemies) {
                 for (int i = 0; i < enemy.bullets.size(); i++) {
                     Bullet bullet = enemy.bullets.get(i);
-                    Rectangle bulletBounds = new Rectangle((int)bullet.worldX, (int)bullet.worldY, 10, 10);
+                    Rectangle bulletBounds = new Rectangle((int) bullet.worldX, (int) bullet.worldY, 10, 10);
                     if (bulletBounds.intersects(obsBounds)) {
                         enemy.bullets.remove(i);
                         i--;
