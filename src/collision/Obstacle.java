@@ -7,8 +7,8 @@ import java.awt.BasicStroke;
 
 public class Obstacle {
     public int worldX, worldY, width, height;
-    public Color color; // Để bạn dễ phân biệt các khối
-    public int type = 0; // 0: Ẩn/Tường, 1: Thùng gỗ, 2: Thùng dầu
+    public Color color;
+    public int type = 0;
 
     public Obstacle(int worldX, int worldY, int width, int height, Color color) {
         this.worldX = worldX;
@@ -18,7 +18,6 @@ public class Obstacle {
         this.color = color;
     }
 
-    // Constructor có thêm loại
     public Obstacle(int worldX, int worldY, int width, int height, int type) {
         this.worldX = worldX;
         this.worldY = worldY;
@@ -36,7 +35,7 @@ public class Obstacle {
         int screenX = worldX - cameraX;
         int screenY = worldY - cameraY;
 
-        if (screenX + width > 0 && screenX < 2000 && 
+        if (screenX + width > 0 && screenX < 2000 &&
                 screenY + height > 0 && screenY < 2000) {
 
             if (type == 0) {
@@ -49,7 +48,7 @@ public class Obstacle {
                 // Thùng gỗ (Wooden Box)
                 g2.setColor(new Color(139, 69, 19)); // Màu nâu gỗ
                 g2.fillRect(screenX, screenY, width, height);
-                
+
                 // Viền ngoài
                 g2.setStroke(new BasicStroke(3));
                 g2.setColor(new Color(101, 42, 14));
