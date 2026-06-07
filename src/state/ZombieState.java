@@ -110,12 +110,12 @@ public class ZombieState extends GameState {
 
         // Kịch bản hội thoại mở đầu và kết thúc
         introScript = new DialogueLine[] {
-                new DialogueLine("Cảnh báo! Khu vực KTX đã bị thế lực Zombie tàn phá!", null),
-                new DialogueLine("Vũ: Chuyện gì thế này... Mình phải dọn sạch lũ Zombie xung quanh \nđể tìm đường máu thoát ra ngoài thôi!", vuFace)
+                new DialogueLine("Giặc đến Bách Khoa rồi! Mình nhất định phải bảo vệ ngôi trường này.", vuFace),
+                new DialogueLine("Quyết tử cho Tổ quốc quyết sinh!", vuFace)
         };
 
         afterQuestScript = new DialogueLine[] {
-                new DialogueLine("Vũ: Phù... Tạm thời khu vực này đã an toàn. \nPhải di chuyển tiếp sang khu nhà bên cạnh thôi!", vuFace)
+                new DialogueLine("Phù... Tạm thời khu vực này đã an toàn. \nPhải di chuyển tiếp sang khu nhà bên cạnh thôi!", vuFace)
         };
 
         // Kích hoạt chuỗi hội thoại đầu game
@@ -263,7 +263,7 @@ public class ZombieState extends GameState {
         Enemy e4 = new Enemy(gp, gp.player, 500, 500); // Thêm 1 quái bỏ chạy
         e4.speed = 2.5; e4.canDodge = true; e4.damage = 5; e4.minDistance = 150; e4.maxHealth *= 5; e4.health = e4.maxHealth;
         gp.enemies.add(e4);
-        
+
         // Gấp đôi số lượng quái
         Enemy e5 = new Enemy(gp, gp.player, 400, 400);
         e5.speed = 1.5; e5.canDodge = true; e5.damage = 5; e5.minDistance = 150; e5.maxHealth *= 5; e5.health = e5.maxHealth;
