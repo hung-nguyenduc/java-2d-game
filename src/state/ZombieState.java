@@ -172,13 +172,13 @@ public class ZombieState extends GameState {
             return;
         }
 
-        // Nếu trên map hết quái và chưa diệt đủ 5 con thì cho sinh con tiếp theo
-        if (gp.enemies.isEmpty() && gp.killCount < 5) {
+        // Nếu trên map hết quái và chưa diệt đủ 3 con thì cho sinh con tiếp theo
+        if (gp.enemies.isEmpty() && gp.killCount < 3) {
             spawnSingleEnemy(gp.killCount);
         }
 
-        // Kiểm tra hoàn thành (Diệt đủ 5 quái) và bật hội thoại một lần duy nhất
-        if (gp.killCount >= 5 && !isQuestCompleted) {
+        // Kiểm tra hoàn thành (Diệt đủ 3 quái) và bật hội thoại một lần duy nhất
+        if (gp.killCount >= 3 && !isQuestCompleted) {
             isQuestCompleted = true;
             if (!isPhase2DialoguePlayed) {
                 dialogueBox.startDialogue(afterQuestScript);
@@ -239,7 +239,7 @@ public class ZombieState extends GameState {
         }
 
         // 6. Vẽ HUD
-        String hudText = "Tiêu diệt kẻ địch: " + gp.killCount + " / 5";
+        String hudText = "Tiêu diệt kẻ địch: " + gp.killCount + " / 3";
         g2.setColor(Color.RED);
         g2.setFont(HUD_FONT);
         FontMetrics fm = g2.getFontMetrics();
