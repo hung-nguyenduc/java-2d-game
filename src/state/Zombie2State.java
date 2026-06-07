@@ -37,6 +37,7 @@ public class Zombie2State extends GameState {
 
     @Override
     public void enter() {
+        gp.sound.playMusic("nhac_nen_2"); // Nhạc nền màn Zombie 2
         try {
             BufferedImage src = ImageIO.read(getClass().getResourceAsStream(MAP_IMAGE_PATH));
             gp.worldWidth = (int) (src.getWidth() * MAP_SCALE);
