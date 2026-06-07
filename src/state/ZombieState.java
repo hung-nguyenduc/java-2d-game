@@ -110,6 +110,7 @@ public class ZombieState extends GameState {
         // Kịch bản hội thoại mở đầu và kết thúc
         introScript = new DialogueLine[] {
                 new DialogueLine("Giặc đến Bách Khoa rồi! Mình nhất định phải bảo vệ ngôi trường này.", vuFace),
+                new DialogueLine("Vừa học môn bắn súng xong, áp dụng thực chiến luôn nào!", vuFace),
                 new DialogueLine("Quyết tử cho Tổ quốc quyết sinh!", vuFace)
         };
 
