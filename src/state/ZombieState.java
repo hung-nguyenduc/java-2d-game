@@ -115,7 +115,7 @@ public class ZombieState extends GameState {
         };
 
         afterQuestScript = new DialogueLine[] {
-                new DialogueLine("Phù... Tạm thời khu vực này đã an toàn. \nPhải di chuyển tiếp sang khu nhà bên cạnh thôi!", vuFace)
+                new DialogueLine("Mặt trận này đã sạch bóng quân thù!\nVì Bách Khoa thân yêu, ta quyết không lùi một bước!", vuFace)
         };
 
         // Kích hoạt chuỗi hội thoại đầu game
@@ -172,13 +172,13 @@ public class ZombieState extends GameState {
             return;
         }
 
-        // TÍNH NĂNG MỚI: Nếu trên map hết quái và chưa diệt đủ 8 con thì cho sinh con tiếp theo
-        if (gp.enemies.isEmpty() && gp.killCount < 3) {
+        // Nếu trên map hết quái và chưa diệt đủ 5 con thì cho sinh con tiếp theo
+        if (gp.enemies.isEmpty() && gp.killCount < 5) {
             spawnSingleEnemy(gp.killCount);
         }
 
-        // SỬA LỖI: Kiểm tra hoàn thành (Diệt đủ 8 quái) và bật hội thoại một lần duy nhất
-        if (gp.killCount >= 3 && !isQuestCompleted) {
+        // Kiểm tra hoàn thành (Diệt đủ 5 quái) và bật hội thoại một lần duy nhất
+        if (gp.killCount >= 5 && !isQuestCompleted) {
             isQuestCompleted = true;
             if (!isPhase2DialoguePlayed) {
                 dialogueBox.startDialogue(afterQuestScript);
@@ -239,7 +239,7 @@ public class ZombieState extends GameState {
         }
 
         // 6. Vẽ HUD
-        String hudText = "Tiêu diệt kẻ địch: " + gp.killCount + " / 3";
+        String hudText = "Tiêu diệt kẻ địch: " + gp.killCount + " / 5";
         g2.setColor(Color.RED);
         g2.setFont(HUD_FONT);
         FontMetrics fm = g2.getFontMetrics();
@@ -270,6 +270,8 @@ public class ZombieState extends GameState {
             case 0: e = new Enemy(gp, gp.player, 900, 300); e.speed = 1.5; break;
             case 1: e = new Enemy(gp, gp.player, 800, 1200); e.speed = 1.5; break;
             case 2: e = new Enemy(gp, gp.player, 1200, 700); e.speed = 2.5; break;
+            case 3: e = new Enemy(gp, gp.player, 400, 900); e.speed = 2.0; break;
+            case 4: e = new Enemy(gp, gp.player, 1400, 1100); e.speed = 2.5; break;
         }
 
         if (e != null) {
