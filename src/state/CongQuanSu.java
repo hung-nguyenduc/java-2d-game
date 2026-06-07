@@ -160,6 +160,7 @@ public class CongQuanSu extends GameState {
                     // NẾU ĐỨNG GẦN VÀ BẤM PHÍM F
                     if (gp.keyH.fPressed) {
                         System.out.println("Vũ đã nhặt được: " + item.name);
+                        gp.sound.playSE("item-equip-6904"); // Tiếng nhặt/trang bị vật phẩm
                         questItems.remove(i);
                         itemsCollected++;
                         gp.keyH.fPressed = false; // Bấm xong phải reset phím ngay tránh lỗi nhặt đúp
