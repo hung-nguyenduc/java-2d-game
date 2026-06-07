@@ -29,7 +29,7 @@ public class ZombieState extends GameState {
     double scale;
     BufferedImage vuFace;
 
-    // Quản lý trạng thái nhiệm vụ và hội thoại giống các map trước
+    // Quản lý trạng thái nhiệm vụ và hội thoại
     private boolean isQuestCompleted = false;
     private boolean isPhase2DialoguePlayed = false;
     private DialogueLine[] introScript;
@@ -45,8 +45,8 @@ public class ZombieState extends GameState {
             @Override
             public void onDialogueComplete() {
                 if (isQuestCompleted) {
-                    // Sau khi bắn hết quái và đọc xong hội thoại ăn mừng -> chuyển sang Level 2 qua LoadingState
-                    gp.setState(new LevelCompleteState(gp, 1, new Level2State(gp)));
+                    // SỬA LỖI: Chỉ chuyển sang Ending state khi người chơi đọc xong hội thoại
+                    gp.setState(new Ending(gp, new MenuState(gp)));
                 }
             }
         };
@@ -54,7 +54,6 @@ public class ZombieState extends GameState {
 
     @Override
     public void enter() {
-        // Pre-scale map một lần duy nhất
         try {
             BufferedImage src = ImageIO.read(getClass().getResourceAsStream(MAP_IMAGE_PATH));
 
@@ -90,25 +89,23 @@ public class ZombieState extends GameState {
         gp.player.health = gp.player.maxHealth;
 
         this.weapon = new Weapon(gp, gp.mouseH, gp.player);
-        this.weapon.automaticFire = true; // Bật chế độ sấy
+        this.weapon.automaticFire = true;
         gp.player.equipWeapon(this.weapon);
         weapon.clearBullets();
 
-        // Tải vật cản từ hằng số path đã định nghĩa
+        // Tải vật cản
         this.obstacles = ObstacleManager.loadObstacles(OBSTACLE_TXT_PATH, this.scale);
 
+        // TÍNH NĂNG MỚI: Chỉ sinh con quái đầu tiên khi bắt đầu màn
+        spawnSingleEnemy(0);
 
-
-        spawnEnemies();
-
-        // Nạp ảnh chân dung nhân vật Vũ cho hội thoại
+        // Nạp ảnh nhân vật Vũ
         try {
             vuFace = ImageIO.read(getClass().getResourceAsStream("/player/down1.png"));
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        // Kịch bản hội thoại mở đầu và kết thúc
         introScript = new DialogueLine[] {
                 new DialogueLine("Giặc đến Bách Khoa rồi! Mình nhất định phải bảo vệ ngôi trường này.", vuFace),
                 new DialogueLine("Quyết tử cho Tổ quốc quyết sinh!", vuFace)
@@ -118,7 +115,6 @@ public class ZombieState extends GameState {
                 new DialogueLine("Phù... Tạm thời khu vực này đã an toàn. \nPhải di chuyển tiếp sang khu nhà bên cạnh thôi!", vuFace)
         };
 
-        // Kích hoạt chuỗi hội thoại đầu game
         dialogueBox.startDialogue(introScript);
     }
 
@@ -145,7 +141,7 @@ public class ZombieState extends GameState {
             return;
         }
 
-        // Nếu hộp thoại đang mở, chặn mọi tương tác di chuyển/bắn súng, chỉ cho bấm Space tua chữ
+        // Chặn tương tác khi hội thoại mở
         if (dialogueBox.isActive()) {
             dialogueBox.update();
             if (gp.keyH.spacePressed) {
@@ -155,10 +151,8 @@ public class ZombieState extends GameState {
             return;
         }
 
-        // Nếu đã thắng hoàn toàn và đọc xong đối thoại thì dừng update logic màn chơi
         if (isQuestCompleted) return;
 
-        // Cập nhật người chơi và lũ Zombie
         gp.player.update();
         for (int i = 0; i < gp.enemies.size(); i++) {
             gp.enemies.get(i).update();
@@ -166,25 +160,24 @@ public class ZombieState extends GameState {
 
         gp.checkCollisions();
 
-        // Kiểm tra điều kiện Thua cuộc (Vũ hết máu)
         if (gp.player.health <= 0) {
             gp.setState(new GameOverState(gp));
             return;
         }
 
-        // Kiểm tra điều kiện Hoàn thành (Diệt đủ 8 quái)
+        // TÍNH NĂNG MỚI: Nếu trên map hết quái và chưa diệt đủ 8 con thì cho sinh con tiếp theo
+        if (gp.enemies.isEmpty() && gp.killCount < 8) {
+            spawnSingleEnemy(gp.killCount);
+        }
+
+        // SỬA LỖI: Kiểm tra hoàn thành (Diệt đủ 8 quái) và bật hội thoại một lần duy nhất
         if (gp.killCount >= 8 && !isQuestCompleted) {
             isQuestCompleted = true;
-        }
-
-        // Kích hoạt hội thoại kết màn ngay sau khi diệt đủ số lượng quái yêu cầu
-        if (isQuestCompleted && !isPhase2DialoguePlayed) {
-            dialogueBox.startDialogue(afterQuestScript);
-            isPhase2DialoguePlayed = true;
-        }
-
-        if (isPhase2DialoguePlayed) {
-            gp.setState(new Ending(gp, new MenuState(gp)));
+            if (!isPhase2DialoguePlayed) {
+                dialogueBox.startDialogue(afterQuestScript);
+                isPhase2DialoguePlayed = true;
+                // Đoạn logic chuyển Ending lập tức ở đây đã bị xóa, việc chuyển do onDialogueComplete() lo.
+            }
         }
     }
 
@@ -196,49 +189,43 @@ public class ZombieState extends GameState {
         cameraX = clamped[0];
         cameraY = clamped[1];
 
-        // 1. Vẽ Map nền
+        // 1. Vẽ Map
         if (mapImage != null) {
             g2.drawImage(mapImage, 0, 0, gp.screenWidth, gp.screenHeight, cameraX, cameraY, cameraX + gp.screenWidth, cameraY + gp.screenHeight, null);
         }
 
-        // 2. VẼ CÁC VẬT CẢN & XỬ LÝ ĐIỀU KIỆN DEBUG MODE
+        // 2. Vẽ Vật cản & Debug Mode
         for (Obstacle obs : obstacles) {
-            // Đầu tiên vẫn vẽ hình ảnh vật cản bình thường để chơi game
             obs.draw(g2, cameraX, cameraY);
-
-            // Cải tiến: Nếu bật debugMode lên đầu class (= true), vẽ thêm khung viền màu đỏ đè lên
             if (debugMode) {
                 g2.setColor(Color.RED);
-                g2.setStroke(new BasicStroke(2)); // Độ dày viền khung debug
-                // Tính tọa độ hiển thị trên màn hình dựa vào Camera
+                g2.setStroke(new BasicStroke(2));
                 int screenObsX = obs.worldX - cameraX;
                 int screenObsY = obs.worldY - cameraY;
                 g2.drawRect(screenObsX, screenObsY, obs.width, obs.height);
             }
         }
 
-        // 3. Vẽ Lũ quái vật Zombie
+        // 3. Vẽ Lũ quái vật
         for (Enemy enemy : gp.enemies) {
             enemy.draw(g2, cameraX, cameraY);
-
-            // Vẽ thêm khung đỏ cho cả quái vật luôn nếu muốn soi vị trí va chạm
             if (debugMode) {
                 g2.setColor(Color.RED);
                 g2.drawRect((int)enemy.worldX - cameraX, (int)enemy.worldY - cameraY, 48, 48);
             }
         }
 
-        // 4. Vẽ Nhân vật Vũ
+        // 4. Vẽ Vũ
         gp.player.draw(g2, cameraX, cameraY);
 
-        // 5. Vẽ Súng và Đạn
+        // 5. Vẽ Súng
         int screenX = (int) (gp.player.worldX - cameraX);
         int screenY = (int) (gp.player.worldY - cameraY);
         if (weapon != null) {
             weapon.draw(g2, screenX, screenY, cameraX, cameraY);
         }
 
-        // 6. Vẽ Giao diện HUD
+        // 6. Vẽ HUD
         g2.setColor(Color.RED);
         g2.setFont(HUD_FONT);
         g2.drawString("Tiêu diệt kẻ địch: " + gp.killCount + " / 8", 10, 30);
@@ -247,39 +234,28 @@ public class ZombieState extends GameState {
         dialogueBox.draw(g2, gp.screenWidth, gp.screenHeight);
     }
 
-    private void spawnEnemies() {
-        Enemy e1 = new Enemy(gp, gp.player, 300, 300);
-        e1.speed = 1.5; e1.canDodge = true; e1.damage = 5; e1.minDistance = 150; e1.maxHealth *= 5; e1.health = e1.maxHealth;
-        gp.enemies.add(e1);
+    // TÍNH NĂNG MỚI: Hàm sinh từng con quái dựa trên thứ tự (chỉ số killCount)
+    private void spawnSingleEnemy(int index) {
+        Enemy e = null;
+        switch (index) {
+            case 0: e = new Enemy(gp, gp.player, 300, 300); e.speed = 1.5; break;
+            case 1: e = new Enemy(gp, gp.player, 800, 500); e.speed = 1.5; break;
+            case 2: e = new Enemy(gp, gp.player, 1200, 700); e.speed = 1.5; break;
+            case 3: e = new Enemy(gp, gp.player, 500, 500); e.speed = 2.5; break; // Quái bỏ chạy
+            case 4: e = new Enemy(gp, gp.player, 400, 400); e.speed = 1.5; break;
+            case 5: e = new Enemy(gp, gp.player, 900, 600); e.speed = 1.5; break;
+            case 6: e = new Enemy(gp, gp.player, 1300, 800); e.speed = 1.5; break;
+            case 7: e = new Enemy(gp, gp.player, 600, 600); e.speed = 2.5; break;
+        }
 
-        Enemy e2 = new Enemy(gp, gp.player, 800, 500);
-        e2.speed = 1.5; e2.canDodge = true; e2.damage = 5; e2.minDistance = 150; e2.maxHealth *= 5; e2.health = e2.maxHealth;
-        gp.enemies.add(e2);
-
-        Enemy e3 = new Enemy(gp, gp.player, 1200, 700);
-        e3.speed = 1.5; e3.canDodge = true; e3.damage = 5; e3.minDistance = 150; e3.maxHealth *= 5; e3.health = e3.maxHealth;
-        gp.enemies.add(e3);
-
-        Enemy e4 = new Enemy(gp, gp.player, 500, 500); // Thêm 1 quái bỏ chạy
-        e4.speed = 2.5; e4.canDodge = true; e4.damage = 5; e4.minDistance = 150; e4.maxHealth *= 5; e4.health = e4.maxHealth;
-        gp.enemies.add(e4);
-
-        // Gấp đôi số lượng quái
-        Enemy e5 = new Enemy(gp, gp.player, 400, 400);
-        e5.speed = 1.5; e5.canDodge = true; e5.damage = 5; e5.minDistance = 150; e5.maxHealth *= 5; e5.health = e5.maxHealth;
-        gp.enemies.add(e5);
-
-        Enemy e6 = new Enemy(gp, gp.player, 900, 600);
-        e6.speed = 1.5; e6.canDodge = true; e6.damage = 5; e6.minDistance = 150; e6.maxHealth *= 5; e6.health = e6.maxHealth;
-        gp.enemies.add(e6);
-
-        Enemy e7 = new Enemy(gp, gp.player, 1300, 800);
-        e7.speed = 1.5; e7.canDodge = true; e7.damage = 5; e7.minDistance = 150; e7.maxHealth *= 5; e7.health = e7.maxHealth;
-        gp.enemies.add(e7);
-
-        Enemy e8 = new Enemy(gp, gp.player, 600, 600);
-        e8.speed = 2.5; e8.canDodge = true; e8.damage = 5; e8.minDistance = 150; e8.maxHealth *= 5; e8.health = e8.maxHealth;
-        gp.enemies.add(e8);
+        if (e != null) {
+            e.canDodge = true;
+            e.damage = 5;
+            e.minDistance = 150;
+            e.maxHealth *= 5;
+            e.health = e.maxHealth;
+            gp.enemies.add(e);
+        }
     }
 
     @Override
