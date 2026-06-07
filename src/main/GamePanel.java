@@ -59,6 +59,9 @@ public class GamePanel extends JPanel implements Runnable, MouseListener, java.a
     // Quản lý âm thanh dùng chung cho toàn game
     public Sound sound = new Sound();
 
+    // Theo dõi chuột có đang dí vào nút dừng không (để phát tiếng đúng 1 lần khi vừa chạm)
+    private boolean pauseBtnHovered = false;
+
     public GamePanel() {
         this.setPreferredSize(new Dimension(screenWidth, screenHeight));
         this.setBackground(Color.BLACK);
@@ -376,6 +379,16 @@ public class GamePanel extends JPanel implements Runnable, MouseListener, java.a
     @Override
     public void mouseMoved(MouseEvent e) {
         MouseEvent translated = translateMouseEvent(e);
+
+        // Phát tiếng đúng 1 lần khi chuột vừa dí vào nút dừng (chỉ khi nút đang hiển thị)
+        boolean pauseVisible = !(currentState instanceof MenuState)
+                && !(currentState instanceof InstructionsState) && !isPaused;
+        boolean nowHover = pauseVisible && pauseButtonRect.contains(translated.getPoint());
+        if (nowHover && !pauseBtnHovered) {
+            sound.playSE("click");
+        }
+        pauseBtnHovered = nowHover;
+
         mouseH.mouseMoved(translated);
     }
 
