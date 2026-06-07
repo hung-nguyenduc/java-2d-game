@@ -2,11 +2,8 @@ package state;
 
 import Dialogue.DialogueLine;
 import Dialogue.DialogueManager;
-import collision.CollisionChecker;
 import entity.Enemy;
 import entity.Weapon;
-import entity.Bullet;
-import main.MouseHandler;
 import main.*;
 import collision.Obstacle;
 import collision.ObstacleManager;

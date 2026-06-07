@@ -130,7 +130,7 @@ public class ClassroomState extends GameState {
         DialogueLine[] script1 = {
                 new DialogueLine("Vũ: Em xin lỗi thầy em đến muộn ạ, xin phép thầy cho em vào lớp\n", vuFace),
                 new DialogueLine("Thầy: Mới hôm đầu đi học mà đã muộn, lần sau muộn nữa\n tôi cho cậu trượt môn", thayGiaoFace),
-                new DialogueLine("Vũ với quyết tâm A+ giải tích nên đã \nlên thẳng bàn đầu ngồi", null)
+                new DialogueLine("Vũ với quyết tâm A+ giải tích nên đã lên thẳng bàn đầu ngồi", null)
         };
         dialogueBox.startDialogue(script1);
     }

@@ -129,11 +129,11 @@ public class BanSungQuanSu extends GameState {
         };
 
         afterQuestScript = new DialogueLine[] {
-                new DialogueLine("Ngon! Trúng được 8 viên, qua môn rồi hẹ hẹ hẹ", vuFace),
+                new DialogueLine("Ngon! Trúng được 8 viên, vừa đủ điểm", vuFace),
         };
 
         failScript = new DialogueLine[] {
-                new DialogueLine("Thầy giáo: Bắn trượt rồi Vũ ơi! Hết đạn mà chưa đủ điểm.", thayGiao),
+                new DialogueLine("Thầy giáo: Bắn trượt rồi Vũ ơi! Thế này mà ra trận thì chết à", thayGiao),
                 new DialogueLine("Thầy giáo: Chuẩn bị tiền học lại đi em", thayGiao)
         };
 
