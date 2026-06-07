@@ -129,7 +129,7 @@ public class BanSungQuanSu extends GameState {
         };
 
         afterQuestScript = new DialogueLine[] {
-                new DialogueLine("Ngon! Trúng được 8 viên, qua môn rồi hẹ hẹ hẹ", vuFace),
+                new DialogueLine("Ngon! Trúng được 8 viên, vừa đủ điểm", vuFace),
         };
 
         failScript = new DialogueLine[] {
