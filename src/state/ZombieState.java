@@ -54,6 +54,7 @@ public class ZombieState extends GameState {
 
     @Override
     public void enter() {
+        gp.sound.playMusic("nhac_nen_1"); // Nhạc nền màn bắn quái
         // Pre-scale map một lần duy nhất
         try {
             BufferedImage src = ImageIO.read(getClass().getResourceAsStream(MAP_IMAGE_PATH));
