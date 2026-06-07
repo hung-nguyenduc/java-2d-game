@@ -5,18 +5,13 @@ import state.TachMonState;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
-// Lớp xử lý sự kiện bàn phím
 public class KeyHandler implements KeyListener {
-
-    // volatile: đảm bảo game thread luôn thấy giá trị mới nhất từ EDT
     public volatile boolean upPressed, downPressed, leftPressed, rightPressed, spacePressed, fPressed, kPressed, gPressed, pPressed;
     public boolean key1Pressed, key2Pressed, key3Pressed, key4Pressed;
     public boolean enterPressed, exitPressed;
-    public TachMonState tachMonState;
-    // Xử lý khi gõ phím (không dùng cho game di chuyển)
+
     @Override
     public void keyTyped(KeyEvent e) {
-        // Không dùng cái này cho game di chuyển
     }
 
     // Xử lý khi nhấn phím
@@ -43,7 +38,7 @@ public class KeyHandler implements KeyListener {
     // Xử lý khi thả phím
     @Override
     public void keyReleased(KeyEvent e) {
-        int code = e.getKeyCode(); // Khi thả phím ra thì gán lại thành false
+        int code = e.getKeyCode();
 
         if (code == KeyEvent.VK_UP || code == KeyEvent.VK_W)    { upPressed = false; }
         if (code == KeyEvent.VK_DOWN || code == KeyEvent.VK_S)  { downPressed = false; }

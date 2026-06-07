@@ -4,10 +4,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseListener;
 
-// Lớp xử lý sự kiện chuột (theo dõi vị trí và click chuột trái)
 public class MouseHandler implements MouseMotionListener, MouseListener {
-
-    // volatile: đảm bảo game thread luôn thấy giá trị mới nhất từ EDT
     public volatile int mouseX, mouseY;
     public volatile boolean leftMousePressed = false;
 
@@ -39,16 +36,13 @@ public class MouseHandler implements MouseMotionListener, MouseListener {
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        // Không cần xử lý
     }
 
     @Override
     public void mouseEntered(MouseEvent e) {
-        // Không cần xử lý
     }
 
     @Override
     public void mouseExited(MouseEvent e) {
-        // Không cần xử lý
     }
 }
