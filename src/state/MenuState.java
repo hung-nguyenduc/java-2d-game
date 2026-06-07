@@ -39,9 +39,13 @@ public class MenuState extends GameState {
         // Cập nhật vị trí chuột liên tục mỗi frame
         Point mousePos = gp.getMousePosition();
         if (mousePos != null) {
-            isPlayHover = playButton.contains(mousePos);
-            isInsHover = instructionsButton.contains(mousePos);
-            isInfoHover = infoButton.contains(mousePos);
+            // Quy đổi tọa độ chuột thật -> tọa độ ảo 768x576 (bù scale + offset khi phóng to)
+            double scaleRatio = gp.getScaleRatio();
+            int vx = (int) ((mousePos.x - gp.getXOffset()) / scaleRatio);
+            int vy = (int) ((mousePos.y - gp.getYOffset()) / scaleRatio);
+            isPlayHover = playButton.contains(vx, vy);
+            isInsHover = instructionsButton.contains(vx, vy);
+            isInfoHover = infoButton.contains(vx, vy);
         } else {
             // Khi chuột kéo ra ngoài cửa sổ game
             isPlayHover = false;
