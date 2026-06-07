@@ -179,6 +179,7 @@ public class KTXState extends GameState {
 
                 if (gp.keyH.fPressed) {
                     System.out.println("Đã nhặt: " + item.name);
+                    gp.sound.playSE("item-equip-6904"); // Tiếng nhặt/trang bị vật phẩm
                     questItems.remove(i);
                     itemsCollected++;
                     gp.keyH.fPressed = false;
