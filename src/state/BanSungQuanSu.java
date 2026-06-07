@@ -33,13 +33,16 @@ public class BanSungQuanSu extends GameState {
     private boolean isQuestCompleted = false;
     private boolean isPhase2DialoguePlayed = false;
     private DialogueLine[] introScript;
-    private DialogueLine[] afterQuestScript;
+    private DialogueLine[] afterQuestScript;   // Trúng đúng 8 viên
+    private DialogueLine[] afterQuest9Script;  // Trúng 9 viên
+    private DialogueLine[] afterQuest10Script; // Trúng 10 viên
     private DialogueLine[] failScript; // Kịch bản khi trượt môn
 
     // Quản lý bia đỡ đạn
     private List<Item> targetBia = new ArrayList<>();
     private int targetsDestroyed = 0;
-    private final int TOTAL_TARGETS = 8;
+    private final int TOTAL_TARGETS = 8;   // Số đạn tối thiểu phải bắn TRÚNG để qua môn
+    private final int TOTAL_BULLETS = 10;  // Tổng số đạn bắt buộc phải bắn hết trước khi chấm điểm
 
     // CÁC BIẾN ĐIỀU KHIỂN BIA DI ĐỘNG "LỪA"
     private int targetSpeedY = 2;
@@ -48,7 +51,7 @@ public class BanSungQuanSu extends GameState {
     private Random random = new Random();
 
     // HỆ THỐNG GIỚI HẠN ĐẠN TRƯỢT
-    private int bulletsLeft = 10;         // Chỉ có đúng 5 viên đạn
+    private int bulletsLeft = TOTAL_BULLETS;   // Số đạn dự trữ còn lại
     private boolean isGameOver = false;
 
     private Weapon ak47;
@@ -98,7 +101,7 @@ public class BanSungQuanSu extends GameState {
         gp.killCount = 0;
         gp.player.health = 100;
         gp.enemies.clear();
-        bulletsLeft = 10;
+        bulletsLeft = TOTAL_BULLETS;
         targetsDestroyed = 0;
         isGameOver = false;
         isQuestCompleted = false;
@@ -125,11 +128,22 @@ public class BanSungQuanSu extends GameState {
 
         introScript = new DialogueLine[] {
                 new DialogueLine("Học phần bắn súng Kỹ thuật chiến đấu bộ binh và chiến thuật bắt đầu!", thayGiao),
-                new DialogueLine("Bắn trúng " + TOTAL_TARGETS + " viên đạn để qua môn", thayGiao),
+                new DialogueLine("Bắn hết cả " + TOTAL_BULLETS + " viên, trúng từ " + TOTAL_TARGETS + " viên trở lên để qua môn!", thayGiao),
         };
 
+        // Lời thoại khi qua môn với đúng 8 viên trúng
         afterQuestScript = new DialogueLine[] {
                 new DialogueLine("Ngon! Trúng được 8 viên, vừa đủ điểm", vuFace),
+        };
+
+        // Lời thoại khi trúng 9 viên
+        afterQuest9Script = new DialogueLine[] {
+                new DialogueLine("Ngon luôn, bắn trúng 9 đạn!!!", vuFace),
+        };
+
+        // Lời thoại khi trúng trọn vẹn 10 viên
+        afterQuest10Script = new DialogueLine[] {
+                new DialogueLine("Bắn trúng 10 đạn, em thật xuất sắc!!!", vuFace),
         };
 
         failScript = new DialogueLine[] {
@@ -177,13 +191,6 @@ public class BanSungQuanSu extends GameState {
 
         // 1. Cập nhật Player
         //gp.player.update();
-
-        // 2. Chặn không cho bắn nếu đã hết đạn dự trữ
-        if (bulletsLeft <= 0 && ak47.bullets.isEmpty() && !isQuestCompleted) {
-            isGameOver = true;
-            dialogueBox.startDialogue(failScript);
-            return;
-        }
 
         // Cập nhật Vũ khí & Đạn bay
         // Đồng thời kiểm tra nếu người chơi click bắn súng thành công thì trừ đạn dự trữ đi
@@ -251,22 +258,40 @@ public class BanSungQuanSu extends GameState {
             }
         }
 
-        // Kiểm tra điều kiện Thắng môn
-        if (targetsDestroyed >= TOTAL_TARGETS && !isQuestCompleted) {
-            isQuestCompleted = true;
-            targetBia.clear();
-        }
-
-        if (isQuestCompleted && !isPhase2DialoguePlayed) {
-            dialogueBox.startDialogue(afterQuestScript);
-            isPhase2DialoguePlayed = true;
+        // TRƯỢT SỚM: nếu số đạn còn lại không đủ để đạt 8 viên trúng (lỡ trượt quá 2 viên,
+        // tối đa chỉ còn 7) thì cho trượt luôn, không bắt bắn hết vô ích.
+        int soVienToiDaConCoThe = targetsDestroyed + bulletsLeft + ak47.bullets.size();
+        if (soVienToiDaConCoThe < TOTAL_TARGETS && !isQuestCompleted && !isGameOver) {
+            isGameOver = true;
+            dialogueBox.startDialogue(failScript);
             return;
         }
 
-        // Kiểm tra nếu người chơi bắn hết sạch cả 5 viên đạn mà điểm vẫn chưa đạt 5 -> Thua cuộc
-        if (bulletsLeft <= 0 && ak47.bullets.isEmpty() && targetsDestroyed < TOTAL_TARGETS && !isQuestCompleted && !dialogueBox.isActive()) {
-            isGameOver = true;
-            dialogueBox.startDialogue(failScript);
+        // CHẤM ĐIỂM: chỉ xét khi đã bắn HẾT cả 10 viên (hết đạn dự trữ và không còn đạn đang bay)
+        boolean banHetDan = bulletsLeft <= 0 && ak47.bullets.isEmpty();
+        if (banHetDan && !isQuestCompleted && !isGameOver) {
+            if (targetsDestroyed >= TOTAL_TARGETS) {
+                // Trúng từ 8 viên trở lên -> QUA MÔN, chọn lời thoại theo số viên trúng
+                isQuestCompleted = true;
+                isPhase2DialoguePlayed = true;
+                targetBia.clear();
+
+                DialogueLine[] winScript;
+                if (targetsDestroyed >= TOTAL_BULLETS) {
+                    winScript = afterQuest10Script;       // trúng trọn 10 viên
+                } else if (targetsDestroyed == 9) {
+                    winScript = afterQuest9Script;        // trúng 9 viên
+                } else {
+                    winScript = afterQuestScript;         // trúng đúng 8 viên
+                }
+                dialogueBox.startDialogue(winScript);
+                return;
+            } else {
+                // Trúng dưới 8 viên -> TRƯỢT MÔN
+                isGameOver = true;
+                dialogueBox.startDialogue(failScript);
+                return;
+            }
         }
 
         gp.checkCollisions();
@@ -315,7 +340,7 @@ public class BanSungQuanSu extends GameState {
         g2.setColor(Color.WHITE);
         g2.setFont(new Font("Consolas", Font.BOLD, 14));
         g2.drawString("SỐ ĐẠN CÒN LẠI: " + bulletsLeft, 25, 38);
-        g2.drawString("ĐIỂM TRÚNG BIA: " + targetsDestroyed + " / " + TOTAL_TARGETS, 25, 60);
+        g2.drawString("ĐIỂM TRÚNG BIA: " + targetsDestroyed + " / " + TOTAL_BULLETS, 25, 60);
 
         if (debugMode) {
             for (Obstacle obs : obstacles) {
