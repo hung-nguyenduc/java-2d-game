@@ -162,7 +162,8 @@ public class Weapon {
 
         Bullet bullet1 = new Bullet(tipX, tipY, aimAngle);
         bullets.add(bullet1);
-        
+
+        gp.sound.playSE("o_cai_tam_chat"); // Tiếng súng bắn
         flashTimer = 5; // Hiển thị chớp lửa trong 5 frames
         
         if (shotgunMode) {
