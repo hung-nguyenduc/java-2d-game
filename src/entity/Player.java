@@ -35,8 +35,8 @@ public class Player extends Entity {
     }
 
     public void setDefaultValues() {
-        speed = 5;
-        maxHealth = 5000;
+        speed = 4;
+        maxHealth = 100;
         health = maxHealth;
         direction = "down";
         currentWeapon = null;
