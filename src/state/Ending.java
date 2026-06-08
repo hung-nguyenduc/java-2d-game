@@ -184,7 +184,7 @@ public class Ending extends GameState {
                 // Nếu hết thoại -> Chuyển sang Phase 1 (Chạy GIF)
                 if (dialogueIndex >= dialogueLines.length) {
                     currentPhase = 1;
-                    gp.sound.playMusic("am_thanh_end_game"); // Nhạc cho đoạn GIF tưởng niệm
+                    gp.sound.playMusic("nhac_tuong_niem"); // Nhạc kèn trang nghiêm tưởng niệm các chiến sĩ
                 }
             }
         }
