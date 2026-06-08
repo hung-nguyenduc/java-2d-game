@@ -121,64 +121,112 @@ public class SoundGen {
         return normalize(s, 0.85);
     }
 
-    // ---- Nhạc tưởng niệm: giai điệu kèn (chỉ nốt bộ ba C-E-G như kèn quân đội) ----
+    // ---- Nhạc tưởng niệm: anh hùng ca ấm áp, bi tráng ----
+    // Giai điệu kèn/dây trên nền hợp âm Am-F-C-G (tiến trình anh hùng, xúc động)
+    // cùng bè trầm, âm sắc ấm và vang nhẹ để trang nghiêm chứ không rùng rợn.
     static double[] nhacTuongNiem() {
-        double G4 = 392.00, C5 = 523.25, E5 = 659.25, G5 = 783.99, C6 = 1046.50;
-        double beat = 0.6; // chậm, trang nghiêm
-        double[][] mel = {
-            // Câu 1 - lời gọi
-            {G4, 0.75}, {C5, 0.25}, {E5, 1.0}, {C5, 0.5}, {G4, 1.0},
-            // Câu 2 - vươn lên
-            {G4, 0.75}, {C5, 0.25}, {E5, 1.0}, {G5, 1.5}, {0, 0.5},
-            // Câu 3 - cao trào
-            {E5, 0.5}, {G5, 0.5}, {C6, 1.5}, {G5, 0.5}, {E5, 0.5}, {C5, 1.0},
-            // Câu 4 - lắng lại
-            {G4, 0.75}, {C5, 0.25}, {E5, 1.0}, {C5, 1.0}, {G4, 2.0},
+        // Tần số các nốt
+        double A2 = 110.00, C3 = 130.81, F2 = 87.31, G2 = 98.00;
+        double A3 = 220.00, B3 = 246.94, C4 = 261.63, D4 = 293.66, E4 = 329.63, F4 = 349.23, G4 = 392.00;
+        double C5 = 523.25, D5 = 587.33, E5 = 659.25, F5 = 698.46;
+
+        double beat = 0.72; // chậm, trang nghiêm
+
+        // Mỗi ô nhịp 2 phách: hợp âm + bè trầm
+        double[][] chords = {
+            {A3, C4, E4}, {A3, C4, F4}, {C4, E4, G4}, {B3, D4, G4}, // Am F C G
+            {A3, C4, E4}, {A3, C4, F4}, {B3, D4, G4}, {C4, E4, G4}, // Am F G C
+            {C4, E4, G4}, {C4, E4, G4}                              // C (kết, ngân dài)
         };
+        double[] bass = {A2, F2, C3, G2, A2, F2, G2, C3, C3, C3};
+        double[] chordBeats = {2, 2, 2, 2, 2, 2, 2, 2, 4, 0.0001};
+
+        // Giai điệu (freq, số phách); 0 = nghỉ
+        double[][] mel = {
+            {E5, 2},
+            {F5, 1}, {E5, 1},
+            {E5, 1}, {D5, 1},
+            {D5, 2},
+            {C5, 1}, {E5, 1},
+            {F5, 2},
+            {D5, 2},
+            {C5, 2},
+            {C5, 4}, // ngân kết
+        };
+
         double total = 0;
-        for (double[] m : mel) total += m[1] * beat;
-        double tail = 1.2;
+        for (double b : chordBeats) total += b * beat;
+        double tail = 1.6;
         int n = (int) (SR * (total + tail));
         double[] s = new double[n];
 
+        // Lớp hợp âm + bè trầm (âm pad ấm)
         int pos = 0;
+        for (int c = 0; c < chords.length; c++) {
+            int len = (int) (chordBeats[c] * beat * SR);
+            double dnote = chordBeats[c] * beat;
+            for (int i = 0; i < len && pos + i < n; i++) {
+                double t = (double) i / SR;
+                double env = padEnv(t, dnote);
+                double v = 0;
+                for (double f : chords[c]) v += voice(f, t, false) / chords[c].length;
+                v = v * 0.30 + voice(bass[c], t, false) * 0.42; // thêm bè trầm
+                s[pos + i] += v * env;
+            }
+            pos += len;
+        }
+
+        // Lớp giai điệu (nổi bật, có vibrato nhẹ)
+        pos = 0;
         for (double[] note : mel) {
             double f = note[0];
             int len = (int) (note[1] * beat * SR);
+            double dnote = note[1] * beat;
             if (f > 0) {
                 for (int i = 0; i < len && pos + i < n; i++) {
                     double t = (double) i / SR;
-                    double dnote = note[1] * beat;
-                    double vib = 1 + 0.004 * Math.sin(2 * Math.PI * 5 * t);
-                    double v = 0;
-                    double[] hamp = {1.0, 0.5, 0.33, 0.22, 0.13, 0.08}; // phổ kiểu kèn đồng
-                    for (int h = 0; h < hamp.length; h++)
-                        v += hamp[h] * Math.sin(2 * Math.PI * f * (h + 1) * t * vib);
-                    // ADSR mềm
-                    double a = 0.06, r = 0.18, sus = 0.8;
-                    double env;
-                    if (t < a) env = t / a;
-                    else if (t > dnote - r) env = sus * Math.max(0, (dnote - t) / r);
-                    else env = sus + (1 - sus) * Math.exp(-(t - a) / 0.15);
-                    s[pos + i] += v * env * 0.5;
+                    double env = padEnv(t, dnote);
+                    s[pos + i] += voice(f, t, true) * env * 0.55;
                 }
             }
             pos += len;
         }
-        // reverb đơn giản: vài tiếng vọng nhỏ dần tạo không gian
+
+        // Vang nhẹ tạo không gian (ít hơn để không bị đục/ghê)
         double[] r = new double[n];
-        int[] delays = {(int)(0.07*SR), (int)(0.13*SR), (int)(0.21*SR)};
-        double[] gains = {0.4, 0.25, 0.16};
+        int[] delays = {(int) (0.05 * SR), (int) (0.11 * SR)};
+        double[] gains = {0.22, 0.13};
         for (int i = 0; i < n; i++) {
             double v = s[i];
             for (int d = 0; d < delays.length; d++)
                 if (i - delays[d] >= 0) v += gains[d] * s[i - delays[d]];
             r[i] = v;
         }
-        // fade-in nhẹ tránh click khi loop
-        int fi = (int)(0.01 * SR);
+
+        // Fade-in / fade-out tránh click khi loop
+        int fi = (int) (0.03 * SR);
         for (int i = 0; i < fi; i++) r[i] *= (double) i / fi;
+        int fo = (int) (0.4 * SR);
+        for (int i = 0; i < fo; i++) r[n - 1 - i] *= (double) i / fo;
         return normalize(r, 0.9);
+    }
+
+    // Một "giọng" âm sắc ấm (kèn/dây): hài giảm nhanh + lọc thông thấp nhẹ
+    static double voice(double f, double t, boolean vibrato) {
+        double vib = vibrato ? (1 + 0.003 * Math.sin(2 * Math.PI * 5 * t)) : 1;
+        double[] hamp = {1.0, 0.45, 0.22, 0.11, 0.05};
+        double v = 0;
+        for (int h = 0; h < hamp.length; h++)
+            v += hamp[h] * Math.sin(2 * Math.PI * f * (h + 1) * t * vib);
+        return v;
+    }
+
+    // Envelope kiểu pad: vào mềm, giữ, thoát mềm
+    static double padEnv(double t, double dnote) {
+        double a = 0.09, rel = 0.3;
+        if (t < a) return t / a;
+        if (t > dnote - rel) return Math.max(0, (dnote - t) / rel);
+        return 1.0;
     }
 
     // ---- Tiện ích ----
