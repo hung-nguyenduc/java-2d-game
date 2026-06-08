@@ -68,22 +68,26 @@ public class SoundGen {
         return normalize(s, 0.9);
     }
 
-    // ---- Tiếng trúng quái: "thụp" đạn trúng, gọn và đanh ----
+    // ---- Tiếng trúng quái: "phập" đạn ghim vào người, đậm và to ----
     static double[] hitEnemy() {
-        double dur = 0.15;
+        double dur = 0.2;
         int n = (int) (SR * dur);
         double[] s = new double[n];
         double lp = 0; // bộ lọc thông thấp đơn giản cho tiếng ồn
         for (int i = 0; i < n; i++) {
             double t = (double) i / SR;
-            double f = 180 * Math.exp(-t / 0.04) + 65;   // cú thụp trầm tụt nhanh
-            double thump = Math.exp(-t / 0.05) * Math.sin(2 * Math.PI * f * t);
+            double f = 190 * Math.exp(-t / 0.05) + 70;   // cú thụp trầm tụt nhanh
+            double thump = Math.exp(-t / 0.07) * Math.sin(2 * Math.PI * f * t);
+            // thêm một lớp trầm sâu cho dày tiếng
+            double sub = Math.exp(-t / 0.09) * Math.sin(2 * Math.PI * 55 * t);
             double noise = (Math.random() * 2 - 1);
-            lp += (noise - lp) * 0.25;                    // làm tối tiếng ồn
-            double burst = lp * Math.exp(-t / 0.028) * 0.6;
-            s[i] = thump * 0.9 + burst;
+            lp += (noise - lp) * 0.3;                     // tiếng "phập" ẩm
+            double burst = lp * Math.exp(-t / 0.04) * 0.8;
+            double mix = thump * 1.1 + sub * 0.6 + burst;
+            // nén mềm (soft-clip) để tăng độ to cảm nhận
+            s[i] = Math.tanh(mix * 1.8);
         }
-        return normalize(s, 0.9);
+        return normalize(s, 0.98);
     }
 
     // ---- Tiếng lựu đạn rơi: cú va trầm + tiếng kim loại loảng xoảng ----
