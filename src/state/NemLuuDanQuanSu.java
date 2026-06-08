@@ -77,7 +77,7 @@ public class NemLuuDanQuanSu extends GameState {
 
     @Override
     public void enter() {
-        gp.sound.playMusic("nhac_nen_2"); // Nhạc nền màn Ném Lựu Đạn
+        gp.sound.playMusic("nhac_nen_mainmenu"); // Nhạc nền nhẹ nhàng cho màn Ném Lựu Đạn
         try {
             BufferedImage src = ImageIO.read(getClass().getResourceAsStream(MAP_IMAGE_PATH));
             gp.worldWidth = (int) (src.getWidth() * MAP_SCALE);
@@ -213,7 +213,7 @@ public class NemLuuDanQuanSu extends GameState {
             if (g.bounceCount == 1 && !g.isFirstTouchHandled) {
                 g.isFirstTouchHandled = true; // Đảm bảo chỉ check va chạm duy nhất một lần tại frame này
 
-                gp.sound.playSE("o_cai_tam_chat"); // Tiếng nổ lựu đạn khi chạm đất
+                gp.sound.playSE("luu_roi"); // Tiếng lựu đạn rơi chạm đất lần đầu
 
                 Rectangle grenadeRect = new Rectangle((int)g.worldX, (int)g.worldY, g.size, g.size);
 
