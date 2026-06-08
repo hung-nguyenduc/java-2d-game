@@ -56,6 +56,7 @@ public class CollisionChecker {
                     if (bullet.worldX + 10 > enemy.worldX && bullet.worldX < enemy.worldX + 80 &&
                             bullet.worldY + 10 > enemy.worldY && bullet.worldY < enemy.worldY + 80) {
                         enemy.health -= 17;
+                        gp.sound.playSE("hit_enemy"); // Tiếng trúng đạn bình thường khi bắn trúng địch
                         gp.player.currentWeapon.bullets.remove(j);
                         j--;
                     }
@@ -68,6 +69,7 @@ public class CollisionChecker {
                 if (bullet.worldX + 10 > gp.player.worldX && bullet.worldX < gp.player.worldX + 80 &&
                         bullet.worldY + 10 > gp.player.worldY && bullet.worldY < gp.player.worldY + 80) {
                     gp.player.health -= 10;
+                    gp.triggerHurtEffect(); // Rung màn hình + viền đỏ + tiếng "hự" khi dính đạn
                     enemy.bullets.remove(j);
                     j--;
                 }
