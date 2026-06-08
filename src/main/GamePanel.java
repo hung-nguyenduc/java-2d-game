@@ -62,6 +62,21 @@ public class GamePanel extends JPanel implements Runnable, MouseListener, java.a
     // Theo dõi chuột có đang dí vào nút dừng không (để phát tiếng đúng 1 lần khi vừa chạm)
     private boolean pauseBtnHovered = false;
 
+    // --- CÀI ĐẶT ÂM THANH (nút bánh răng góc phải + bảng chỉnh âm lượng) ---
+    private Rectangle settingsButtonRect;
+    private boolean showSettings = false;
+    private Rectangle musicSliderTrack;
+    private Rectangle seSliderTrack;
+    private Rectangle muteToggleRect;
+    private Rectangle settingsCloseRect;
+    private int settingsPanelX, settingsPanelY, settingsPanelW, settingsPanelH;
+
+    // --- HIỆU ỨNG KHI DÍNH ĐẠN (rung màn hình + viền đỏ) ---
+    public int hurtFlashTimer = 0; // số frame còn lại để vẽ viền đỏ
+    public int shakeTimer = 0;     // số frame còn lại để rung màn hình
+    private static final int HURT_DURATION = 24;
+    private final java.util.Random fxRandom = new java.util.Random();
+
     public GamePanel() {
         this.setPreferredSize(new Dimension(screenWidth, screenHeight));
         this.setBackground(Color.BLACK);
@@ -72,6 +87,21 @@ public class GamePanel extends JPanel implements Runnable, MouseListener, java.a
         helpButtonRect = new Rectangle(screenWidth / 2 - 100, screenHeight / 2 - 30, 200, 50);
         exitButtonRect = new Rectangle(screenWidth / 2 - 100, screenHeight / 2 + 40, 200, 50);
         backButtonRect = new Rectangle(screenWidth / 2 - 100, screenHeight / 2 + 150, 200, 50);
+
+        // Nút bánh răng đặt ngay bên trái nút Dừng ở góc trên phải
+        settingsButtonRect = new Rectangle(screenWidth - 120, 10, 50, 50);
+
+        // Bảng cài đặt âm thanh (canh giữa màn hình)
+        settingsPanelW = 380;
+        settingsPanelH = 250;
+        settingsPanelX = (screenWidth - settingsPanelW) / 2;
+        settingsPanelY = (screenHeight - settingsPanelH) / 2;
+        int trackX = settingsPanelX + 130;
+        int trackW = 200;
+        musicSliderTrack = new Rectangle(trackX, settingsPanelY + 80, trackW, 10);
+        seSliderTrack = new Rectangle(trackX, settingsPanelY + 130, trackW, 10);
+        muteToggleRect = new Rectangle(settingsPanelX + 130, settingsPanelY + 165, 140, 32);
+        settingsCloseRect = new Rectangle(settingsPanelX + settingsPanelW - 110, settingsPanelY + settingsPanelH - 45, 90, 32);
 
         // Initialize state management - start with MenuState
         currentState = new MenuState(this);
@@ -169,10 +199,21 @@ public class GamePanel extends JPanel implements Runnable, MouseListener, java.a
 
     // Cập nhật trạng thái game mỗi frame
     public void update() {
-        if (!isPaused) {
+        // Giảm dần các bộ đếm hiệu ứng dính đạn (kể cả khi dừng để hiệu ứng tự tắt)
+        if (hurtFlashTimer > 0) hurtFlashTimer--;
+        if (shakeTimer > 0) shakeTimer--;
+
+        if (!isPaused && !showSettings) {
             currentState.update();
             checkCollisions();
         }
+    }
+
+    /** Kích hoạt hiệu ứng khi nhân vật dính đạn: rung màn hình + viền đỏ + tiếng "hự". */
+    public void triggerHurtEffect() {
+        hurtFlashTimer = HURT_DURATION;
+        shakeTimer = 12;
+        sound.playSE("dinh_dan");
     }
 
     public double getScaleRatio() {
@@ -206,7 +247,15 @@ public class GamePanel extends JPanel implements Runnable, MouseListener, java.a
         int xOffset = getXOffset();
         int yOffset = getYOffset();
 
-        g2.translate(xOffset, yOffset);
+        // Rung màn hình khi dính đạn: lệch nhẹ vị trí vẽ một cách ngẫu nhiên, giảm dần
+        int shakeX = 0, shakeY = 0;
+        if (shakeTimer > 0) {
+            int mag = Math.max(1, shakeTimer / 2);
+            shakeX = fxRandom.nextInt(mag * 2 + 1) - mag;
+            shakeY = fxRandom.nextInt(mag * 2 + 1) - mag;
+        }
+
+        g2.translate(xOffset + shakeX, yOffset + shakeY);
         g2.scale(scaleRatio, scaleRatio);
 
         // Cắt bớt phần bên ngoài để tránh rác (nếu có)
@@ -256,10 +305,106 @@ public class GamePanel extends JPanel implements Runnable, MouseListener, java.a
             }
         }
         
+        // --- VIỀN ĐỎ KHI DÍNH ĐẠN ---
+        if (hurtFlashTimer > 0) {
+            drawHurtVignette(g2, hurtFlashTimer / (float) HURT_DURATION);
+        }
+
+        // --- NÚT LOA CÀI ĐẶT (hiện ở mọi màn, kể cả Menu) ---
+        boolean gearVisible = !isPaused && !showSettings && !(currentState instanceof InstructionsState);
+        if (gearVisible) {
+            drawSpeakerButton(g2, settingsButtonRect);
+        }
+
+        // --- BẢNG CÀI ĐẶT ÂM THANH ---
+        if (showSettings) {
+            drawSettingsPanel(g2);
+        }
+
         // KHÔNG dispose Graphics do Swing cấp — đó là lỗi, dispose sẽ làm hỏng các vẽ
         // tiếp theo
     }
-    
+
+    // Vẽ viền đỏ mờ dần từ rìa màn hình vào trong (hiệu ứng trúng đạn)
+    private void drawHurtVignette(Graphics2D g2, float intensity) {
+        int bands = 40;
+        int maxAlpha = (int) (170 * intensity);
+        for (int i = 0; i < bands; i++) {
+            int a = (int) (maxAlpha * (1 - (float) i / bands));
+            if (a <= 0) continue;
+            g2.setColor(new Color(200, 0, 0, a));
+            g2.drawRect(i, i, screenWidth - 1 - i * 2, screenHeight - 1 - i * 2);
+        }
+    }
+
+    // Vẽ biểu tượng cái loa (kèm sóng âm)
+    private void drawSpeakerButton(Graphics2D g2, Rectangle r) {
+        g2.setColor(new Color(0, 0, 0, 150));
+        g2.fillRoundRect(r.x, r.y, r.width, r.height, 10, 10);
+        int cx = r.x + r.width / 2;
+        int cy = r.y + r.height / 2;
+
+        g2.setColor(Color.WHITE);
+        // Thân loa
+        g2.fillRect(cx - 14, cy - 5, 7, 10);
+        // Nón loa (hình thang mở rộng sang phải)
+        Polygon cone = new Polygon();
+        cone.addPoint(cx - 7, cy - 5);
+        cone.addPoint(cx - 7, cy + 5);
+        cone.addPoint(cx + 1, cy + 12);
+        cone.addPoint(cx + 1, cy - 12);
+        g2.fillPolygon(cone);
+        // Sóng âm phát ra
+        g2.setStroke(new BasicStroke(2));
+        g2.drawArc(cx + 1, cy - 9, 9, 18, -60, 120);
+        g2.drawArc(cx + 1, cy - 14, 17, 28, -55, 110);
+    }
+
+    // Vẽ bảng cài đặt âm thanh với 2 thanh trượt + nút tắt tiếng + nút đóng
+    private void drawSettingsPanel(Graphics2D g2) {
+        g2.setColor(new Color(0, 0, 0, 200));
+        g2.fillRect(0, 0, screenWidth, screenHeight);
+
+        g2.setColor(new Color(30, 30, 40));
+        g2.fillRoundRect(settingsPanelX, settingsPanelY, settingsPanelW, settingsPanelH, 20, 20);
+        g2.setColor(Color.WHITE);
+        g2.setStroke(new BasicStroke(2));
+        g2.drawRoundRect(settingsPanelX, settingsPanelY, settingsPanelW, settingsPanelH, 20, 20);
+
+        // Tiêu đề
+        g2.setFont(new Font("Arial", Font.BOLD, 26));
+        FontMetrics fm = g2.getFontMetrics();
+        String title = "ÂM THANH";
+        g2.drawString(title, settingsPanelX + (settingsPanelW - fm.stringWidth(title)) / 2, settingsPanelY + 45);
+
+        // Nhãn + 2 thanh trượt
+        g2.setFont(new Font("Arial", Font.PLAIN, 18));
+        g2.setColor(Color.WHITE);
+        g2.drawString("Nhạc nền", settingsPanelX + 30, musicSliderTrack.y + 12);
+        drawSlider(g2, musicSliderTrack, sound.getMusicVolume());
+        g2.setColor(Color.WHITE);
+        g2.drawString("Hiệu ứng", settingsPanelX + 30, seSliderTrack.y + 12);
+        drawSlider(g2, seSliderTrack, sound.getSeVolume());
+
+        // Nút tắt/bật tiếng và nút đóng
+        drawButton(g2, muteToggleRect, sound.isMuted() ? "Bật tiếng" : "Tắt tiếng");
+        drawButton(g2, settingsCloseRect, "Đóng");
+    }
+
+    private void drawSlider(Graphics2D g2, Rectangle track, float value) {
+        g2.setColor(new Color(80, 80, 90));
+        g2.fillRoundRect(track.x, track.y, track.width, track.height, 6, 6);
+        int fill = (int) (track.width * value);
+        g2.setColor(new Color(80, 200, 120));
+        g2.fillRoundRect(track.x, track.y, fill, track.height, 6, 6);
+        int knobX = track.x + fill;
+        g2.setColor(Color.WHITE);
+        g2.fillOval(knobX - 8, track.y + track.height / 2 - 9, 18, 18);
+        g2.setColor(Color.WHITE);
+        g2.setFont(new Font("Arial", Font.BOLD, 14));
+        g2.drawString((int) (value * 100) + "%", track.x + track.width + 14, track.y + 11);
+    }
+
     private void drawButton(Graphics2D g2, Rectangle rect, String text) {
         g2.setColor(Color.GRAY);
         g2.fillRect(rect.x, rect.y, rect.width, rect.height);
@@ -315,6 +460,20 @@ public class GamePanel extends JPanel implements Runnable, MouseListener, java.a
         MouseEvent translated = translateMouseEvent(e);
         Point p = translated.getPoint();
 
+        // Bảng cài đặt đang mở -> ưu tiên xử lý trong bảng
+        if (showSettings) {
+            handleSettingsClick(p);
+            return;
+        }
+
+        // Nút bánh răng (hiện ở mọi màn trừ khi đang Dừng / màn Hướng dẫn)
+        boolean gearVisible = !isPaused && !(currentState instanceof InstructionsState);
+        if (gearVisible && settingsButtonRect.contains(p)) {
+            showSettings = true;
+            sound.playSE("click");
+            return;
+        }
+
         if (!(currentState instanceof MenuState) && !(currentState instanceof InstructionsState)) {
             if (!isPaused && pauseButtonRect.contains(p)) {
                 isPaused = true;
@@ -345,15 +504,66 @@ public class GamePanel extends JPanel implements Runnable, MouseListener, java.a
         mouseH.mouseClicked(translated);
     }
 
+    // Xử lý click bên trong bảng cài đặt âm thanh
+    private void handleSettingsClick(Point p) {
+        if (settingsCloseRect.contains(p)) {
+            showSettings = false;
+            return;
+        }
+        if (muteToggleRect.contains(p)) {
+            sound.toggleMute();
+            return;
+        }
+        if (nearTrack(musicSliderTrack, p)) {
+            setSliderFromPoint(musicSliderTrack, p, true, false);
+            return;
+        }
+        if (nearTrack(seSliderTrack, p)) {
+            setSliderFromPoint(seSliderTrack, p, false, true);
+            return;
+        }
+        // Click ra ngoài bảng -> đóng
+        Rectangle panel = new Rectangle(settingsPanelX, settingsPanelY, settingsPanelW, settingsPanelH);
+        if (!panel.contains(p)) {
+            showSettings = false;
+        }
+    }
+
+    // Vùng bấm rộng hơn thanh trượt một chút cho dễ trúng
+    private boolean nearTrack(Rectangle t, Point p) {
+        return p.x >= t.x - 12 && p.x <= t.x + t.width + 12
+                && p.y >= t.y - 14 && p.y <= t.y + t.height + 14;
+    }
+
+    // Đặt âm lượng theo vị trí chuột trên thanh trượt
+    private void setSliderFromPoint(Rectangle track, Point p, boolean music, boolean preview) {
+        float v = (p.x - track.x) / (float) track.width;
+        if (v < 0f) v = 0f;
+        if (v > 1f) v = 1f;
+        if (music) {
+            sound.setMusicVolume(v);
+        } else {
+            sound.setSeVolume(v);
+            if (preview) sound.playSE("hit_enemy"); // nghe thử mức âm lượng SE
+        }
+    }
+
     @Override
     public void mousePressed(MouseEvent e) {
         MouseEvent translated = translateMouseEvent(e);
+        if (showSettings) {
+            Point p = translated.getPoint();
+            if (nearTrack(musicSliderTrack, p)) setSliderFromPoint(musicSliderTrack, p, true, false);
+            else if (nearTrack(seSliderTrack, p)) setSliderFromPoint(seSliderTrack, p, false, false);
+            return;
+        }
         mouseH.mousePressed(translated);
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
         MouseEvent translated = translateMouseEvent(e);
+        if (showSettings) return;
         mouseH.mouseReleased(translated);
     }
 
@@ -373,6 +583,12 @@ public class GamePanel extends JPanel implements Runnable, MouseListener, java.a
     @Override
     public void mouseDragged(MouseEvent e) {
         MouseEvent translated = translateMouseEvent(e);
+        if (showSettings) {
+            Point p = translated.getPoint();
+            if (nearTrack(musicSliderTrack, p)) setSliderFromPoint(musicSliderTrack, p, true, false);
+            else if (nearTrack(seSliderTrack, p)) setSliderFromPoint(seSliderTrack, p, false, false);
+            return;
+        }
         mouseH.mouseDragged(translated);
     }
 
