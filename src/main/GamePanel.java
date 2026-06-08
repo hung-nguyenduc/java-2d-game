@@ -551,12 +551,21 @@ public class GamePanel extends JPanel implements Runnable, MouseListener, java.a
     @Override
     public void mousePressed(MouseEvent e) {
         MouseEvent translated = translateMouseEvent(e);
+        Point p = translated.getPoint();
         if (showSettings) {
-            Point p = translated.getPoint();
             if (nearTrack(musicSliderTrack, p)) setSliderFromPoint(musicSliderTrack, p, true, false);
             else if (nearTrack(seSliderTrack, p)) setSliderFromPoint(seSliderTrack, p, false, false);
             return;
         }
+
+        // Không truyền sự kiện nhấn xuống game khi bấm vào nút loa / nút Dừng
+        // (tránh bị bắn/ngắm một phát khi chỉ muốn mở cài đặt hoặc tạm dừng)
+        boolean gearVisible = !isPaused && !(currentState instanceof InstructionsState);
+        if (gearVisible && settingsButtonRect.contains(p)) return;
+        boolean pauseVisible = !(currentState instanceof MenuState)
+                && !(currentState instanceof InstructionsState) && !isPaused;
+        if (pauseVisible && pauseButtonRect.contains(p)) return;
+
         mouseH.mousePressed(translated);
     }
 
