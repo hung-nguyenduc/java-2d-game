@@ -22,6 +22,8 @@ public class LoadingState2 extends GameState {
 
     @Override
     public void enter() {
+        // Dừng nhạc nền của màn trước để video VTV không bị nhạc lặp đi lặp lại đè lên
+        gp.sound.stopMusic();
         try {
             // LƯU Ý QUAN TRỌNG:
             // Phải dùng ImageIcon thay vì ImageIO.read() thì file GIF nó mới giữ được hoạt ảnh
