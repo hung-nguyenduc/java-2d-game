@@ -226,15 +226,19 @@ public class ZombieState extends GameState {
         killTextTimer = KILL_TEXT_DURATION;
     }
 
-    // Nạp font brush (res/fonts/killstreak.ttf); thiếu thì dùng font script dự phòng
+    // Nạp font brush (res/fonts/killstreak.otf hoặc .ttf); thiếu thì dùng font script dự phòng
     private Font getKillFont(float size) {
         if (!killFontLoaded) {
             killFontLoaded = true;
-            try {
-                java.io.InputStream is = getClass().getResourceAsStream("/fonts/killstreak.ttf");
-                if (is != null) killFont = Font.createFont(Font.TRUETYPE_FONT, is);
-            } catch (Exception e) {
-                killFont = null;
+            for (String path : new String[] {"/fonts/killstreak.otf", "/fonts/killstreak.ttf"}) {
+                try (java.io.InputStream is = getClass().getResourceAsStream(path)) {
+                    if (is != null) {
+                        killFont = Font.createFont(Font.TRUETYPE_FONT, is);
+                        break;
+                    }
+                } catch (Exception e) {
+                    killFont = null;
+                }
             }
         }
         if (killFont != null) return killFont.deriveFont(Font.BOLD, size);
