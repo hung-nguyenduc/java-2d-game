@@ -18,12 +18,33 @@ public class SoundGen {
         String out = args.length > 0 ? args[0] : "res/sound";
         new File(out).mkdirs();
 
+        write(out + "/ban_sung.wav", banSung());
         write(out + "/hit_bia.wav", hitBia());
         write(out + "/hit_enemy.wav", hitEnemy());
         write(out + "/luu_roi.wav", luuRoi());
         write(out + "/dinh_dan.wav", dinhDan());
         write(out + "/nhac_tuong_niem.wav", nhacTuongNiem());
         System.out.println("Done.");
+    }
+
+    // ---- Tiếng súng bắn: tiếng "đoàng" đanh + cú thụp trầm ----
+    static double[] banSung() {
+        double dur = 0.2;
+        int n = (int) (SR * dur);
+        double[] s = new double[n];
+        double lp = 0;
+        for (int i = 0; i < n; i++) {
+            double t = (double) i / SR;
+            double nz = Math.random() * 2 - 1;
+            lp += (nz - lp) * 0.4;          // lọc thông thấp
+            double hp = nz - lp;            // phần cao -> tiếng "crack" đanh
+            double crack = hp * Math.exp(-t / 0.035);
+            double f = 95 * Math.exp(-t / 0.03) + 60;
+            double body = Math.exp(-t / 0.06) * Math.sin(2 * Math.PI * f * t); // cú thụp trầm
+            double mid = lp * Math.exp(-t / 0.05) * 0.6;
+            s[i] = crack * 0.9 + body * 0.7 + mid;
+        }
+        return normalize(s, 0.92);
     }
 
     // ---- Tiếng trúng bia: "ding/ping" kim loại sáng, có vài bồi âm lệch hài ----
