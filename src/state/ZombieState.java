@@ -35,6 +35,15 @@ public class ZombieState extends GameState {
     private DialogueLine[] introScript;
     private DialogueLine[] afterQuestScript;
 
+    // --- HIỆU ỨNG CHUỖI HẠ GỤC (First Blood / Double Kill / Triple Kill) ---
+    private String killText = null;
+    private int killTextTimer = 0;
+    private static final int KILL_TEXT_DURATION = 110; // ~1.8s ở 60FPS
+    private int lastAnnouncedKill = 0;
+    private boolean pendingWinDialogue = false;
+    private static Font killFont;
+    private static boolean killFontLoaded = false;
+
     public ZombieState(GamePanel gp) {
         super(gp);
         this.obstacles = new ArrayList<>();
@@ -85,6 +94,10 @@ public class ZombieState extends GameState {
         gp.killCount = 0;
         isQuestCompleted = false;
         isPhase2DialoguePlayed = false;
+        lastAnnouncedKill = 0;
+        killText = null;
+        killTextTimer = 0;
+        pendingWinDialogue = false;
 
         gp.player.setDefaultValues();
         gp.player.spawnAtCenter();
@@ -147,6 +160,15 @@ public class ZombieState extends GameState {
             return;
         }
 
+        // Giảm bộ đếm hiệu ứng chữ kill-streak (chạy kể cả khi đã hoàn thành màn)
+        if (killTextTimer > 0) killTextTimer--;
+        // Sau khi chữ "Triple Kill" chạy xong mới mở lời thoại kết màn
+        if (pendingWinDialogue && killTextTimer <= 0 && !isPhase2DialoguePlayed && !dialogueBox.isActive()) {
+            dialogueBox.startDialogue(afterQuestScript);
+            isPhase2DialoguePlayed = true;
+            pendingWinDialogue = false;
+        }
+
         // Nếu hộp thoại đang mở, chặn mọi tương tác di chuyển/bắn súng, chỉ cho bấm Space tua chữ
         if (dialogueBox.isActive()) {
             dialogueBox.update();
@@ -168,6 +190,12 @@ public class ZombieState extends GameState {
 
         gp.checkCollisions();
 
+        // Hiện chữ + đọc tên chuỗi hạ gục mỗi khi vừa diệt thêm một quái
+        if (gp.killCount > lastAnnouncedKill && gp.killCount <= 3) {
+            lastAnnouncedKill = gp.killCount;
+            announceKill(gp.killCount);
+        }
+
         // Kiểm tra điều kiện Thua cuộc (Vũ hết máu)
         if (gp.player.health <= 0) {
             gp.setState(new GameOverState(gp));
@@ -179,15 +207,80 @@ public class ZombieState extends GameState {
             spawnSingleEnemy(gp.killCount);
         }
 
-        // Kiểm tra hoàn thành (Diệt đủ 3 quái) và bật hội thoại một lần duy nhất
+        // Kiểm tra hoàn thành (Diệt đủ 3 quái); lời thoại kết màn mở sau khi chữ Triple Kill chạy xong
         if (gp.killCount >= 3 && !isQuestCompleted) {
             isQuestCompleted = true;
-            if (!isPhase2DialoguePlayed) {
-                dialogueBox.startDialogue(afterQuestScript);
-                isPhase2DialoguePlayed = true;
-                // Đoạn logic chuyển Ending lập tức ở đây đã bị xóa, việc chuyển do onDialogueComplete() lo.
+            pendingWinDialogue = true;
+            // Đoạn logic chuyển Ending lập tức ở đây đã bị xóa, việc chuyển do onDialogueComplete() lo.
+        }
+    }
+
+    // Hiện chữ kill-streak + phát giọng đọc tương ứng
+    private void announceKill(int k) {
+        switch (k) {
+            case 1: killText = "First Blood"; gp.sound.playSE("first_blood"); break;
+            case 2: killText = "Double Kill"; gp.sound.playSE("double_kill"); break;
+            case 3: killText = "Triple Kill"; gp.sound.playSE("triple_kill"); break;
+            default: return;
+        }
+        killTextTimer = KILL_TEXT_DURATION;
+    }
+
+    // Nạp font brush (res/fonts/killstreak.ttf); thiếu thì dùng font script dự phòng
+    private Font getKillFont(float size) {
+        if (!killFontLoaded) {
+            killFontLoaded = true;
+            try {
+                java.io.InputStream is = getClass().getResourceAsStream("/fonts/killstreak.ttf");
+                if (is != null) killFont = Font.createFont(Font.TRUETYPE_FONT, is);
+            } catch (Exception e) {
+                killFont = null;
             }
         }
+        if (killFont != null) return killFont.deriveFont(Font.BOLD, size);
+        return new Font("Segoe Script", Font.BOLD | Font.ITALIC, (int) size);
+    }
+
+    // Vẽ chữ kill-streak: chữ trắng, viền đỏ (theo ảnh mẫu)
+    private void drawKillStreak(Graphics2D g2, String text, int timer) {
+        int elapsed = KILL_TEXT_DURATION - timer;
+        float life = timer / (float) KILL_TEXT_DURATION;
+        float alpha;
+        if (elapsed < 8) alpha = elapsed / 8f;            // hiện nhanh
+        else alpha = Math.min(1f, life / 0.4f);           // tan dần ở cuối
+        if (alpha < 0f) alpha = 0f;
+        if (alpha > 1f) alpha = 1f;
+
+        float size = 78f;
+        if (elapsed < 10) size *= 1.15f - 0.15f * (elapsed / 10f); // "pop" hơi to lúc đầu
+
+        Font font = getKillFont(size);
+        java.awt.font.FontRenderContext frc = g2.getFontRenderContext();
+        java.awt.font.GlyphVector gv = font.createGlyphVector(frc, text);
+        Rectangle bounds = gv.getPixelBounds(frc, 0, 0);
+        int x = (gp.screenWidth - bounds.width) / 2 - bounds.x;
+        int y = (int) (gp.screenHeight * 0.30);
+        java.awt.Shape shape = gv.getOutline(x, y);
+
+        Composite oldComp = g2.getComposite();
+        Object oldAA = g2.getRenderingHint(RenderingHints.KEY_ANTIALIASING);
+        g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        // Quầng đỏ mờ bên ngoài
+        g2.setColor(new Color(140, 0, 0));
+        g2.setStroke(new BasicStroke(13, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+        g2.draw(shape);
+        // Viền đỏ rõ
+        g2.setColor(new Color(225, 20, 20));
+        g2.setStroke(new BasicStroke(7, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+        g2.draw(shape);
+        // Tô trắng bên trong
+        g2.setColor(Color.WHITE);
+        g2.fill(shape);
+
+        g2.setComposite(oldComp);
+        if (oldAA != null) g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, oldAA);
     }
 
     @Override
@@ -261,7 +354,12 @@ public class ZombieState extends GameState {
         g2.setColor(Color.RED);
         g2.drawString(hudText, 20, 10 + fm.getAscent() + 5);
 
-        // 7. Vẽ Hộp thoại
+        // 7. Vẽ hiệu ứng chữ chuỗi hạ gục (First Blood / Double Kill / Triple Kill)
+        if (killText != null && killTextTimer > 0) {
+            drawKillStreak(g2, killText, killTextTimer);
+        }
+
+        // 8. Vẽ Hộp thoại
         dialogueBox.draw(g2, gp.screenWidth, gp.screenHeight);
     }
 
