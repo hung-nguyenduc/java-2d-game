@@ -87,6 +87,7 @@ public class Zombie2State extends GameState {
             gp.player.currentWeapon.shotgunMode = false;
             gp.player.currentWeapon.shootInterval = 3;
             gp.player.currentWeapon.automaticFire = true;
+            gp.player.currentWeapon.playShootSound = true; // Bật tiếng súng cho màn bắn quái
         }
 
         // Sinh quái (Enemy) riêng cho map này

@@ -92,6 +92,7 @@ public class ZombieState extends GameState {
 
         this.weapon = new Weapon(gp, gp.mouseH, gp.player);
         this.weapon.automaticFire = true; // Bật chế độ sấy
+        this.weapon.playShootSound = true; // Bật tiếng súng cho màn bắn quái
         gp.player.equipWeapon(this.weapon);
         weapon.clearBullets();
 

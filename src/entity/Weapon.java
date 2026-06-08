@@ -33,6 +33,7 @@ public class Weapon {
     
     public boolean shotgunMode = false;
     public boolean automaticFire = false; // Thêm chế độ sấy
+    public boolean playShootSound = false; // Phát tiếng súng khi bắn (chỉ bật ở màn bắn quái)
 
     private static final Color BULLET_COLOR = new Color(0, 80, 200);
 
@@ -163,7 +164,10 @@ public class Weapon {
         Bullet bullet1 = new Bullet(tipX, tipY, aimAngle);
         bullets.add(bullet1);
 
-        // Bỏ tiếng súng khi khai hỏa: chỉ phát tiếng khi đạn trúng mục tiêu
+        // Tiếng súng chỉ phát ở màn bắn quái (màn bắn súng để im, chỉ kêu khi trúng bia)
+        if (playShootSound) {
+            gp.sound.playSE("ban_sung");
+        }
         flashTimer = 5; // Hiển thị chớp lửa trong 5 frames
         
         if (shotgunMode) {
