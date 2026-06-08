@@ -47,6 +47,8 @@ public class Ending extends GameState {
 
     @Override
     public void enter() {
+        // Nhạc bi tráng hào hùng ngay từ đoạn thoại "mùa hè đỏ lửa", chạy xuyên suốt tới GIF
+        gp.sound.playMusic("nhac_tuong_niem");
         try {
             // MÀY ĐỔI ĐƯỜNG DẪN FILE GIF Ở ĐÂY
             endingGif = new ImageIcon(getClass().getResource("/video/dai-tuong-niem.gif")).getImage();
@@ -184,7 +186,7 @@ public class Ending extends GameState {
                 // Nếu hết thoại -> Chuyển sang Phase 1 (Chạy GIF)
                 if (dialogueIndex >= dialogueLines.length) {
                     currentPhase = 1;
-                    gp.sound.playMusic("nhac_tuong_niem"); // Nhạc kèn trang nghiêm tưởng niệm các chiến sĩ
+                    // Nhạc tưởng niệm đã bật từ enter(), chạy liền mạch nên không bật lại ở đây
                 }
             }
         }
